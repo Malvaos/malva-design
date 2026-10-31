@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Privacy & Security - LionOS</title>
+    <style>
+        /* --- 1. LIONOS DESIGN TOKENS --- */
+        :root {
+            /* Palette - Obsidian (Dark) */
+            --bg-body: #0f060d;
+            --bg-glass-card: rgba(var(--ov),0.03);
+            --bg-glass-hover: rgba(var(--ov),0.07);
+            --bg-glass-active: rgba(var(--ov),0.1);
+            --bg-header: rgba(15,6,13,0.85);
+            
+            /* Text */
+            --text-primary: rgba(var(--ov),0.96);
+            --text-secondary: rgba(var(--ov),0.6);
+            --text-tertiary: rgba(var(--ov),0.35);
+            
+            /* Accents */
+            --accent-primary: #d859bf; 
+            --accent-success: #5b8940;
+            --accent-warn: #df9321;
+            --accent-danger: #ef445b;
+            
+            /* Borders */
+            --border-subtle: 1px solid rgba(var(--ov),0.08);
+            --border-separator: 1px solid rgba(var(--ov),0.05);
+            
+            /* Dimensions & Spacing */
+            --radius-window: 28px;
+            --radius-icon: 10px;
+            --max-width: 720px;
+            --padding-page: 40px; /* More breathing room */
+            --padding-card: 24px;
+            
+            /* Animation */
+            --ease-fluid: cubic-bezier(0.2, 0.8, 0.2, 1);
+            --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Light Mode */
+        [data-theme="light"] {
+            --bg-body: #eaa4dc;
+            --bg-glass-card: rgba(var(--ov),0.7);
+            --bg-glass-hover: rgba(var(--ov),0.9);
+            --bg-glass-active: #f8f1f7;
+            --bg-header: rgba(234,164,220,0.85);
+            
+            --text-primary: #150d13;
+            --text-secondary: rgba(15,6,13,0.6);
+            --text-tertiary: rgba(15,6,13,0.4);
+            
+            --border-subtle: 1px solid rgba(15,6,13,0.05);
+            --border-separator: 1px solid rgba(15,6,13,0.06);
+        }
+
+        /* --- 2. BASE RESET --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            /* Subtle texture + gradient */
+            background-image: 
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E"),
+                radial-gradient(circle at 50% 0%, rgba(216,89,191,0.08) 0%, transparent 80%);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+            transition: background 0.5s var(--ease-fluid);
+        }
+
+        /* --- 3. LAYOUT CONTAINER --- */
+        .window-frame {
+            width: 100%;
+            max-width: var(--max-width);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 0 var(--padding-page);
+            overflow-y: auto;
+            scrollbar-width: none;
+            animation: fadeInUp 0.6s var(--ease-fluid);
+        }
+        .window-frame::-webkit-scrollbar { display: none; }
+
+        /* --- 4. HEADER --- */
+        .header {
+            display: flex; align-items: center; 
+            padding: 20px 0;
+            position: sticky; top: 0; z-index: 20;
+            background: var(--bg-header);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: var(--border-separator);
+            margin: 0 calc(var(--padding-page) * -1) 32px calc(var(--padding-page) * -1); /* Bleed */
+            padding-left: var(--padding-page); padding-right: var(--padding-page);
+        }
+
+        .btn-back {
+            width: 40px; height: 40px; 
+            border-radius: 50%;
+            background: var(--bg-glass-card); border: var(--border-subtle);
+            color: var(--text-primary); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; margin-right: 16px;
+            flex-shrink: 0; /* GEOMETRY LOCK */
+        }
+        .btn-back:hover { background: var(--bg-glass-hover); transform: translateX(-2px); }
+        .page-title { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+
+        /* --- 5. HERO: SECURITY SHIELD --- */
+        .hero-container {
+            background: var(--bg-glass-card);
+            border: var(--border-subtle);
+            border-radius: var(--radius-window);
+            padding: 40px;
+            margin-bottom: 32px;
+            display: flex; flex-direction: column; align-items: center;
+            text-align: center; position: relative; overflow: hidden;
+            transition: border-color 0.3s;
+        }
+
+        .shield-wrapper {
+            width: 88px; height: 88px;
+            background: var(--accent-success);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; margin-bottom: 20px;
+            box-shadow: 0 0 40px rgba(91,137,64,0.3);
+            position: relative; z-index: 2;
+            flex-shrink: 0; /* GEOMETRY LOCK */
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+        
+        .pulse-ring {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%; height: 100%;
+            border: 2px solid var(--accent-success);
+            border-radius: 50%;
+            opacity: 0;
+            animation: pulse 2.5s infinite;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .hero-title { font-size: 20px; font-weight: 600; margin-bottom: 6px; z-index: 2; }
+        .hero-desc { font-size: 14px; color: var(--text-secondary); max-width: 320px; z-index: 2; line-height: 1.5; }
+
+        /* Warning State Styles */
+        .hero-container.warn .shield-wrapper { background: var(--accent-danger); box-shadow: 0 0 40px rgba(239,68,91,0.3); }
+        .hero-container.warn .pulse-ring { border-color: var(--accent-danger); animation-duration: 1.5s; }
+
+        /* --- 6. SETTINGS GROUP --- */
+        .section-label {
+            font-size: 12px; font-weight: 700; color: var(--text-secondary);
+            margin-bottom: 14px; letter-spacing: 0.08em; text-transform: uppercase;
+            padding-left: 12px;
+        }
+
+        .group {
+            background: var(--bg-glass-card); border: var(--border-subtle);
+            border-radius: var(--radius-window); padding: 8px 24px;
+            margin-bottom: 32px; overflow: hidden;
+        }
+
+        .row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 0; border-bottom: var(--border-separator);
+            gap: 24px; /* Ensure space between text and toggle */
+        }
+        .row:last-child { border-bottom: none; }
+
+        .row-content { 
+            display: flex; align-items: center; gap: 18px; 
+            min-width: 0; /* Allows text truncation if needed */
+        }
+        
+        .row-icon {
+            width: 36px; height: 36px; 
+            border-radius: var(--radius-icon);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 18px;
+            flex-shrink: 0; /* GEOMETRY LOCK */
+            aspect-ratio: 1/1; /* GEOMETRY LOCK */
+        }
+        
+        /* Icon Colors */
+        .bg-blue { background: #d859bf; }
+        .bg-purple { background: #de74c9; }
+        .bg-orange { background: #e1992e; }
+        .bg-teal { background: #a5278c; }
+        .bg-red { background: #ef445b; }
+        .bg-gray { background: #8d2177; }
+
+        .text-stack { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+        .label-main { font-size: 16px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .label-sub { font-size: 13px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* --- 7. CONTROLS --- */
+        
+        /* Toggle Switch */
+        .switch {
+            width: 52px; height: 32px; 
+            background: rgba(var(--ov),0.1);
+            border-radius: 99px; position: relative; cursor: pointer;
+            transition: background 0.3s; 
+            border: 1px solid rgba(var(--ov),0.1);
+            flex-shrink: 0; /* GEOMETRY LOCK */
+        }
+        .switch-knob {
+            position: absolute; top: 2px; left: 2px;
+            width: 26px; height: 26px; 
+            background: white; border-radius: 50%;
+            transition: transform 0.3s var(--ease-bounce);
+            box-shadow: 0 2px 5px rgba(15,6,13,0.2);
+        }
+        .chk:checked + .switch { background: var(--accent-success); border-color: var(--accent-success); }
+        .chk:checked + .switch .switch-knob { transform: translateX(20px); }
+        .chk { display: none; }
+
+        /* Buttons */
+        .btn-action {
+            padding: 8px 16px; 
+            background: rgba(var(--ov),0.08);
+            border: 1px solid rgba(var(--ov),0.1); 
+            border-radius: 10px;
+            color: var(--text-primary); 
+            font-size: 13px; font-weight: 500;
+            cursor: pointer; transition: all 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .btn-action:hover { background: rgba(var(--ov),0.15); }
+        .btn-action:active { transform: scale(0.96); }
+        .btn-action.loading { cursor: wait; opacity: 0.7; }
+
+        /* Dropdown */
+        .select-wrapper { position: relative; }
+        .select-style {
+            background: transparent; color: var(--text-secondary);
+            border: none; font-size: 14px; cursor: pointer; 
+            text-align: right; outline: none;
+            padding-right: 16px; font-weight: 500;
+        }
+
+        /* --- 8. ANIMATIONS --- */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; } 100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; } }
+
+    </style>
+<style id="malva-tokens">
+:root{--ov:227,213,225;--bg-body:#1d101c;--bg-glass-card:rgba(227,213,225,.05);--bg-glass-hover:rgba(227,213,225,.09);--bg-glass-active:rgba(227,213,225,.14);--bg-glass-panel:rgba(42,25,41,.72);--bg-header:rgba(29,16,28,.82);
+--text-primary:#e3d5e1;--text-secondary:#b5a0b2;--text-tertiary:#8f7a8c;--accent-primary:#d47abc;--accent-glow:rgba(212,122,188,.45);--accent-success:#7bc74d;--accent-warn:#f2b04a;--accent-danger:#ff8a94;--accent-purple:#b99cf0;--accent-cyan:#72c9d8;--accent-rose:#ff8a94;--accent-amber:#f2b04a;--accent-violet:#a592f2;--accent-eco:#7bc74d;--accent-perf:#d47abc;--accent-pink:#e999d2;
+--border-subtle:1px solid rgba(227,213,225,.12);--border-separator:1px solid rgba(227,213,225,.06)}
+[data-theme="light"]{--ov:56,32,52;--bg-body:#f6f0f6;--bg-glass-card:rgba(255,255,255,.72);--bg-glass-hover:rgba(255,255,255,.9);--bg-glass-active:#ffffff;--bg-glass-panel:rgba(251,248,251,.85);--bg-header:rgba(246,240,246,.85);
+--text-primary:#382034;--text-secondary:#6c4e67;--text-tertiary:#8a6f85;--accent-primary:#7e376a;--accent-glow:rgba(126,55,106,.35);--accent-success:#3f7f1b;--accent-warn:#9a5b00;--accent-danger:#c0414e;--accent-purple:#6a4bb5;--accent-cyan:#1f7f95;--accent-rose:#c0414e;--accent-amber:#9a5b00;--accent-violet:#5b4bb5;--accent-eco:#3f7f1b;--accent-perf:#7e376a;--accent-pink:#a14c8c;
+--border-subtle:1px solid rgba(56,32,52,.14);--border-separator:1px solid rgba(56,32,52,.07)}
+html,body{color:var(--text-primary)}.window-frame>*{flex-shrink:0}html.embedded,html.embedded body{background:transparent!important;background-image:none!important}
+html.embedded .window-frame{max-width:none;padding:26px 34px}
+html.embedded .btn-back{display:none!important}html.embedded .header{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border-bottom:0!important;position:static!important}
+</style></head>
+<body>
+
+    <div class="window-frame">
+        
+        <header class="header">
+            <button class="btn-back" onclick="console.log('Back')" aria-label="Go Back">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <h1 class="page-title">Privacy & Security</h1>
+        </header>
+
+        <!-- HERO -->
+        <div class="hero-container" id="hero-card">
+            <div class="shield-wrapper">
+                <div class="pulse-ring"></div>
+                <!-- SVG Shield -->
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+            <div class="hero-title" id="hero-title">System Secure</div>
+            <div class="hero-desc" id="hero-desc">Your device is protected. Firewall is active and monitoring traffic.</div>
+        </div>
+
+        <!-- 1. PERMISSIONS -->
+        <div class="section-label">App Permissions</div>
+        <div class="group">
+            <div class="row">
+                <div class="row-content">
+                    <div class="row-icon bg-blue">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    </div>
+                    <div class="text-stack">
+                        <span class="label-main">Location Services</span>
+                        <span class="label-sub">Precise location access</span>
+                    </div>
+                </div>
+                <label>
+                    <input type="checkbox" class="chk" checked>
+                    <div class="switch"><div class="switch-knob"></div></div>
+                </label>
+            </div>
+
+            <div class="row">
+                <div class="row-content">
+                    <div class="row-icon bg-purple">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    </div>
+                    <div class="text-stack">
+                        <span class="label-main">Camera</span>
+                        <span class="label-sub">2 apps have access</span>
+                    </div>
+                </div>
+                <label>
+                    <input type="checkbox" class="chk" checked>
+                    <div class="switch"><div class="switch-knob"></div></div>
+                </label>
+            </div>
+
+            <div class="row">
+                <div class="row-content">
+                    <div class="row-icon bg-orange">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                    </div>
+                    <div class="text-stack">
+                        <span class="label-main">Microphone</span>
+                        <span class="label-sub">1 app has access</span>
+                    </div>
+                </div>
+                <label>
+                    <input type="checkbox" class="chk" checked>
+                    <div class="switch"><div class="switch-knob"></div></div>
+                </label>
+            </div>
+        </div>
+
+        <!-- 2. SECURITY -->
+        <div class="section-label">System Security</div>
+        <div class="group">
+            <div class="row">
+                <div class="row-content">
+                    <div class="row-icon bg-teal">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    </div>
+                    <div class="text-stack">
+                        <span class="label-main">Firewall</span>
+                        <span class="label-sub">Block incoming connections</span>
+                    </div>
+                </div>
+                <label>
+                    <input type="checkbox" class="chk" checked onchange="toggleFirewall(this)">
+                    <div class="switch"><div class="switch-knob"></div></div>
+                </label>
+            </div>
+
+            <div class="row">
+                <div class="row-content">
+                    <div class="row-icon bg-gray">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>
+                    </div>
+                    <div class="text-stack">
+                        <span class="label-main">Disk Encryption</span>
+                        <span class="label-sub">LUKS Encrypted</span>
+                    </div>
+                </div>
+                <span style="font-size:13px; color:var(--accent-success); font-weight:600; white-space:nowrap;">Active</span>
+            </div>
+
+            <div class="row">
+                <div class="row-content">
+                    <div class="row-icon bg-blue">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 5.5A10 10 0 1 1 11.26 2.05"/></svg>
+                    </div>
+                    <div class="text-stack">
+                        <span class="label-main">Auto Updates</span>
+                        <span class="label-sub">Security patches only</span>
+                    </div>
+                </div>
+                <label>
+                    <input type="checkbox" class="chk" checked>
+                    <div class="switch"><div class="switch-knob"></div></div>
+                </label>
+            </div>
+            
+            <div class="row">
+                <div class="row-content">
+                    <div class="row-icon bg-gray">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="2" ry="2"></rect><line x1="12" y1="21" x2="12" y2="17"></line></svg>
+                    </div>
+                    <div class="text-stack">
+                        <span class="label-main">Screen Lock</span>
+                        <span class="label-sub">Auto-lock timeout</span>
+                    </div>
+                </div>
+                <div class="select-wrapper">
+                    <select class="select-style">
+                        <option>5 Minutes</option>
+                        <option>10 Minutes</option>
+                        <option>30 Minutes</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. MAINTENANCE -->
+        <div class="section-label">Data Management</div>
+        <div class="group">
+            <div class="row">
+                <div class="row-content">
+                    <div class="row-icon bg-purple">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M2 12l5-5M2 12l5 5"/></svg>
+                    </div>
+                    <div class="text-stack">
+                        <span class="label-main">Diagnostics</span>
+                        <span class="label-sub">Send usage data to LionOS</span>
+                    </div>
+                </div>
+                <label>
+                    <input type="checkbox" class="chk">
+                    <div class="switch"><div class="switch-knob"></div></div>
+                </label>
+            </div>
+
+            <div class="row">
+                <div class="row-content">
+                    <div class="row-icon bg-red">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </div>
+                    <div class="text-stack">
+                        <span class="label-main">Temp Files</span>
+                        <span class="label-sub">450 MB in trash</span>
+                    </div>
+                </div>
+                <button class="btn-action" onclick="clearData(this)">Empty Trash</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. FIREWALL LOGIC ---
+        function toggleFirewall(chk) {
+            const hero = document.getElementById('hero-card');
+            const title = document.getElementById('hero-title');
+            const desc = document.getElementById('hero-desc');
+            const iconWrapper = hero.querySelector('.shield-wrapper');
+            const icon = iconWrapper.querySelector('svg');
+
+            if (chk.checked) {
+                // Secure
+                hero.classList.remove('warn');
+                title.textContent = "System Secure";
+                desc.textContent = "Your device is protected. Firewall is active and monitoring traffic.";
+                iconWrapper.style.background = "var(--accent-success)";
+                iconWrapper.style.boxShadow = "0 0 40px rgba(91,137,64,0.3)";
+                icon.innerHTML = '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>';
+            } else {
+                // Warning
+                hero.classList.add('warn');
+                title.textContent = "Security Risk";
+                desc.textContent = "Firewall is disabled. Your device is vulnerable to network attacks.";
+                iconWrapper.style.background = "var(--accent-danger)";
+                iconWrapper.style.boxShadow = "0 0 40px rgba(239,68,91,0.3)";
+                icon.innerHTML = '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>';
+            }
+        }
+
+        // --- 2. CLEAR DATA LOGIC (Debounced) ---
+        let isCleaning = false;
+
+        function clearData(btn) {
+            if (isCleaning) return; // Prevent spam clicks
+            isCleaning = true;
+
+            const originalText = "Empty Trash";
+            btn.textContent = "Cleaning...";
+            btn.classList.add('loading');
+
+            // Simulate Process
+            setTimeout(() => {
+                btn.textContent = "Cleaned";
+                btn.style.color = "var(--accent-success)";
+                btn.style.borderColor = "rgba(91,137,64,0.3)";
+                btn.style.background = "rgba(91,137,64,0.1)";
+                btn.classList.remove('loading');
+                
+                // Reset State
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.color = "";
+                    btn.style.borderColor = "";
+                    btn.style.background = "";
+                    isCleaning = false;
+                }, 2000);
+            }, 1200);
+        }
+
+    </script>
+<script>(function(){if(self!==top)document.documentElement.classList.add('embedded');addEventListener('message',function(e){var t=e.data&&e.data.malvaTheme;if(t)document.documentElement.setAttribute('data-theme',t)})})();</script></body>
+</html>
+

@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Leonux OS - Settings</title>
+
+    <style>
+        /**
+         * LEONUX DESIGN SYSTEM - SETTINGS / FONTS MANAGER EDITION
+         */
+        :root {
+            --bg-body: #1d101c;
+            --surface-base: rgba(42,25,41,0.84);
+            --surface-panel: rgba(58,38,57,0.55);
+            --surface-hover: rgba(227,213,225,0.08);
+            --surface-active: rgba(227,213,225,0.13);
+            --surface-selected: rgba(223,118,202,0.15);
+            --border-glass: rgba(227,213,225,0.09);
+            --border-mid: rgba(227,213,225,0.17);
+            
+            --text-main: #e3d5e1;
+            --text-muted: #b5a0b2;
+            
+            --accent: #d47abc;
+            --accent-glow: rgba(212,122,188,0.35);
+            --danger: #ff8a94;
+            --success: #7bc74d;
+            --warning: #f2b04a;
+            --purple: #eaa4dc;
+            
+            --shadow-win: 0 40px 100px -20px rgba(10,3,9,0.95);
+            --glass-blur: blur(40px) saturate(180%);
+            --radius-xl: clamp(16px, 2vh, 24px);
+            --radius-l: clamp(8px, 1vh, 12px);
+            --radius-pill: 9999px;
+            --ease-leonux: cubic-bezier(0.2, 1, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(248,241,247,0.1); border-radius: 4px; border: 2px solid transparent; background-clip: padding-box; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(248,241,247,0.2); }
+
+        .noise-layer {
+            position: fixed; inset: 0; opacity: 0.03; pointer-events: none; z-index: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        .ambient-glow {
+            position: absolute; width: 80vw; height: 80vh; border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            filter: blur(140px); opacity: 0.35; z-index: 1; pointer-events: none; transition: all 1s ease;
+        }
+
+        /* App Window */
+        .app-frame {
+            position: relative; width: 95vw; max-width: 1100px; height: 85vh; max-height: 800px;
+            background: var(--surface-base); backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-glass); border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-win); display: flex; flex-direction: column;
+            z-index: 10; overflow: hidden; animation: window-open 0.6s var(--ease-leonux) forwards;
+        }
+
+        @keyframes window-open {
+            from { opacity: 0; transform: scale(0.97) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Header Navigation Toolbar */
+        .header-toolbar {
+            display: flex; align-items: center; padding: 14px 20px;
+            border-bottom: 1px solid var(--border-glass); background: rgba(15,6,13,0.3);
+            gap: 16px; justify-content: space-between;
+        }
+
+        .window-controls { display: flex; gap: 8px; flex-shrink: 0; }
+        .win-btn { width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer; }
+        .win-close { background: #f75e73; }
+        .win-min { background: #e5a648; }
+        .win-max { background: #6ca34d; }
+
+        .app-title {
+            font-size: 13px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px;
+            display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center; margin-right: 48px; /* offset win controls */
+        }
+
+        /* Workspace Core Layout */
+        .workspace { flex: 1; display: flex; overflow: hidden; position: relative; }
+
+        /* --- Sidebar Categories --- */
+        .sidebar {
+            width: 240px; border-right: 1px solid var(--border-glass); display: flex; flex-direction: column;
+            background: rgba(15,6,13,0.15); overflow-y: auto; flex-shrink: 0; padding: 16px 12px; gap: 24px;
+        }
+        
+        .nav-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: var(--radius-l);
+            cursor: pointer; transition: all 0.2s ease; font-size: 13px; color: var(--text-muted); font-weight: 500;
+        }
+        .nav-item:hover { background: var(--surface-hover); color: var(--text-main); }
+        .nav-item.active { background: rgba(223,118,202,0.15); color: var(--accent); font-weight: 600; }
+        .nav-item svg { width: 18px; height: 18px; opacity: 0.8; }
+        .nav-item.active svg { opacity: 1; }
+
+        /* --- Main Content Area --- */
+        .content-area {
+            flex: 1; display: flex; flex-direction: column; background: transparent; overflow-y: auto;
+            padding: 32px 40px; scroll-behavior: smooth;
+        }
+
+        .page-header { margin-bottom: 32px; }
+        .page-title { font-size: 28px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
+        .page-subtitle { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+
+        /* Settings Sections */
+        .settings-section { margin-bottom: 40px; }
+        .section-title {
+            font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border-glass);
+        }
+
+        .settings-card {
+            background: var(--surface-panel); border: 1px solid var(--border-glass);
+            border-radius: var(--radius-l); padding: 20px; display: flex; flex-direction: column; gap: 20px;
+        }
+
+        .setting-row { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+        .setting-info { flex: 1; }
+        .setting-name { font-size: 14px; font-weight: 600; color: var(--text-main); margin-bottom: 4px; }
+        .setting-desc { font-size: 12px; color: var(--text-muted); }
+        .setting-control { display: flex; align-items: center; gap: 12px; min-width: 150px; justify-content: flex-end; }
+
+        /* Inputs & Controls */
+        select.glass-select {
+            appearance: none; background: rgba(15,6,13,0.3); border: 1px solid var(--border-glass);
+            color: var(--text-main); padding: 8px 32px 8px 12px; border-radius: 8px; font-size: 13px;
+            outline: none; cursor: pointer; transition: 0.2s; width: 200px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239DA3AE' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 10px center;
+        }
+        select.glass-select:focus, select.glass-select:hover { border-color: var(--accent); background-color: rgba(15,6,13,0.5); }
+        select.glass-select option { background: #21151f; color: #f8f1f7; }
+
+        input[type="range"].glass-slider {
+            -webkit-appearance: none; width: 150px; height: 6px; background: rgba(248,241,247,0.1);
+            border-radius: 4px; outline: none; transition: 0.2s;
+        }
+        input[type="range"].glass-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 16px; height: 16px;
+            border-radius: 50%; background: var(--text-main); cursor: pointer;
+            box-shadow: 0 0 10px rgba(15,6,13,0.5); border: 2px solid var(--accent); transition: 0.2s;
+        }
+        input[type="range"].glass-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        
+        .slider-value { font-size: 13px; font-weight: 600; color: var(--accent); width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
+
+        /* Toggle Switch */
+        .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(248,241,247,0.1); transition: .3s; border-radius: 24px;
+            border: 1px solid var(--border-glass);
+        }
+        .toggle-slider:before {
+            position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+            background-color: var(--text-muted); transition: .3s; border-radius: 50%;
+        }
+        .toggle-switch input:checked + .toggle-slider { background-color: var(--accent); border-color: var(--accent); }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); background-color: #f8f1f7; }
+
+        /* Live Preview Box */
+        .live-preview-box {
+            background: rgba(15,6,13,0.3); border: 1px solid var(--border-mid);
+            border-radius: var(--radius-l); padding: 24px; margin-top: 16px;
+            text-align: center; min-height: 120px; display: flex; align-items: center; justify-content: center;
+            transition: font-size 0.2s ease, font-family 0.2s ease;
+        }
+        .live-preview-box[contenteditable]:focus { outline: 1px solid var(--accent); background: rgba(15,6,13,0.5); }
+
+        /* Font Library Toolbar */
+        .library-toolbar {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+        }
+        .search-wrapper { position: relative; }
+        .search-input {
+            background: rgba(15,6,13,0.3); border: 1px solid var(--border-glass);
+            border-radius: var(--radius-pill); padding: 8px 16px 8px 36px; color: var(--text-main);
+            font-size: 13px; width: 240px; outline: none; transition: 0.2s;
+        }
+        .search-input:focus { border-color: var(--accent); }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-muted); pointer-events: none; }
+        
+        .btn-install {
+            background: rgba(248,241,247,0.05); border: 1px solid var(--border-glass); color: var(--text-main);
+            padding: 8px 16px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 500;
+            cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;
+        }
+        .btn-install:hover { background: var(--surface-hover); border-color: var(--border-mid); }
+        .btn-install svg { width: 14px; height: 14px; }
+
+        /* Font Grid */
+        .font-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;
+        }
+        .font-card {
+            background: var(--surface-panel); border: 1px solid var(--border-glass);
+            border-radius: var(--radius-l); padding: 20px; cursor: pointer;
+            transition: all 0.3s var(--ease-leonux); display: flex; flex-direction: column; gap: 12px;
+            position: relative; overflow: hidden;
+        }
+        .font-card:hover {
+            transform: translateY(-2px); border-color: var(--border-mid);
+            box-shadow: 0 10px 30px rgba(15,6,13,0.2); background: rgba(38,24,35,0.8);
+        }
+        .font-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .font-card-title { font-size: 15px; font-weight: 600; color: var(--text-main); }
+        .font-card-meta { font-size: 11px; color: var(--text-muted); background: rgba(15,6,13,0.3); padding: 2px 8px; border-radius: 12px; }
+        .font-card-preview {
+            font-size: 20px; color: var(--text-main); margin-top: 8px; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis; opacity: 0.9;
+        }
+        .font-card-actions {
+            display: flex; gap: 8px; margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(248,241,247,0.05); opacity: 0; transition: 0.2s;
+        }
+        .font-card:hover .font-card-actions { opacity: 1; }
+        .font-action-btn { background: transparent; border: none; color: var(--accent); font-size: 12px; font-weight: 600; cursor: pointer; }
+        .font-action-btn:hover { text-decoration: underline; }
+
+        @media (max-width: 768px) {
+            .app-frame { height: 100dvh; max-height: none; width: 100vw; border-radius: 0; border: none; }
+            .sidebar { display: none; }
+            .content-area { padding: 20px; }
+            .setting-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .setting-control { width: 100%; justify-content: flex-start; }
+        }
+    </style>
+<style id="malva-overrides">body{background:#1d101c url(../../brand/wallpapers/malva-dusk-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f6f0f6 url(../../brand/wallpapers/malva-dawn-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
+<body>
+
+    <div class="noise-layer"></div>
+    <div class="ambient-glow" id="ambient-glow"></div>
+
+    <!-- Offline SVG Assets -->
+    <svg style="display:none;" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></symbol>
+        <symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></symbol>
+        
+        <!-- Sidebar Icons -->
+        <symbol id="icon-network" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></symbol>
+        <symbol id="icon-display" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></symbol>
+        <symbol id="icon-appearance" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></symbol>
+        <symbol id="icon-font" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></symbol>
+        <symbol id="icon-keyboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect><path d="M6 8h.001"></path><path d="M10 8h.001"></path><path d="M14 8h.001"></path><path d="M18 8h.001"></path><path d="M8 12h.001"></path><path d="M12 12h.001"></path><path d="M16 12h.001"></path><path d="M7 16h10"></path></symbol>
+        <symbol id="icon-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></symbol>
+        <symbol id="icon-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></symbol>
+    </svg>
+
+    <main class="app-frame">
+        
+        <!-- Top Toolbar -->
+        <header class="header-toolbar">
+            <div class="window-controls">
+                <button class="win-btn win-close" id="btn-close-app"></button>
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+            </div>
+            <div class="app-title">
+                <svg width="16" height="16"><use href="#icon-settings"></use></svg>
+                Settings
+            </div>
+        </header>
+
+        <div class="workspace">
+            
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="nav-item">
+                    <svg><use href="#icon-network"></use></svg><span>Network & Internet</span>
+                </div>
+                <div class="nav-item">
+                    <svg><use href="#icon-display"></use></svg><span>Display</span>
+                </div>
+                <div class="nav-item">
+                    <svg><use href="#icon-appearance"></use></svg><span>Appearance</span>
+                </div>
+                <div class="nav-item active">
+                    <svg><use href="#icon-font"></use></svg><span>Fonts Manager</span>
+                </div>
+                <div class="nav-item">
+                    <svg><use href="#icon-keyboard"></use></svg><span>Keyboard & Mouse</span>
+                </div>
+                <div style="margin-top: auto;"></div>
+                <div class="nav-item">
+                    <svg><use href="#icon-info"></use></svg><span>About System</span>
+                </div>
+            </aside>
+
+            <!-- Main Content Area (Fonts Manager) -->
+            <section class="content-area" id="fonts-content">
+                
+                <header class="page-header">
+                    <h1 class="page-title">Fonts Manager</h1>
+                    <p class="page-subtitle">Customize system typography, scaling, and manage installed fonts.</p>
+                </header>
+
+                <!-- Section: Global Typography -->
+                <div class="settings-section">
+                    <div class="section-title">Global Typography</div>
+                    
+                    <div class="settings-card">
+                        
+                        <!-- System Font -->
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-name">System Interface Font</div>
+                                <div class="setting-desc">Primary font used across the desktop environment and apps.</div>
+                            </div>
+                            <div class="setting-control">
+                                <select class="glass-select" id="select-system-font">
+                                    <option value="system-ui" selected>System Default (San Francisco / Roboto)</option>
+                                    <option value="Arial, sans-serif">Arial</option>
+                                    <option value="'Segoe UI', sans-serif">Segoe UI</option>
+                                    <option value="Verdana, sans-serif">Verdana</option>
+                                    <option value="Georgia, serif">Georgia (Serif)</option>
+                                    <option value="'Comic Sans MS', cursive">Comic Sans (Playful)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Monospace Font -->
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-name">Monospace Font</div>
+                                <div class="setting-desc">Used in Terminal, code editors, and raw text views.</div>
+                            </div>
+                            <div class="setting-control">
+                                <select class="glass-select" id="select-mono-font">
+                                    <option value="monospace" selected>System Default Monospace</option>
+                                    <option value="'Courier New', monospace">Courier New</option>
+                                    <option value="'Lucida Console', monospace">Lucida Console</option>
+                                    <option value="Consolas, monospace">Consolas</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Font Scaling -->
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-name">Interface Text Scaling</div>
+                                <div class="setting-desc">Adjust the global size of text across all applications.</div>
+                            </div>
+                            <div class="setting-control">
+                                <input type="range" min="10" max="24" value="16" class="glass-slider" id="slider-font-size">
+                                <span class="slider-value" id="val-font-size">100%</span>
+                            </div>
+                        </div>
+
+                        <!-- Live Preview Box -->
+                        <div class="live-preview-box" id="live-preview-box" contenteditable="true" spellcheck="false" title="Click to edit preview text">
+                            The quick brown fox jumps over the lazy dog. 0123456789
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Rendering -->
+                <div class="settings-section">
+                    <div class="section-title">Font Rendering</div>
+                    <div class="settings-card">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-name">Antialiasing (Subpixel Smoothing)</div>
+                                <div class="setting-desc">Improves text readability on high-DPI displays. Recommended to keep enabled.</div>
+                            </div>
+                            <div class="setting-control">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-aa" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Installed Fonts Library -->
+                <div class="settings-section">
+                    <div class="section-title">Installed Fonts</div>
+                    
+                    <div class="library-toolbar">
+                        <div class="search-wrapper">
+                            <svg class="search-icon"><use href="#icon-search"></use></svg>
+                            <input type="text" class="search-input" id="search-fonts" placeholder="Search installed fonts...">
+                        </div>
+                        <button class="btn-install" title="Install Font from File">
+                            <svg><use href="#icon-plus"></use></svg> Add Font
+                        </button>
+                    </div>
+
+                    <div class="font-grid" id="font-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+            </section>
+        </div>
+    </main>
+
+    <script>
+        (function() {
+            "use strict";
+
+            // --- Mock Database of Installed Fonts ---
+            const installedFonts = [
+                { name: "System UI Default", family: "system-ui", type: "Sans-Serif", weights: "100-900" },
+                { name: "Arial", family: "Arial, sans-serif", type: "Sans-Serif", weights: "400, 700" },
+                { name: "Helvetica", family: "Helvetica, sans-serif", type: "Sans-Serif", weights: "400, 700" },
+                { name: "Verdana", family: "Verdana, sans-serif", type: "Sans-Serif", weights: "400, 700" },
+                { name: "Tahoma", family: "Tahoma, sans-serif", type: "Sans-Serif", weights: "400, 700" },
+                { name: "Trebuchet MS", family: "'Trebuchet MS', sans-serif", type: "Sans-Serif", weights: "400, 700" },
+                { name: "Georgia", family: "Georgia, serif", type: "Serif", weights: "400, 700" },
+                { name: "Times New Roman", family: "'Times New Roman', serif", type: "Serif", weights: "400, 700" },
+                { name: "Garamond", family: "Garamond, serif", type: "Serif", weights: "400, 700" },
+                { name: "Courier New", family: "'Courier New', monospace", type: "Monospace", weights: "400, 700" },
+                { name: "Consolas", family: "Consolas, monospace", type: "Monospace", weights: "400, 700" },
+                { name: "Impact", family: "Impact, fantasy", type: "Display", weights: "400" },
+                { name: "Comic Sans MS", family: "'Comic Sans MS', cursive", type: "Handwriting", weights: "400, 700" }
+            ];
+
+            // --- DOM Elements ---
+            const selSystemFont = document.getElementById('select-system-font');
+            const sliderFontSize = document.getElementById('slider-font-size');
+            const valFontSize = document.getElementById('val-font-size');
+            const previewBox = document.getElementById('live-preview-box');
+            const toggleAA = document.getElementById('toggle-aa');
+            
+            const searchInput = document.getElementById('search-fonts');
+            const fontGrid = document.getElementById('font-grid');
+
+            // --- Initialization ---
+            renderFontGrid(installedFonts);
+
+            // --- Event Listeners ---
+            
+            // 1. Change System Font (Applies to Preview & Body for simulation)
+            selSystemFont.addEventListener('change', (e) => {
+                const newFont = e.target.value;
+                previewBox.style.fontFamily = newFont;
+                document.body.style.fontFamily = newFont; // Actually apply to the settings app!
+            });
+
+            // 2. Change Font Scale
+            sliderFontSize.addEventListener('input', (e) => {
+                const sizePx = e.target.value;
+                const percentage = Math.round((sizePx / 16) * 100);
+                
+                valFontSize.textContent = `${percentage}%`;
+                previewBox.style.fontSize = `${sizePx}px`;
+            });
+
+            // 3. Toggle Antialiasing
+            toggleAA.addEventListener('change', (e) => {
+                const isEnabled = e.target.checked;
+                if (isEnabled) {
+                    previewBox.style.webkitFontSmoothing = 'antialiased';
+                    previewBox.style.mozOsxFontSmoothing = 'grayscale';
+                } else {
+                    previewBox.style.webkitFontSmoothing = 'none';
+                    previewBox.style.mozOsxFontSmoothing = 'unset';
+                }
+            });
+
+            // 4. Search Fonts
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                const filtered = installedFonts.filter(f => 
+                    f.name.toLowerCase().includes(query) || 
+                    f.type.toLowerCase().includes(query)
+                );
+                renderFontGrid(filtered);
+            });
+
+            // Window close visual
+            document.getElementById('btn-close-app').addEventListener('click', () => {
+                document.querySelector('.app-frame').style.animation = "window-open 0.4s var(--ease-leonux) reverse forwards";
+                setTimeout(() => document.body.innerHTML = "<h2 style='color:var(--text-muted); font-weight:300;'>Settings App Closed.</h2>", 400);
+            });
+
+            // --- Functions ---
+            
+            function renderFontGrid(fonts) {
+                fontGrid.innerHTML = '';
+                
+                if (fonts.length === 0) {
+                    fontGrid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">No fonts found matching your search.</div>`;
+                    return;
+                }
+
+                fonts.forEach(font => {
+                    const card = document.createElement('div');
+                    card.className = 'font-card';
+                    
+                    // The sample text renders in the actual font
+                    const sampleText = "Leonux OS Typography";
+                    
+                    card.innerHTML = `
+                        <div class="font-card-header">
+                            <div>
+                                <div class="font-card-title">${font.name}</div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Weights: ${font.weights}</div>
+                            </div>
+                            <div class="font-card-meta">${font.type}</div>
+                        </div>
+                        <div class="font-card-preview" style="font-family: ${font.family};">
+                            ${sampleText}
+                        </div>
+                        <div class="font-card-actions">
+                            <button class="font-action-btn">Set Default</button>
+                            <button class="font-action-btn">View Details</button>
+                            <button class="font-action-btn" style="margin-left: auto; color: var(--danger);">Uninstall</button>
+                        </div>
+                    `;
+
+                    // Interactivity for previewing
+                    card.addEventListener('click', () => {
+                        selSystemFont.value = font.family;
+                        // Trigger change event manually if the option exists, otherwise just set it
+                        if(selSystemFont.querySelector(`option[value="${font.family}"]`)) {
+                            selSystemFont.dispatchEvent(new Event('change'));
+                        } else {
+                            previewBox.style.fontFamily = font.family;
+                        }
+                        
+                        // Briefly highlight card
+                        card.style.borderColor = 'var(--accent)';
+                        setTimeout(() => card.style.borderColor = 'var(--border-glass)', 500);
+                    });
+
+                    fontGrid.appendChild(card);
+                });
+            }
+
+        })();
+    </script>
+</body>
+</html>

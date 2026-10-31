@@ -1,0 +1,34 @@
+name = "Malva Dark"
+is_dark = true
+high_contrast = false
+reduced_transparency = false
+reduced_motion = false
+accent_seed_hex = 0xB84F9F
+
+[spacing]
+xxs = 4.0
+xs = 8.0
+sm = 12.0
+md = 16.0
+lg = 24.0
+xl = 32.0
+xxl = 48.0
+
+[radii]
+xs = 4.0
+sm = 8.0
+md = 12.0
+lg = 16.0
+xl = 24.0
+pill = 9999.0
+
+[typography]
+font_family_sans = "Inter"
+font_family_mono = "JetBrains Mono"
+caption_px = 11.0
+body_sm_px = 13.0
+body_px = 14.0
+subtitle_px = 16.0
+title_px = 20.0
+headline_px = 28.0
+display_px = 36.0

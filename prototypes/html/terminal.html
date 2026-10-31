@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cyber">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Leonux OS — Terminal Emulator</title>
+
+    <style>
+        /**
+         * LEONUX DESIGN SYSTEM - TERMINAL EMULATOR EDITION
+         */
+        :root {
+            --bg-body: #1d101c;
+            --surface-base: rgba(42,25,41,0.84);
+            --surface-panel: rgba(58,38,57,0.55);
+            --surface-hover: rgba(227,213,225,0.08);
+            --surface-active: rgba(227,213,225,0.13);
+            --border-glass: rgba(227,213,225,0.09);
+            --border-mid: rgba(227,213,225,0.17);
+            
+            --text-main: #e3d5e1;
+            --text-muted: #b5a0b2;
+            
+            --accent: #d47abc;
+            --accent-glow: rgba(212,122,188,0.35);
+            --danger: #ff8a94;
+            --success: #7bc74d;
+            --warning: #f2b04a;
+            
+            --shadow-win: 0 40px 100px -20px rgba(10,3,9,0.95);
+            --glass-blur: blur(40px) saturate(180%);
+            --radius-xl: clamp(16px, 2vh, 24px);
+            --radius-l: clamp(8px, 1vh, 12px);
+            --radius-pill: 9999px;
+            --ease-leonux: cubic-bezier(0.2, 1, 0.2, 1);
+            --font-term: 'JetBrains Mono', 'SF Mono', Fira Code, Consolas, monospace;
+        }
+
+        /* --- Theme Variants Configs --- */
+        [data-theme="hacker"] {
+            --accent: #7eb45f;
+            --accent-glow: rgba(126,180,95,0.35);
+            --text-main: #7eb45f;
+            --text-muted: #456831;
+            --surface-base: rgba(8,12,5,0.9);
+            --border-glass: rgba(126,180,95,0.15);
+        }
+
+        [data-theme="amber"] {
+            --accent: #df9320;
+            --accent-glow: rgba(223,147,32,0.35);
+            --text-main: #df9320;
+            --text-muted: #9d6716;
+            --surface-base: rgba(12,9,5,0.9);
+            --border-glass: rgba(223,147,32,0.15);
+        }
+
+        [data-theme="dracula"] {
+            --accent: #e9a3db;
+            --accent-glow: rgba(233,163,219,0.35);
+            --text-main: #f8f6f2;
+            --text-muted: #d345b7;
+            --surface-base: rgba(34,8,29,0.88);
+            --border-glass: rgba(233,163,219,0.15);
+        }
+
+        [data-theme="nord"] {
+            --accent: #df79cb;
+            --accent-glow: rgba(223,121,203,0.35);
+            --text-main: #eaa4dc;
+            --text-muted: #93237d;
+            --surface-base: rgba(36,8,30,0.88);
+            --border-glass: rgba(223,121,203,0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+        body {
+            font-family: var(--font-term);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .noise-layer {
+            position: fixed; inset: 0; opacity: 0.03; pointer-events: none; z-index: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* Ambient Dynamic Color Glow behind the window */
+        .ambient-glow {
+            position: absolute;
+            width: 75vw;
+            height: 75vh;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            filter: blur(140px);
+            opacity: 0.45;
+            z-index: 1;
+            pointer-events: none;
+            transition: all 0.8s ease;
+        }
+
+        /* Main Shell Window Frame */
+        .term-frame {
+            position: relative;
+            width: 95vw;
+            max-width: 950px;
+            height: 85vh;
+            max-height: 680px;
+            background: var(--surface-base);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-win);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            overflow: hidden;
+            animation: window-open 0.6s var(--ease-leonux) forwards;
+        }
+
+        @keyframes window-open {
+            from { opacity: 0; transform: scale(0.97) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Header Navigation bar */
+        .header-nav {
+            display: flex;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-glass);
+            background: rgba(15,6,13,0.3);
+            justify-content: space-between;
+            z-index: 30;
+            flex-shrink: 0;
+        }
+
+        .window-controls { display: flex; gap: 8px; }
+        .win-btn { width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer; }
+        .win-close { background: #f75e73; }
+        .win-min { background: #e5a648; }
+        .win-max { background: #6ca34d; }
+
+        .app-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .option-action-btn {
+            background: transparent; border: none; color: var(--text-muted);
+            width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; cursor: pointer; transition: all 0.2s ease;
+        }
+        .option-action-btn:hover { color: var(--text-main); background: var(--surface-hover); }
+
+        /* Workspace Split */
+        .workspace {
+            flex: 1;
+            display: flex;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- Panel A: Terminal Screen Column --- */
+        .term-screen {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+            position: relative;
+            scrollbar-width: thin;
+        }
+        .term-screen::-webkit-scrollbar { width: 6px; }
+        .term-screen::-webkit-scrollbar-thumb { background: var(--border-glass); border-radius: 3px; }
+
+        /* Scanning phosphor lines overlay */
+        .scanlines {
+            position: absolute; inset: 0;
+            background: linear-gradient(rgba(21,13,19,0) 50%, rgba(15,6,13,0.25) 50%);
+            background-size: 100% 4px;
+            z-index: 5;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .scanlines.active { opacity: 0.3; }
+
+        /* Full Matrix Rain Canvas Overlay */
+        .matrix-overlay {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .matrix-overlay.active { opacity: 0.35; }
+
+        /* Output structural blocks */
+        .output-row {
+            white-space: pre-wrap;
+            word-break: break-all;
+            z-index: 10;
+        }
+
+        .output-cmd {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .output-success { color: var(--success); }
+        .output-warn { color: var(--warning); }
+        .output-err { color: var(--danger); }
+
+        /* Interactive Shell Prompt Line */
+        .prompt-line {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+        .prompt-sigil {
+            color: var(--accent);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .prompt-input-wrapper {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .prompt-field {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: inherit;
+            caret-color: transparent; /* custom cursor */
+        }
+        .custom-cursor {
+            position: absolute;
+            left: 0;
+            width: 8px;
+            height: 15px;
+            background: var(--accent);
+            animation: cursor-blink 1s steps(2, start) infinite;
+            pointer-events: none;
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+        @keyframes cursor-blink { to { visibility: hidden; } }
+
+        /* --- Panel B: Slide-out Options Tray (Right Side) --- */
+        .options-tray {
+            width: 320px;
+            border-left: 1px solid var(--border-glass);
+            background: var(--surface-panel);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            position: absolute; right: 0; top: 0; bottom: 0;
+            transform: translateX(100%);
+            transition: transform 0.4s var(--ease-leonux);
+            z-index: 50;
+            overflow-y: auto;
+            padding: 24px;
+            gap: 28px;
+        }
+        .options-tray.active {
+            transform: translateX(0);
+        }
+
+        .tray-section { display: flex; flex-direction: column; gap: 12px; }
+        .tray-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        /* Customizable Prompts / Form entries */
+        .config-input {
+            width: 100%;
+            background: rgba(15,6,13,0.3);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text-main);
+            font-family: var(--font-term);
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .config-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(223,118,202,0.15);
+        }
+
+        /* Theme Selector Blocks grid */
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .theme-pill {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-glass);
+            background: rgba(15,6,13,0.25);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        .theme-pill:hover {
+            border-color: var(--border-mid);
+            background: var(--surface-hover);
+        }
+        .theme-pill.active {
+            border-color: var(--accent);
+            color: var(--text-main);
+            box-shadow: inset 0 0 10px var(--accent-glow);
+        }
+        .theme-dot {
+            width: 16px; height: 16px; border-radius: 50%;
+            box-shadow: 0 0 8px rgba(15,6,13,0.5);
+        }
+
+        /* Incremental Sizers buttons */
+        .sizer-wrapper {
+            display: flex; gap: 8px; align-items: center;
+        }
+        .sizer-btn {
+            background: rgba(248,241,247,0.03);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            border-radius: 8px;
+            width: 40px; height: 38px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 16px; transition: 0.2s;
+        }
+        .sizer-btn:hover { background: var(--surface-hover); border-color: var(--border-mid); }
+        .sizer-val { flex: 1; text-align: center; font-size: 13px; font-weight: 600; }
+
+        /* Custom Toggle Switches */
+        .toggle-row {
+            display: flex; justify-content: space-between; align-items: center;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 13px; font-weight: 600;
+        }
+        .toggle { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: rgba(248,241,247,0.05); transition: .3s; border-radius: 20px; border: 1px solid var(--border-glass); }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px; background-color: var(--text-muted); transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); border-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(20px); background-color: var(--bg-body); }
+
+        /* Quick Utility Trigger buttons */
+        .action-tray-btn {
+            width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-glass);
+            background: rgba(248,241,247,0.02); color: var(--text-main); font-size: 12px; font-weight: 600;
+            cursor: pointer; text-align: center; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .action-tray-btn:hover { background: var(--surface-hover); border-color: var(--border-mid); }
+
+        @media (max-width: 768px) {
+            .term-frame { height: 100dvh; max-height: none; width: 100dvw; border-radius: 0; border: none; }
+            .options-tray { width: 100%; }
+        }
+    </style>
+<style id="malva-overrides">body{background:#1d101c url(../../brand/wallpapers/malva-dusk-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f6f0f6 url(../../brand/wallpapers/malva-dawn-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
+<body>
+
+    <div class="noise-layer"></div>
+    <div class="ambient-glow" id="ambient-glow"></div>
+
+    <main class="term-frame">
+        <header class="header-nav">
+            <div class="window-controls">
+                <button class="win-btn win-close" id="btn-close-app" title="Kill Shell session"></button>
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+            </div>
+            <div class="app-title">Leonux Shell v2.6 — GPU Accelerated</div>
+            <button class="option-action-btn" id="btn-toggle-options" title="Settings Menu">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round"></circle>
+                </svg>
+            </button>
+        </header>
+
+        <div class="workspace">
+            
+            <!-- PANEL A: TERMINAL DISPLAY SCREEN -->
+            <section class="term-screen" id="term-view">
+                <div class="scanlines" id="crt-scanlines"></div>
+                <canvas class="matrix-overlay" id="matrix-canvas"></canvas>
+
+                <!-- Command Scrolling Buffer -->
+                <div id="terminal-history">
+                    <div class="output-row">Leonux Kernel v4.19.0-6-amd64 x86_64 Core</div>
+                    <div class="terminal-line line-info">Welcome to Leonux Terminal interface. Type <span style="color:var(--accent);">help</span> to view available system functions.</div>
+                    <div class="terminal-line line-info">------------------------------------------------------------</div>
+                </div>
+
+                <!-- Live Prompt line -->
+                <div class="scrubber-axis" style="display: flex; align-items: center; width: 100%; gap: 8px;">
+                    <span class="line-cmd" id="terminal-prompt" style="font-family: monospace; font-size: 13px; font-weight: 700; white-space: nowrap;">guest@leonux:~$</span>
+                    <div class="timeline-track-container" style="flex: 1; cursor: text; height: auto;">
+                        <input type="text" id="terminal-stdin" style="background:transparent; border:none; outline:none; color:var(--text-main); font-family:'JetBrains Mono', monospace; font-size:14px; width:100%;" autofocus autocomplete="off" spellcheck="false">
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- PANEL B: SETTINGS SHELF (COLLAPSED BY DEFAULT) -->
+            <aside class="storage-sidebar" style="display: none;" id="settings-shelf">
+                
+                <!-- Themes section -->
+                <div class="sidebar-section">
+                    <div class="section-title"><span>Terminal Color Themes</span></div>
+                    <div class="device-group" id="theme-selectors-group">
+                        <div class="tree-node active" data-theme-id="cyberpunk">
+                            <div style="width: 14px; height: 14px; border-radius: 50%; background: #df76ca;" class="node-icon"></div>
+                            <div class="node-meta"><span class="node-name">Leonux Standard (Blue)</span></div>
+                        </div>
+                        <div class="tree-node" data-theme-id="retro">
+                            <div style="width: 14px; height: 14px; border-radius: 50%; background: #df9320;" class="node-icon"></div>
+                            <div class="node-meta"><span class="node-name">CRT Cathode (Amber)</span></div>
+                        </div>
+                        <div class="tree-node" data-theme-id="hacker">
+                            <div style="width: 14px; height: 14px; border-radius: 50%; background: #7eb45f;" class="node-icon"></div>
+                            <div class="node-meta"><span class="node-name">Matrix Phosphor (Green)</span></div>
+                        </div>
+                        <div class="tree-node" data-theme-id="dracula">
+                            <div style="width: 14px; height: 14px; border-radius: 50%; background: #e9a3db;" class="node-icon"></div>
+                            <div class="node-meta"><span class="node-name">Clean Dracula (Purple)</span></div>
+                        </div>
+                        <div class="tree-node" data-theme-id="nord">
+                            <div style="width: 14px; height: 14px; border-radius: 50%; background: #df79cb;" class="node-icon"></div>
+                            <div class="node-meta"><span class="node-name">Nordic Arctic (Frost)</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Font Scaler section -->
+                <div class="sidebar-section">
+                    <div class="section-title"><span>Console Font Scale</span></div>
+                    <div class="sizer-wrapper">
+                        <button class="sizer-btn" id="btn-font-dec">—</button>
+                        <span class="sizer-val" id="font-scale-lbl">14px</span>
+                        <button class="sizer-btn" id="btn-font-inc">+</button>
+                    </div>
+                </div>
+
+                <!-- Prompt customizer section -->
+                <div class="sidebar-section">
+                    <div class="section-title"><span>Personal Prompt string</span></div>
+                    <input type="text" class="config-input" id="cfg-prompt-string" value="guest@leonux">
+                </div>
+
+                <!-- Display Overlay controls section -->
+                <div class="sidebar-section" style="display: flex; flex-direction: column; gap: 14px;">
+                    <div class="section-title"><span>Graphical Options</span></div>
+                    
+                    <div class="toggle-row">
+                        <span>CRT Phosphor Scanlines</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-scanlines">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-row">
+                        <span>Physical Key Tick sound</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-ticks" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Reset controls -->
+                <div class="sidebar-section" style="margin-top: auto;">
+                    <button class="action-tray-btn" id="btn-wipe-history">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        <span>Purge History logs</span>
+                    </button>
+                </div>
+
+            </aside>
+
+        </div>
+    </main>
+
+    <script>
+        (function() {
+            "use strict";
+
+            // --- State Parameters ---
+            let commandHistoryList = [];
+            let commandHistoryCursor = -1;
+            
+            let systemPromptPrefix = "guest@leonux";
+            let fontSizeDefault = 14;
+            let enableTypingSound = true;
+            let isMatrixPlaying = false;
+
+            // Matrix Digital waterfall parameters
+            let matrixCanvas = document.getElementById('matrix-canvas');
+            let matrixCtx = matrixCanvas.getContext('2d');
+            let matrixAnimationId = null;
+
+            // --- DOM Elements References ---
+            const termView = document.getElementById('term-view');
+            const termHistory = document.getElementById('terminal-history');
+            const terminalPrompt = document.getElementById('terminal-prompt');
+            const stdinField = document.getElementById('terminal-stdin');
+
+            const settingsShelf = document.getElementById('settings-shelf');
+            const btnToggleOptions = document.getElementById('btn-toggle-options');
+            
+            const crtScanlines = document.getElementById('crt-scanlines');
+            const toggleScanlines = document.getElementById('toggle-scanlines');
+            const toggleTicks = document.getElementById('toggle-ticks');
+            
+            const btnFontDec = document.getElementById('btn-font-dec');
+            const btnFontInc = document.getElementById('btn-font-inc');
+            const fontScaleLbl = document.getElementById('font-scale-lbl');
+            const cfgPromptString = document.getElementById('cfg-prompt-string');
+            const btnWipeHistory = document.getElementById('btn-wipe-history');
+
+            // Audio ticks haptic generator (Zero dependencies)
+            function playConsoleHapticTick() {
+                if (!enableTypingSound) return;
+                try {
+                    const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+                    const ctx = new AudioCtxClass();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(2200, ctx.currentTime); // High-pitch tick click
+                    
+                    gain.gain.setValueAtTime(0.04, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.04); // Fast decay
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.05);
+                } catch(e) {}
+            }
+
+            // --- Terminal Commands Map Engine ---
+            const commands = {
+                help: {
+                    desc: "List all functional CLI system triggers.",
+                    exec: () => {
+                        let table = "\nAvailable System Commands:\n";
+                        for (let [name, obj] of Object.entries(commands)) {
+                            table += `  ${name.padEnd(16)} - ${obj.desc}\n`;
+                        }
+                        return table;
+                    }
+                },
+                clear: {
+                    desc: "Wipe terminal console screens.",
+                    exec: () => {
+                        termHistory.innerHTML = '';
+                        return "";
+                    }
+                },
+                whoami: {
+                    desc: "Retrieve active shell identity.",
+                    exec: () => "guest_developer@leonux-os-sandbox.local (root rights verified)"
+                },
+                date: {
+                    desc: "Display system date parameters.",
+                    exec: () => new Date().toString()
+                },
+                neofetch: {
+                    desc: "Render OS specifications block.",
+                    exec: () => {
+                        return `
+<span style="color:var(--accent);">        _.._        </span>    <span style="color:var(--accent);">OS:</span> Leonux OS Core v2.6.4-stable
+<span style="color:var(--accent);">      .' .-'\`       </span>    <span style="color:var(--accent);">Kernel:</span> Linux 4.19.12-leonux-gpu-accel
+<span style="color:var(--accent);">     /  /           </span>    <span style="color:var(--accent);">Uptime:</span> 1 hour, 42 minutes
+<span style="color:var(--accent);">     |  |           </span>    <span style="color:var(--accent);">Shell:</span> /bin/leonux-sh
+<span style="color:var(--accent);">     \\  \\           </span>    <span style="color:var(--accent);">DE:</span> Glassmorphic-Desktop
+<span style="color:var(--accent);">      \`. .-\`\`       </span>    <span style="color:var(--accent);">CPU:</span> Intel Core i9-13900K @ 4.80GHz
+<span style="color:var(--accent);">        ''          </span>    <span style="color:var(--accent);">GPU:</span> NVIDIA GeForce RTX 4090 Dedicated
+                        <span style="color:var(--accent);">Memory:</span> 14.2 GB / 32.0 GB (44%)
+`;
+                    }
+                },
+                ping: {
+                    desc: "Verify gateway latency. Usage: ping [host]",
+                    exec: (args) => {
+                        const target = args[0] || "leonux.local";
+                        appendTerminalResponse(`PING ${target} (10.0.0.1) 56(84) bytes of data.`);
+                        
+                        let seq = 1;
+                        const pingInterval = setInterval(() => {
+                            if (seq > 4) {
+                                clearInterval(pingInterval);
+                                appendTerminalResponse(`--- ${target} ping statistics ---`);
+                                appendTerminalResponse(`4 packets transmitted, 4 received, 0% packet loss, time 3004ms`);
+                                scrollTerminalBottom();
+                                return;
+                            }
+                            const ms = (2.4 + Math.random() * 4.2).toFixed(1);
+                            appendTerminalResponse(`64 bytes from 10.0.0.1: icmp_seq=${seq} ttl=64 time=${ms} ms`);
+                            scrollTerminalBottom();
+                            seq++;
+                        }, 500);
+                        return null; // Asynchronous processing
+                    }
+                },
+                matrix: {
+                    desc: "Toggle beautiful animated code canvas waterfall.",
+                    exec: () => {
+                        toggleMatrixWaterfall();
+                        return "Toggled digital rain canvas sequence.";
+                    }
+                },
+                pkg: {
+                    desc: "Install virtual apps. Usage: pkg install [app-name]",
+                    exec: (args) => {
+                        if (args[0] !== 'install' || !args[1]) {
+                            return "Error: Invalid syntax. Use 'pkg install [package-name]'";
+                        }
+                        const app = args[1];
+                        appendTerminalResponse(`Reading dependency schemas for target [${app}] ...`);
+                        
+                        let count = 0;
+                        const steps = [
+                            `Unpacking files indexes for ${app} ...`,
+                            `Establishing system node paths directory ...`,
+                            `Integrating library configurations descriptors ...`,
+                            `Installation Completed: ${app} successfully updated.`
+                        ];
+
+                        const runInstallStep = () => {
+                            if (count >= steps.length) {
+                                scrollTerminalBottom();
+                                return;
+                            }
+                            appendTerminalResponse(`[OK] ${steps[count]}`);
+                            scrollTerminalBottom();
+                            count++;
+                            setTimeout(runInstallStep, 700);
+                        };
+
+                        setTimeout(runInstallStep, 600);
+                        return null;
+                    }
+                },
+                theme: {
+                    desc: "Switch terminal profile color. Usage: theme [cyber|retro|hacker|dracula|nord]",
+                    exec: (args) => {
+                        const target = args[0];
+                        const valid = ['cyber', 'retro', 'hacker', 'dracula', 'nord'];
+                        if (!valid.includes(target)) {
+                            return `Invalid theme. Available profiles: ${valid.join(', ')}`;
+                        }
+                        setTerminalTheme(target);
+                        return `Applied terminal color template successfully: [${target}]`;
+                    }
+                },
+                history: {
+                    desc: "View command execution queue records.",
+                    exec: () => commandHistoryList.join('\n')
+                }
+            };
+
+            // --- Terminal Print Engines ---
+            function appendTerminalResponse(text, isCmd = false, err = false) {
+                const row = document.createElement('div');
+                row.className = `output-row ${isCmd ? 'output-cmd' : ''} ${err ? 'output-err' : ''}`;
+                row.innerHTML = text;
+                termHistory.appendChild(row);
+                scrollTerminalBottom();
+            }
+
+            function scrollTerminalBottom() {
+                termView.scrollTop = termView.scrollHeight;
+            }
+
+            // --- Shell Executor Interface ---
+            function runInteractiveCommandLine(inputLine) {
+                const cleanInput = inputLine.trim();
+                if (cleanInput === '') return;
+
+                // Save to logs history
+                commandHistoryList.push(cleanInput);
+                commandHistoryCursor = commandHistoryList.length;
+
+                // Print input prompt mirror
+                appendTerminalResponse(`${systemPromptPrefix}:~$ ${cleanInput}`, true);
+
+                // Parse components
+                const tokens = cleanInput.split(/\s+/);
+                const cmdName = tokens[0].toLowerCase();
+                const args = tokens.slice(1);
+
+                if (commands[cmdName]) {
+                    const result = commands[cmdName].exec(args);
+                    if (result !== null) {
+                        appendTerminalResponse(result);
+                    }
+                } else {
+                    appendTerminalResponse(`bash: command not found: ${cmdName}. Type 'help' to see system commands.`, false, true);
+                }
+            }
+
+            // Refocus prompt anywhere click occurs inside terminal bounds
+            termView.addEventListener('click', (e) => {
+                if (e.target.closest('.options-tray')) return; // ignore settings panel
+                stdinField.focus();
+            });
+
+            // Prompt line focus indicators
+            stdinField.addEventListener('focus', () => {
+                document.getElementById('cursor-blinker').style.display = 'block';
+            });
+            
+            // Text inputs keydown controllers
+            stdinField.addEventListener('keydown', (e) => {
+                playConsoleHapticTick();
+
+                if (e.key === 'Enter') {
+                    const content = stdinField.value;
+                    stdinField.value = '';
+                    runInteractiveCommandLine(content);
+                } 
+                else if (e.key === 'ArrowUp') {
+                    // Navigate History logs
+                    e.preventDefault();
+                    if (commandHistoryList.length > 0 && commandHistoryCursor > 0) {
+                        commandHistoryCursor--;
+                        stdinField.value = commandHistoryList[commandHistoryCursor];
+                        updateCursorPosition();
+                    }
+                } 
+                else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (commandHistoryList.length > 0 && commandHistoryCursor < commandHistoryList.length - 1) {
+                        commandHistoryCursor++;
+                        stdinField.value = commandHistoryList[commandHistoryCursor];
+                    } else {
+                        commandHistoryCursor = commandHistoryList.length;
+                        stdinField.value = '';
+                    }
+                    updateCursorPosition();
+                }
+            });
+
+            // Adjust custom blinking cursor offset position dynamically
+            stdinField.addEventListener('input', updateCursorPosition);
+            
+            function updateCursorPosition() {
+                const textLength = stdinField.value.length;
+                const charWidth = 8.4; // Approximated monospaced pixel character width scale
+                document.getElementById('cursor-blinker').style.left = `${textLength * charWidth}px`;
+            }
+
+            // --- Theme Controllers ---
+            function setTerminalTheme(themeId) {
+                document.documentElement.setAttribute('data-theme', themeId);
+                
+                // Align settings nodes active states
+                document.querySelectorAll('#theme-selectors-group .tree-node').forEach(node => {
+                    node.classList.toggle('active', node.dataset.themeId === themeId);
+                });
+
+                // Set Backlight glow colors match
+                const glowColors = {
+                    cyber: 'rgba(223,118,202,0.35)',
+                    retro: 'rgba(223,147,32,0.35)',
+                    hacker: 'rgba(126,180,95,0.35)',
+                    dracula: 'rgba(233,163,219,0.35)',
+                    nord: 'rgba(223,121,203,0.35)'
+                };
+                document.getElementById('ambient-glow').style.background = `radial-gradient(circle, ${glowColors[themeId]} 0%, transparent 70%)`;
+            }
+
+            document.getElementById('theme-selectors-group').addEventListener('click', (e) => {
+                const node = e.target.closest('.tree-node');
+                if (!node) return;
+                setTerminalTheme(node.dataset.themeId);
+            });
+
+            // --- Options Drawer slide-outs ---
+            btnToggleOptions.addEventListener('click', () => {
+                settingsShelf.classList.toggle('active');
+            });
+
+            // Close shelf if click occurs on terminal area
+            termView.addEventListener('click', (e) => {
+                if (settingsShelf.classList.contains('active') && !e.target.closest('.options-tray') && !e.target.closest('#btn-toggle-options')) {
+                    settingsShelf.classList.remove('active');
+                }
+            });
+
+            // --- Settings Customizers binds ---
+            toggleScanlines.addEventListener('change', (e) => {
+                crtScanlines.classList.toggle('active', e.target.checked);
+            });
+
+            toggleTicks.addEventListener('change', (e) => {
+                enableTypingSound = e.target.checked;
+            });
+
+            btnFontInc.addEventListener('click', () => {
+                if (fontSizeDefault < 24) {
+                    fontSizeDefault += 1;
+                    termView.style.fontSize = `${fontSizeDefault}px`;
+                    fontScaleLbl.textContent = `${fontSizeDefault}px`;
+                }
+            });
+
+            btnFontDec.addEventListener('click', () => {
+                if (fontSizeDefault > 10) {
+                    fontSizeDefault -= 1;
+                    termView.style.fontSize = `${fontSizeDefault}px`;
+                    fontScaleLbl.textContent = `${fontSizeDefault}px`;
+                }
+            });
+
+            cfgPromptString.addEventListener('input', (e) => {
+                const val = e.target.value.trim() || 'guest@leonux';
+                systemPromptPrefix = val;
+                terminalPrompt.textContent = `${val}:~$`;
+            });
+
+            btnWipeHistory.addEventListener('click', () => {
+                commandHistoryList = [];
+                commandHistoryCursor = -1;
+                termHistory.innerHTML = `<div class="terminal-line line-info">[OK] Core console history log cache purged.</div>`;
+            });
+
+            // --- High-Performance Matrix Code Rain Canvas Generator ---
+            function toggleMatrixWaterfall() {
+                isMatrixPlaying = !isMatrixPlaying;
+                matrixCanvas.classList.toggle('active', isMatrixPlaying);
+
+                if (isMatrixPlaying) {
+                    setupMatrixCanvasDimensions();
+                    runMatrixAnimationRain();
+                } else {
+                    if (matrixAnimationId) cancelAnimationFrame(matrixAnimationId);
+                }
+            }
+
+            function setupMatrixCanvasDimensions() {
+                matrixCanvas.width = termView.clientWidth;
+                matrixCanvas.height = termView.clientHeight;
+            }
+
+            window.addEventListener('resize', () => {
+                if (isMatrixPlaying) setupMatrixCanvasDimensions();
+            });
+
+            const katakana = "010110010110110101ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const alphabet = katakana.split("");
+            const fontSize = 14;
+            let columns = 0;
+            let rainDrops = [];
+
+            function runMatrixAnimationRain() {
+                columns = matrixCanvas.width / fontSize;
+                rainDrops = [];
+
+                for (let x = 0; x < columns; x++) {
+                    rainDrops[x] = 1;
+                }
+
+                function drawMatrixFrame() {
+                    matrixCtx.fillStyle = 'rgba(15,6,13,0.05)';
+                    matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+
+                    // Dynamic stroke color based on active theme
+                    let matrixColor = '#7eb45f'; // hacker default
+                    const activeTheme = document.documentElement.getAttribute('data-theme');
+                    if (activeTheme === 'cyber') matrixColor = '#df76ca';
+                    else if (activeTheme === 'amber') matrixColor = '#df9320';
+                    else if (activeTheme === 'dracula') matrixColor = '#e9a3db';
+                    else if (activeTheme === 'nord') matrixColor = '#df79cb';
+
+                    matrixCtx.fillStyle = matrixColor;
+                    matrixCtx.font = fontSize + 'px monospace';
+
+                    for (let i = 0; i < rainDrops.length; i++) {
+                        const text = alphabet[Math.floor(Math.random() * alphabet.length)];
+                        matrixCtx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+
+                        if (rainDrops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+                            rainDrops[i] = 0;
+                        }
+                        rainDrops[i]++;
+                    }
+                    
+                    matrixAnimationId = requestAnimationFrame(drawMatrixFrame);
+                }
+
+                drawMatrixFrame();
+            }
+
+            // Window Close command (visual simulation only)
+            document.getElementById('btn-close-app').addEventListener('click', () => {
+                document.querySelector('.term-frame').style.animation = "window-open 0.4s var(--ease-leonux) reverse forwards";
+                if (matrixAnimationId) cancelAnimationFrame(matrixAnimationId);
+                setTimeout(() => document.body.innerHTML = "<h2 style='color:var(--text-muted); font-weight:300;'>Leonux shell session terminated.</h2>", 400);
+            });
+
+            // Initial focus
+            stdinField.focus();
+
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Personalization - LionOS</title>
+    <style>
+        /* --- 1. LIONOS UNIFIED DESIGN SYSTEM --- */
+        :root {
+            /* Palette - Obsidian (Dark) */
+            --bg-body: #0f060d;
+            --bg-glass-card: rgba(var(--ov),0.04);
+            --bg-glass-hover: rgba(var(--ov),0.08);
+            --bg-glass-active: rgba(var(--ov),0.12);
+            --bg-header: rgba(15,6,13,0.85);
+            
+            /* Text */
+            --text-primary: rgba(var(--ov),0.95);
+            --text-secondary: rgba(var(--ov),0.55);
+            --text-tertiary: rgba(var(--ov),0.35);
+            
+            /* Dynamic Accents */
+            --accent-primary: #d859bf; 
+            
+            /* Borders */
+            --border-subtle: 1px solid rgba(var(--ov),0.08);
+            --border-separator: 1px solid rgba(var(--ov),0.05);
+            
+            /* Dimensions */
+            --radius-window: 24px;
+            --radius-card: 16px;
+            --radius-sm: 12px;
+            --padding-page: 24px;
+            
+            /* Animation */
+            --ease-fluid: cubic-bezier(0.2, 0.8, 0.2, 1);
+            --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+            
+            /* Typography */
+            --font-size-base: 16px;
+            --icon-scale: 1;
+        }
+
+        /* Ceramic (Light) Theme */
+        [data-theme="light"] {
+            --bg-body: #eaa4dc;
+            --bg-glass-card: rgba(var(--ov),0.7);
+            --bg-glass-hover: rgba(var(--ov),0.9);
+            --bg-glass-active: #f8f1f7;
+            --bg-header: rgba(234,164,220,0.85);
+            
+            --text-primary: #0f060d;
+            --text-secondary: rgba(15,6,13,0.6);
+            --text-tertiary: rgba(15,6,13,0.4);
+            
+            --border-subtle: 1px solid rgba(15,6,13,0.05);
+            --border-separator: 1px solid rgba(15,6,13,0.08);
+        }
+
+        /* --- 2. BASE & RESET --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            background-image: 
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E"),
+                radial-gradient(circle at 50% 0%, var(--bg-glass-active) 0%, transparent 80%);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+            transition: background 0.5s var(--ease-fluid), color 0.3s;
+            font-size: var(--font-size-base);
+        }
+
+        .window-frame {
+            width: 100%;
+            max-width: 800px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: var(--padding-page);
+            overflow-y: auto;
+            scrollbar-width: none;
+            animation: fadeInUp 0.6s var(--ease-fluid);
+            scroll-behavior: smooth;
+        }
+        .window-frame::-webkit-scrollbar { display: none; }
+
+        @media (min-width: 768px) {
+            :root { --padding-page: 32px; }
+        }
+
+        /* --- 3. HEADER & HERO MOCKUP --- */
+        .header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 24px; position: sticky; top: 0; z-index: 50;
+            background: var(--bg-header);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            padding-bottom: 16px; padding-top: 16px;
+            border-bottom: var(--border-separator);
+            margin-left: calc(var(--padding-page) * -1); 
+            margin-right: calc(var(--padding-page) * -1); 
+            padding-left: var(--padding-page); 
+            padding-right: var(--padding-page);
+        }
+
+        .header-left { display: flex; align-items: center; gap: 16px; }
+
+        .btn-icon {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--bg-glass-card); border: var(--border-subtle);
+            color: var(--text-primary); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+        }
+        .btn-icon:hover { background: var(--bg-glass-hover); transform: scale(1.05); }
+        .page-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+
+        /* Hero Deck */
+        .hero-deck {
+            position: relative;
+            background: var(--bg-glass-card);
+            border: var(--border-subtle);
+            border-radius: var(--radius-window);
+            padding: 20px;
+            margin-bottom: 40px;
+            display: flex; justify-content: center; align-items: center;
+            height: 280px;
+            overflow: hidden;
+            box-shadow: inset 0 0 40px rgba(15,6,13,0.1);
+            perspective: 1000px;
+            flex-shrink: 0;
+        }
+        @media (min-width: 768px) { .hero-deck { height: 340px; } }
+
+        .mock-screen {
+            width: 100%; max-width: 240px; height: 220px;
+            background: #0f060d; border-radius: 24px;
+            border: 6px solid #20141d;
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            transition: transform 0.6s var(--ease-fluid), border-color 0.4s;
+            box-shadow: 0 20px 40px rgba(15,6,13,0.4);
+            transform: rotateX(5deg) rotateY(0deg);
+        }
+        @media (min-width: 768px) {
+            .mock-screen { max-width: 420px; height: 280px; }
+        }
+        
+        [data-theme="light"] .mock-screen { border-color: #eae5e9; box-shadow: 0 20px 40px rgba(15,6,13,0.15); }
+        
+        .mock-wallpaper { 
+            position: absolute; inset: 0; 
+            background: radial-gradient(circle at 50% 50%, #291b26, #0f060d); 
+            transition: background 0.5s ease, filter 0.5s; 
+            background-size: cover; background-position: center;
+        }
+        
+        .mock-ui { 
+            position: relative; z-index: 2; width: 100%; height: 100%; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: 0.3s; padding: 20px; color: white;
+        }
+
+        /* Mock UI Components */
+        .m-clock { 
+            font-size: 48px; font-weight: 200; 
+            text-shadow: 0 4px 12px rgba(15,6,13,0.3); 
+            transition: 0.3s; margin-bottom: auto; margin-top: 30px;
+        }
+        @media (min-width: 768px) { .m-clock { font-size: 56px; } }
+        
+        .m-dock-area {
+            margin-top: auto; width: 100%; display: flex; justify-content: center; gap: 12px;
+            padding: 10px; background: rgba(var(--ov),0.15); border-radius: 20px;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            transform: translateY(100px); opacity: 0;
+            transition: all 0.4s var(--ease-bounce);
+        }
+        .m-dock-area.visible { transform: translateY(0); opacity: 1; }
+
+        .m-icon {
+            width: calc(32px * var(--icon-scale)); 
+            height: calc(32px * var(--icon-scale)); 
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent-primary), #e07acc);
+            box-shadow: 0 4px 10px rgba(15,6,13,0.2);
+            display: flex; align-items: center; justify-content: center; color: white;
+            transition: all 0.3s;
+        }
+        
+        .m-widget-stack {
+            position: absolute; top: 16px; left: 16px; right: 16px; height: 60px;
+            display: flex; gap: 10px; opacity: 0; transform: translateY(-10px);
+            transition: 0.3s;
+        }
+        .m-widget-stack.visible { opacity: 1; transform: translateY(0); }
+        .m-widget { flex: 1; background: rgba(var(--ov),0.15); border-radius: 12px; backdrop-filter: blur(5px); }
+
+        /* --- 4. LAYOUT GRIDS & SECTIONS --- */
+        .section-header {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 20px; margin-top: 32px;
+            color: var(--text-secondary); text-transform: uppercase;
+            font-size: 13px; font-weight: 600; letter-spacing: 0.05em;
+        }
+
+        .settings-grid {
+            display: grid; grid-template-columns: 1fr; gap: 16px;
+        }
+        @media (min-width: 600px) {
+            .settings-grid { grid-template-columns: repeat(2, 1fr); }
+            .card.full-width { grid-column: 1 / -1; }
+        }
+
+        /* --- 5. CARDS & UI CONTROLS --- */
+        .card {
+            background: var(--bg-glass-card); border: var(--border-subtle);
+            border-radius: var(--radius-card); padding: 20px;
+            transition: all 0.2s; position: relative; overflow: hidden;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .card:hover { background: var(--bg-glass-hover); }
+
+        .card-row { display: flex; justify-content: space-between; align-items: center; gap: 16px;}
+        .label-group { display: flex; flex-direction: column; gap: 4px; }
+        .label { font-size: 15px; font-weight: 500; color: var(--text-primary); }
+        .sub-label { font-size: 13px; color: var(--text-secondary); }
+
+        /* Toggles */
+        .switch {
+            width: 48px; height: 28px; background: rgba(151,97,140,0.3);
+            border-radius: 99px; position: relative; cursor: pointer;
+            transition: background 0.3s; border: 1px solid rgba(var(--ov),0.05); flex-shrink: 0;
+        }
+        .knob {
+            position: absolute; top: 2px; left: 2px;
+            width: 22px; height: 22px; background: white; border-radius: 50%;
+            transition: transform 0.3s var(--ease-bounce);
+            box-shadow: 0 2px 4px rgba(15,6,13,0.2);
+        }
+        .chk:checked + .switch { background: var(--accent-primary); border-color: var(--accent-primary); }
+        .chk:checked + .switch .knob { transform: translateX(20px); }
+        .chk { display: none; }
+
+        /* Range Slider */
+        .slider-wrapper { display: flex; align-items: center; gap: 16px; width: 100%; }
+        .font-icon { color: var(--text-secondary); font-weight: 700; user-select: none; }
+        input[type=range] {
+            -webkit-appearance: none; flex: 1; background: transparent; height: 24px;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 6px; background: var(--bg-glass-active);
+            border-radius: 99px; cursor: pointer; border: var(--border-subtle);
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 20px; width: 20px; border-radius: 50%;
+            background: #f8f1f7; cursor: pointer;
+            -webkit-appearance: none; margin-top: -8px;
+            box-shadow: 0 2px 6px rgba(15,6,13,0.3);
+            transition: transform 0.2s;
+        }
+        input[type=range]:active::-webkit-slider-thumb { transform: scale(1.2); }
+
+        /* Visual Pickers (Grid) */
+        .visual-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .v-opt {
+            background: var(--bg-glass-active); border-radius: 12px;
+            aspect-ratio: 1.2; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border: 2px solid transparent; transition: all 0.2s; gap: 8px;
+        }
+        @media (min-width: 768px) { .v-opt { aspect-ratio: 1.4; } }
+        
+        .v-opt:hover { background: var(--bg-glass-hover); }
+        .v-opt.active { 
+            border-color: var(--accent-primary); 
+            background: color-mix(in srgb, var(--accent-primary) 15%, transparent);
+            color: var(--accent-primary); 
+        }
+        .v-icon { width: 20px; height: 20px; opacity: 0.9; }
+        .v-text { font-size: 12px; font-weight: 600; opacity: 0.9; }
+
+        /* Wallpapers Scroll */
+        .wallpaper-scroll {
+            display: flex; gap: 12px; overflow-x: auto; 
+            padding-bottom: 8px; scrollbar-width: none;
+            margin-right: -20px; padding-right: 20px; /* Bleed effect */
+        }
+        .wallpaper-scroll::-webkit-scrollbar { display: none; }
+        
+        .wall-thumb {
+            width: 80px; height: 120px; border-radius: 12px; flex-shrink: 0;
+            background-size: cover; background-position: center;
+            cursor: pointer; border: 2px solid transparent;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        @media (min-width: 768px) { .wall-thumb { width: 100px; height: 140px; } }
+        
+        .wall-thumb:hover { transform: translateY(-4px); }
+        .wall-thumb.active { border-color: var(--accent-primary); box-shadow: 0 4px 15px rgba(15,6,13,0.2); }
+        
+        /* Wallpaper Patterns */
+        .wp-1 { background: radial-gradient(circle at 100% 0%, #5f1650, #2e0b27); }
+        .wp-2 { background: conic-gradient(from 45deg at 50% 50%, #5b8940, #26391b, #5b8940); }
+        .wp-3 { background: linear-gradient(135deg, #df9321 0%, #d78d1f 100%); }
+        .wp-4 { background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H22v20h-2v-2h-2v2h-2v-2h-2v2h-2v-2H0v-2h20v-2H0v-2h20v-2H0v-2h20z' fill='%233b82f6' fill-opacity='0.2' fill-rule='evenodd'/%3E%3C/svg%3E"), linear-gradient(#48113d, #2e0b27); }
+        .wp-5 { background: linear-gradient(to bottom, #ec4899, #de74c9); }
+
+        /* Color Dots */
+        .color-row { display: flex; gap: 12px; flex-wrap: wrap; }
+        .color-dot {
+            width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+            border: 2px solid transparent; transition: transform 0.2s; position: relative;
+        }
+        .color-dot::after {
+            content: ''; position: absolute; inset: -4px; border-radius: 50%;
+            border: 2px solid var(--text-primary); opacity: 0; transition: 0.2s;
+        }
+        .color-dot.active::after { opacity: 1; inset: -4px; }
+        .color-dot:active { transform: scale(0.9); }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+<style id="malva-tokens">
+:root{--ov:227,213,225;--bg-body:#1d101c;--bg-glass-card:rgba(227,213,225,.05);--bg-glass-hover:rgba(227,213,225,.09);--bg-glass-active:rgba(227,213,225,.14);--bg-glass-panel:rgba(42,25,41,.72);--bg-header:rgba(29,16,28,.82);
+--text-primary:#e3d5e1;--text-secondary:#b5a0b2;--text-tertiary:#8f7a8c;--accent-primary:#d47abc;--accent-glow:rgba(212,122,188,.45);--accent-success:#7bc74d;--accent-warn:#f2b04a;--accent-danger:#ff8a94;--accent-purple:#b99cf0;--accent-cyan:#72c9d8;--accent-rose:#ff8a94;--accent-amber:#f2b04a;--accent-violet:#a592f2;--accent-eco:#7bc74d;--accent-perf:#d47abc;--accent-pink:#e999d2;
+--border-subtle:1px solid rgba(227,213,225,.12);--border-separator:1px solid rgba(227,213,225,.06)}
+[data-theme="light"]{--ov:56,32,52;--bg-body:#f6f0f6;--bg-glass-card:rgba(255,255,255,.72);--bg-glass-hover:rgba(255,255,255,.9);--bg-glass-active:#ffffff;--bg-glass-panel:rgba(251,248,251,.85);--bg-header:rgba(246,240,246,.85);
+--text-primary:#382034;--text-secondary:#6c4e67;--text-tertiary:#8a6f85;--accent-primary:#7e376a;--accent-glow:rgba(126,55,106,.35);--accent-success:#3f7f1b;--accent-warn:#9a5b00;--accent-danger:#c0414e;--accent-purple:#6a4bb5;--accent-cyan:#1f7f95;--accent-rose:#c0414e;--accent-amber:#9a5b00;--accent-violet:#5b4bb5;--accent-eco:#3f7f1b;--accent-perf:#7e376a;--accent-pink:#a14c8c;
+--border-subtle:1px solid rgba(56,32,52,.14);--border-separator:1px solid rgba(56,32,52,.07)}
+html,body{color:var(--text-primary)}.window-frame>*{flex-shrink:0}html.embedded,html.embedded body{background:transparent!important;background-image:none!important}
+html.embedded .window-frame{max-width:none;padding:26px 34px}
+html.embedded .btn-back{display:none!important}html.embedded .header{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border-bottom:0!important;position:static!important}
+</style></head>
+<body>
+
+    <div class="window-frame" id="scroll-container">
+        
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-left">
+                <button class="btn-icon" aria-label="Go Back">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <h1 class="page-title">Personalization</h1>
+            </div>
+            <button class="btn-icon" onclick="resetDefaults()" aria-label="Reset Defaults" title="Reset Defaults">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            </button>
+        </header>
+
+        <!-- HERO DECK (LIVE PREVIEW) -->
+        <div class="hero-deck">
+            <div class="mock-screen" id="mock-screen">
+                <div class="mock-wallpaper wp-1" id="mock-bg"></div>
+                <div class="mock-ui" id="mock-ui">
+                    <div class="m-widget-stack visible" id="m-widget">
+                        <div class="m-widget"></div>
+                        <div class="m-widget"></div>
+                    </div>
+                    <div class="m-clock" id="m-clock">10:42</div>
+                    <div class="m-dock-area visible" id="m-dock">
+                        <div class="m-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+                        <div class="m-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div>
+                        <div class="m-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+                        <div class="m-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. APPEARANCE & STYLE -->
+        <div class="section-header" id="sec-appearance">Appearance & Style</div>
+        <div class="settings-grid">
+            
+            <!-- Theme -->
+            <div class="card">
+                <div class="label" style="margin-bottom:8px;">Theme</div>
+                <div class="visual-picker">
+                    <div class="v-opt" onclick="setTheme('light', this)" id="opt-light">
+                        <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                        <div class="v-text">Light</div>
+                    </div>
+                    <div class="v-opt active" onclick="setTheme('dark', this)" id="opt-dark">
+                        <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                        <div class="v-text">Dark</div>
+                    </div>
+                    <div class="v-opt" onclick="setTheme('auto', this)" id="opt-auto">
+                        <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        <div class="v-text">Auto</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wallpapers -->
+            <div class="card">
+                <div class="card-row" style="margin-bottom:8px;">
+                    <div class="label">Wallpapers</div>
+                </div>
+                <div class="wallpaper-scroll">
+                    <div class="wall-thumb wp-1 active" onclick="setWallpaper('wp-1', this)"></div>
+                    <div class="wall-thumb wp-2" onclick="setWallpaper('wp-2', this)"></div>
+                    <div class="wall-thumb wp-3" onclick="setWallpaper('wp-3', this)"></div>
+                    <div class="wall-thumb wp-4" onclick="setWallpaper('wp-4', this)"></div>
+                    <div class="wall-thumb wp-5" onclick="setWallpaper('wp-5', this)"></div>
+                </div>
+            </div>
+
+            <!-- Accent Colors -->
+            <div class="card full-width">
+                <div class="label" style="margin-bottom:12px;">System Accent Color</div>
+                <div class="color-row">
+                    <div class="color-dot active" style="background:#d859bf" onclick="setAccent('#d859bf', this)"></div>
+                    <div class="color-dot" style="background:#5b8940" onclick="setAccent('#5b8940', this)"></div>
+                    <div class="color-dot" style="background:#df9321" onclick="setAccent('#df9321', this)"></div>
+                    <div class="color-dot" style="background:#ef445b" onclick="setAccent('#ef445b', this)"></div>
+                    <div class="color-dot" style="background:#e799d7" onclick="setAccent('#e799d7', this)"></div>
+                    <div class="color-dot" style="background:#f472b6" onclick="setAccent('#f472b6', this)"></div>
+                    <div class="color-dot" style="background:#6a4362" onclick="setAccent('#6a4362', this)"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. LOCK SCREEN -->
+        <div class="section-header" id="sec-lock">Lock Screen</div>
+        <div class="settings-grid">
+            <div class="card">
+                <div class="label" style="margin-bottom:8px;">Clock Style</div>
+                <div class="visual-picker">
+                    <div class="v-opt active" onclick="setClock('digital', this)">
+                        <div class="v-text" style="font-size:16px;">10:42</div>
+                        <div class="v-text">Digital</div>
+                    </div>
+                    <div class="v-opt" onclick="setClock('analog', this)">
+                        <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <div class="v-text">Analog</div>
+                    </div>
+                    <div class="v-opt" onclick="setClock('mini', this)">
+                        <div class="v-text" style="font-family: monospace; font-size:14px; letter-spacing:2px;">10|42</div>
+                        <div class="v-text">Mono</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-row">
+                    <div class="label-group">
+                        <div class="label">Show Widgets</div>
+                        <div class="sub-label">Weather, Battery on lock screen</div>
+                    </div>
+                    <label>
+                        <input type="checkbox" class="chk" id="chk-widget" checked onchange="toggleWidget(this)">
+                        <div class="switch"><div class="knob"></div></div>
+                    </label>
+                </div>
+                <hr style="border:0; border-top:var(--border-separator);">
+                <div class="card-row">
+                    <div class="label-group">
+                        <div class="label">Always On Display</div>
+                        <div class="sub-label">Show clock in low power mode</div>
+                    </div>
+                    <label>
+                        <input type="checkbox" class="chk" checked>
+                        <div class="switch"><div class="knob"></div></div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. HOME SCREEN & INTERFACE -->
+        <div class="section-header" id="sec-home">Interface & Home</div>
+        <div class="settings-grid">
+            <div class="card full-width">
+                <div class="card-row">
+                    <div class="label-group" style="width: 140px;">
+                        <div class="label">Icon Size</div>
+                        <div class="sub-label">Adjust UI scale</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <span class="font-icon" style="font-size: 12px;">A</span>
+                        <input type="range" min="0.8" max="1.2" value="1" step="0.1" oninput="updateIconScale(this.value)">
+                        <span class="font-icon" style="font-size: 20px;">A</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="label" style="margin-bottom:8px;">App Layout</div>
+                <div class="visual-picker">
+                    <div class="v-opt active" onclick="setActive(this)"><svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><div class="v-text">Grid</div></div>
+                    <div class="v-opt" onclick="setActive(this)"><svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><div class="v-text">List</div></div>
+                    <div class="v-opt" onclick="setActive(this)"><svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg><div class="v-text">Free</div></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-row">
+                    <div class="label-group">
+                        <div class="label">Glass Dock</div>
+                        <div class="sub-label">Transparent dock background</div>
+                    </div>
+                    <label>
+                        <input type="checkbox" class="chk" id="chk-dock" checked onchange="toggleDock(this)">
+                        <div class="switch"><div class="knob"></div></div>
+                    </label>
+                </div>
+                <hr style="border:0; border-top:var(--border-separator);">
+                <div class="card-row">
+                    <div class="label-group">
+                        <div class="label">App Labels</div>
+                        <div class="sub-label">Show text under icons</div>
+                    </div>
+                    <label>
+                        <input type="checkbox" class="chk" checked>
+                        <div class="switch"><div class="knob"></div></div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. WINDOW EFFECTS -->
+        <div class="section-header">Window Effects</div>
+        <div class="settings-grid">
+            <div class="card full-width" style="flex-direction: row; flex-wrap: wrap; justify-content: space-between;">
+                <div class="card-row" style="flex: 1; min-width: 250px;">
+                    <div class="label-group">
+                        <div class="label">Glass Transparency</div>
+                        <div class="sub-label">Blend windows with background</div>
+                    </div>
+                    <label>
+                        <input type="checkbox" class="chk" checked onchange="toggleGlass(this)">
+                        <div class="switch"><div class="knob"></div></div>
+                    </label>
+                </div>
+                <div class="card-row" style="flex: 1; min-width: 250px;">
+                    <div class="label-group">
+                        <div class="label">Reduce Motion</div>
+                        <div class="sub-label">Simplify system animations</div>
+                    </div>
+                    <label>
+                        <input type="checkbox" class="chk" onchange="toggleMotion(this)">
+                        <div class="switch"><div class="knob"></div></div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div style="height: 60px;"></div>
+
+    </div>
+
+    <script>
+        // --- 1. SCROLL SPY LOGIC (Hero Deck Context) ---
+        const observerOptions = {
+            root: document.getElementById('scroll-container'),
+            threshold: 0.6
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    updateMockContext(entry.target.id);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.section-header').forEach(el => observer.observe(el));
+
+        function updateMockContext(sectionId) {
+            const dock = document.getElementById('m-dock');
+            const clock = document.getElementById('m-clock');
+            const widget = document.getElementById('m-widget');
+            const mockScreen = document.getElementById('mock-screen');
+
+            // Reset transform 
+            mockScreen.style.transform = "rotateX(5deg) rotateY(0deg)";
+
+            if (sectionId === 'sec-lock') {
+                clock.style.opacity = '1';
+                dock.classList.remove('visible');
+                const showWidget = document.getElementById('chk-widget').checked;
+                widget.style.display = showWidget ? 'flex' : 'none';
+                if(showWidget) setTimeout(() => widget.classList.add('visible'), 50);
+            } else if (sectionId === 'sec-home') {
+                clock.style.opacity = '0';
+                widget.classList.remove('visible');
+                setTimeout(() => widget.style.display = 'none', 300);
+                if(document.getElementById('chk-dock').checked) dock.classList.add('visible');
+            } else if (sectionId === 'sec-appearance') {
+                // Focus Effect
+                mockScreen.style.transform = "rotateX(0deg) scale(1.05)";
+                clock.style.opacity = '1';
+                if(document.getElementById('chk-dock').checked) dock.classList.add('visible');
+                const showWidget = document.getElementById('chk-widget').checked;
+                widget.style.display = showWidget ? 'flex' : 'none';
+                if(showWidget) setTimeout(() => widget.classList.add('visible'), 50);
+            }
+        }
+
+
+        // --- 2. APPEARANCE LOGIC ---
+        function setTheme(mode, el) {
+            setActive(el);
+            const ui = document.getElementById('mock-ui');
+            const bg = document.getElementById('mock-bg');
+            
+            if(mode === 'auto') {
+                const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', mode);
+            }
+
+            // Update Mockup to match theme loosely
+            const activeTheme = document.documentElement.getAttribute('data-theme');
+            if(activeTheme === 'light') {
+                bg.style.filter = 'brightness(1.2)';
+                ui.style.color = '#f8f1f7'; // Keep white for contrast on wallpapers
+                document.getElementById('m-dock').style.background = 'rgba(var(--ov),0.4)';
+            } else {
+                bg.style.filter = 'none';
+                ui.style.color = '#f8f1f7';
+                document.getElementById('m-dock').style.background = 'rgba(var(--ov),0.15)';
+            }
+        }
+
+        function setWallpaper(wpClass, el) {
+            const bg = document.getElementById('mock-bg');
+            bg.className = `mock-wallpaper ${wpClass}`;
+            document.querySelectorAll('.wall-thumb').forEach(w => w.classList.remove('active'));
+            el.classList.add('active');
+            
+            // Re-apply accent border
+            const currentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').trim();
+            el.style.borderColor = currentColor;
+        }
+
+        function setAccent(color, el) {
+            document.documentElement.style.setProperty('--accent-primary', color);
+            
+            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+            el.classList.add('active');
+            
+            // Update active states in visual pickers
+            document.querySelectorAll('.v-opt.active').forEach(p => {
+                p.style.borderColor = color;
+                p.style.color = color;
+                p.style.background = `color-mix(in srgb, ${color} 15%, transparent)`;
+            });
+            
+            // Update active wallpaper border
+            const activeWall = document.querySelector('.wall-thumb.active');
+            if(activeWall) activeWall.style.borderColor = color;
+
+            // Update Mock Icons
+            document.querySelectorAll('.m-icon').forEach(icon => {
+                icon.style.background = `linear-gradient(135deg, ${color}, #e07acc)`;
+            });
+        }
+
+        // --- 3. LOCK & HOME LOGIC ---
+        function setClock(type, el) {
+            setActive(el);
+            const clock = document.getElementById('m-clock');
+            if(type === 'digital') { 
+                clock.innerText = '10:42'; 
+                clock.style.fontFamily = 'inherit';
+                clock.style.letterSpacing = 'normal';
+                clock.style.fontWeight = '200';
+            }
+            if(type === 'analog') { 
+                clock.innerText = '🕒'; 
+            }
+            if(type === 'mini') { 
+                clock.innerText = '10|42'; 
+                clock.style.fontFamily = 'monospace'; 
+                clock.style.letterSpacing = '2px';
+                clock.style.fontWeight = '600';
+            }
+        }
+
+        function toggleWidget(chk) {
+            const w = document.getElementById('m-widget');
+            if (chk.checked) {
+                w.style.display = 'flex';
+                setTimeout(() => w.classList.add('visible'), 50);
+            } else {
+                w.classList.remove('visible');
+                setTimeout(() => w.style.display = 'none', 300);
+            }
+        }
+
+        function toggleDock(chk) {
+            const d = document.getElementById('m-dock');
+            if(chk.checked) {
+                d.style.background = document.documentElement.getAttribute('data-theme') === 'light' ? 'rgba(var(--ov),0.4)' : 'rgba(var(--ov),0.15)';
+                d.style.backdropFilter = 'blur(10px)';
+                d.classList.add('visible');
+            } else {
+                d.style.background = 'rgba(15,6,13,0.6)';
+                d.style.backdropFilter = 'none';
+            }
+        }
+
+        function updateIconScale(val) {
+            document.documentElement.style.setProperty('--icon-scale', val);
+        }
+
+        // --- 4. EFFECTS LOGIC ---
+        function toggleGlass(checkbox) {
+            if(checkbox.checked) {
+                document.documentElement.style.removeProperty('--bg-glass-card');
+                document.documentElement.style.removeProperty('--bg-glass-hover');
+            } else {
+                const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+                document.documentElement.style.setProperty('--bg-glass-card', isLight ? '#f8f1f7' : '#231721');
+                document.documentElement.style.setProperty('--bg-glass-hover', isLight ? '#eaa4dc' : '#372333');
+            }
+        }
+        
+        function toggleMotion(checkbox) {
+            if(checkbox.checked) {
+                document.documentElement.style.setProperty('--ease-fluid', 'linear');
+                document.documentElement.style.setProperty('--ease-bounce', 'linear');
+                document.documentElement.style.setProperty('transition', 'none');
+                document.getElementById('mock-screen').style.transition = 'none';
+            } else {
+                document.documentElement.style.removeProperty('--ease-fluid');
+                document.documentElement.style.removeProperty('--ease-bounce');
+                document.documentElement.style.removeProperty('transition');
+                document.getElementById('mock-screen').style.transition = 'transform 0.6s var(--ease-fluid), border-color 0.4s';
+            }
+        }
+
+        // --- UTILS ---
+        function setActive(el) {
+            const siblings = el.parentElement.children;
+            const currentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').trim();
+            for(let sib of siblings) {
+                sib.classList.remove('active');
+                sib.style.borderColor = 'transparent';
+                sib.style.color = 'inherit';
+                sib.style.background = 'var(--bg-glass-active)';
+            }
+            el.classList.add('active');
+            el.style.borderColor = currentColor;
+            el.style.color = currentColor;
+            el.style.background = `color-mix(in srgb, ${currentColor} 15%, transparent)`;
+        }
+
+        function resetDefaults() {
+            setTheme('dark', document.getElementById('opt-dark'));
+            setWallpaper('wp-1', document.querySelector('.wall-thumb.wp-1'));
+            setAccent('#d859bf', document.querySelector('.color-dot'));
+            setClock('digital', document.querySelector('.v-opt'));
+            
+            // Reset Sliders & Toggles
+            document.querySelector('input[type=range]').value = 1;
+            updateIconScale(1);
+            
+            const checks = document.querySelectorAll('.chk');
+            checks.forEach(chk => {
+                if(chk.getAttribute('onchange') && chk.getAttribute('onchange').includes('toggleMotion')) {
+                    chk.checked = false;
+                    toggleMotion(chk);
+                } else {
+                    chk.checked = true;
+                    if(chk.id === 'chk-widget') toggleWidget(chk);
+                    if(chk.id === 'chk-dock') toggleDock(chk);
+                    if(chk.getAttribute('onchange') && chk.getAttribute('onchange').includes('toggleGlass')) toggleGlass(chk);
+                }
+            });
+        }
+
+        // Init
+        setAccent('#d859bf', document.querySelector('.color-dot.active'));
+        
+        // Listen for system theme changes if Auto is selected
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if(document.getElementById('opt-auto').classList.contains('active')) {
+                setTheme('auto', document.getElementById('opt-auto'));
+            }
+        });
+
+    </script>
+<script>(function(){if(self!==top)document.documentElement.classList.add('embedded');addEventListener('message',function(e){var t=e.data&&e.data.malvaTheme;if(t)document.documentElement.setAttribute('data-theme',t)})})();</script></body>
+</html>

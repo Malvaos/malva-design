@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LionOS Settings</title>
+    <meta name="description" content="A minimal, premium settings dashboard.">
+    
+    <!-- Link to external CSS -->
+    <link rel="stylesheet" href="settings.css">
+    
+    <!-- Link to external JS (defer ensures it loads after HTML parses) -->
+    <script src="settings.js" defer></script>
+</head>
+<body>
+
+    <div class="app-window" id="app">
+        <!-- SIDEBAR -->
+        <nav class="sidebar" aria-label="Settings Navigation">
+            <div class="search-bar">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" class="search-input" placeholder="Search" aria-label="Search Settings">
+            </div>
+
+            <div class="user-profile-summary">
+                <div class="user-avatar">LD</div>
+                <div class="user-info">
+                    <span class="user-name">Lion Desktop</span>
+                    <span class="user-id">Lion ID, Cloud Sync, Media & Store</span>
+                </div>
+            </div>
+
+            <ul class="nav-list" role="tablist">
+                <!-- Connectivity Group -->
+                <li class="nav-item" role="tab" tabindex="0" data-target="wifi">
+                    <div class="icon-box" style="background: #d345b7;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg></div>
+                    Wi-Fi
+                </li>
+                <li class="nav-item" role="tab" tabindex="0" data-target="bluetooth">
+                    <div class="icon-box" style="background: #d345b7;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"></polyline></svg></div>
+                    Bluetooth
+                </li>
+                <li class="nav-item" role="tab" tabindex="0" data-target="network">
+                    <div class="icon-box" style="background: #d345b7;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></div>
+                    Network
+                </li>
+
+                <div class="nav-separator"></div>
+
+                <!-- Main Settings -->
+                <li class="nav-item active" role="tab" aria-selected="true" tabindex="0" data-target="general">
+                    <div class="icon-box" style="background: #9e8398;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div>
+                    General
+                </li>
+                 <li class="nav-item" role="tab" tabindex="0" data-target="appearance">
+                    <div class="icon-box" style="background: #b29dae;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10"></path></svg></div>
+                    Appearance
+                </li>
+                <li class="nav-item" role="tab" tabindex="0" data-target="accessibility">
+                    <div class="icon-box" style="background: #d345b7;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg></div>
+                    Accessibility
+                </li>
+                 <li class="nav-item" role="tab" tabindex="0" data-target="controlcenter">
+                    <div class="icon-box" style="background: #9e8398;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></div>
+                    Control Panel
+                </li>
+                 <li class="nav-item" role="tab" tabindex="0" data-target="siri">
+                    <div class="icon-box" style="background: linear-gradient(135deg, #53354d 0%, #0f060d 100%);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:white;"><path d="M12 2a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></div>
+                    Assistant & Search
+                </li>
+
+                 <div class="nav-separator"></div>
+
+                <li class="nav-item" role="tab" tabindex="0" data-target="privacy">
+                    <div class="icon-box" style="background: #d345b7;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div>
+                    Privacy & Security
+                </li>
+
+                 <div class="nav-separator"></div>
+
+                <li class="nav-item" role="tab" tabindex="0" data-target="display">
+                    <div class="icon-box" style="background: #d345b7;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></div>
+                    Display
+                </li>
+                <li class="nav-item" role="tab" tabindex="0" data-target="sound">
+                    <div class="icon-box" style="background: #f43851;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg></div>
+                    Sound
+                </li>
+                <li class="nav-item" role="tab" tabindex="0" data-target="notifications">
+                    <div class="icon-box" style="background: #f53a53;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></div>
+                    Notifications
+                </li>
+                <li class="nav-item" role="tab" tabindex="0" data-target="screentime">
+                    <div class="icon-box" style="background: #d755bd;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></div>
+                    Digital Balance
+                </li>
+                <li class="nav-item" role="tab" tabindex="0" data-target="wallpaper">
+                    <div class="icon-box" style="background: #d345b7;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div>
+                    Wallpaper
+                </li>
+
+                 <div class="nav-separator"></div>
+
+                <li class="nav-item" role="tab" tabindex="0" data-target="battery">
+                    <div class="icon-box" style="background: #71ab50;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="6" width="18" height="12" rx="2" ry="2"></rect><line x1="23" y1="13" x2="23" y2="11"></line></svg></div>
+                    Battery
+                </li>
+            
+                <div class="nav-separator"></div>
+                <div class="nav-heading">Detailed pages</div>
+                <li class="nav-item" role="tab" tabindex="0" data-target="pages" data-page="settings-pages/About_device.html">
+                    <div class="icon-box" style="background: #a592f2;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div>
+                    About device
+                </li>
+                <li class="nav-item" role="tab" tabindex="0" data-target="pages" data-page="settings-pages/Accessibility.html">
+                    <div class="icon-box" style="background: #d47abc;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="2"/><path d="M4 8l8 2 8-2M12 10v5l-3 6M12 15l3 6"/></svg></div>
+                    Accessibility
+                </li>
+                <li class="nav-item" role="tab" tabindex="0" data-target="pages" data-page="settings-pages/Accounts.html">
+                    <div class="icon-box" style="background: #72c9d8;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg></div>
+                    Accounts
+                </li>
+                <li class="nav-item" role="tab" tabindex="0" data-target="pages" data-page="settings-pages/Battery_and_performance.html">
+                    <div class="icon-box" style="background: #7bc74d;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="18" height="12" rx="2"/><line x1="23" y1="13" x2="23" y2="11"/></svg></div>
+                    Battery & performance
+                </li>
+                <li class="nav-item" role="tab" tabindex="0" data-target="pages" data-page="settings-pages/Connectivity.html">
+                    <div class="icon-box" style="background: #d47abc;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14 0M1.4 9a16 16 0 0 1 21.2 0M8.5 16.1a6 6 0 0 1 7 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg></div>
+                    Connectivity
+                </li>
+                <li class="nav-item" role="tab" tabindex="0" data-target="pages" data-page="settings-pages/Devices___Printers.html">
+                    <div class="icon-box" style="background: #f2b04a;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
+                    Devices & printers
+                </li>
+                <li class="nav-item" role="tab" tabindex="0" data-target="pages" data-page="settings-pages/General.html">
+                    <div class="icon-box" style="background: #b5a0b2;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/></svg></div>
+                    General (detailed)
+                </li>
+                <li class="nav-item" role="tab" tabindex="0" data-target="pages" data-page="settings-pages/personalization.html">
+                    <div class="icon-box" style="background: #e999d2;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><path d="M12 2a10 10 0 1 0 0 20c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4A4.7 4.7 0 0 0 22 11c0-5-4.5-9-10-9z"/></svg></div>
+                    Personalization
+                </li>
+                <li class="nav-item" role="tab" tabindex="0" data-target="pages" data-page="settings-pages/privacy_and_security.html">
+                    <div class="icon-box" style="background: #ff8a94;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                    Privacy & security (detailed)
+                </li>
+                <li class="nav-item" role="tab" tabindex="0" data-target="pages" data-page="settings-pages/Programs.html">
+                    <div class="icon-box" style="background: #a592f2;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+                    Programs
+                </li>
+            </ul>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            
+            <!-- SECTION: WI-FI -->
+            <section id="wifi" class="settings-section">
+                <header class="section-header">
+                    <div class="section-icon-large" style="background: #d345b7;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg></div>
+                    <h1 class="section-title">Wi-Fi</h1>
+                    <div class="toggle-switch-wrapper" style="margin-left: auto;">
+                        <input type="checkbox" class="toggle-switch" checked aria-label="Toggle Wi-Fi">
+                    </div>
+                </header>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">LionOffice_5G</span>
+                            <span class="row-desc">Connected</span>
+                        </div>
+                        <div class="row-control">
+                            <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-success); width: 18px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <button class="btn btn-neutral" style="margin-left: 10px;">Details</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-subtitle">Known Networks</div>
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Starbucks_Guest</span>
+                        </div>
+                        <div class="row-control">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; color: var(--text-tertiary);"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Home_Mesh_Network</span>
+                        </div>
+                        <div class="row-control">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; color: var(--text-tertiary);"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                         <div class="row-label">
+                            <span class="row-title">Ask to Join Networks</span>
+                        </div>
+                        <div class="row-control select-wrapper">
+                            <select>
+                                <option>Off</option>
+                                <option>Notify</option>
+                                <option>Ask</option>
+                            </select>
+                            <div class="select-arrow"></div>
+                        </div>
+                    </div>
+                     <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Auto-Join Hotspot</span>
+                            <span class="row-desc">Automatically discover personal hotspots when no Wi-Fi is available</span>
+                        </div>
+                        <div class="row-control">
+                             <input type="checkbox" class="toggle-switch">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+             <!-- SECTION: BLUETOOTH -->
+             <section id="bluetooth" class="settings-section">
+                <header class="section-header">
+                    <div class="section-icon-large" style="background: #d345b7;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"></polyline></svg></div>
+                    <h1 class="section-title">Bluetooth</h1>
+                    <div class="toggle-switch-wrapper" style="margin-left: auto;">
+                        <input type="checkbox" class="toggle-switch" checked aria-label="Toggle Bluetooth">
+                    </div>
+                </header>
+                
+                <div class="section-subtitle">My Devices</div>
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Pro Earbuds</span>
+                        </div>
+                        <div class="row-control">
+                            <span class="status-badge" style="color: var(--text-tertiary); background: transparent;">Not Connected</span>
+                            <button class="btn btn-neutral">Connect</button>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Slim Wireless Keyboard</span>
+                        </div>
+                        <div class="row-control">
+                            <span class="status-badge status-success">Connected</span>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">MX Master 3</span>
+                        </div>
+                        <div class="row-control">
+                            <span class="status-badge status-success">Connected</span>
+                        </div>
+                    </div>
+                </div>
+                 <div class="section-subtitle">Nearby Devices</div>
+                 <div class="settings-group">
+                     <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Living Room TV</span>
+                        </div>
+                        <div class="row-control">
+                           <button class="btn btn-neutral">Connect</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- SECTION: NETWORK -->
+            <section id="network" class="settings-section">
+                 <header class="section-header">
+                    <div class="section-icon-large" style="background: #d345b7;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></div>
+                    <h1 class="section-title">Network</h1>
+                </header>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Ethernet</span>
+                            <span class="row-desc">Not Connected</span>
+                        </div>
+                         <div class="row-control">
+                           <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--color-danger);"></div>
+                        </div>
+                    </div>
+                     <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">High-Speed Bridge</span>
+                            <span class="row-desc">Not Connected</span>
+                        </div>
+                         <div class="row-control">
+                           <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--color-danger);"></div>
+                        </div>
+                    </div>
+                     <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">VPN</span>
+                        </div>
+                         <div class="row-control">
+                           <span class="status-badge">Not Configured</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: GENERAL -->
+            <section id="general" class="settings-section active">
+                <header class="section-header">
+                    <div class="section-icon-large" style="background: #9e8398;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div>
+                    <h1 class="section-title">General</h1>
+                </header>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">About</span>
+                            <span class="row-desc">LionOS Desktop, L-Series Chip</span>
+                        </div>
+                        <div class="row-control">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; color: var(--text-tertiary);"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Software Update</span>
+                            <span class="row-desc">LionOS 15.2 is available</span>
+                        </div>
+                        <div class="row-control">
+                            <span class="status-badge status-success" style="margin-right: 10px;">Available</span>
+                            <button class="btn btn-neutral" id="updateBtn">Update Now</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Storage</span>
+                        </div>
+                        <div class="row-control" style="width: 200px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                            <span class="row-desc" style="font-size: 11px;">392 GB used of 512 GB</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 76%; background: var(--color-warning);"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Quick Share</span>
+                        </div>
+                        <div class="row-control select-wrapper">
+                            <select aria-label="Quick Share Selection">
+                                <option>Contacts Only</option>
+                                <option>Everyone for 10 Minutes</option>
+                                <option>Receiving Off</option>
+                            </select>
+                            <div class="select-arrow"></div>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Wireless Cast Receiver</span>
+                        </div>
+                        <div class="row-control">
+                            <input type="checkbox" class="toggle-switch" checked>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Language & Region</span>
+                        </div>
+                        <div class="row-control select-wrapper">
+                            <select aria-label="Language selection">
+                                <option>English (US)</option>
+                                <option>English (UK)</option>
+                                <option>Japanese</option>
+                                <option>German</option>
+                            </select>
+                            <div class="select-arrow"></div>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Date & Time</span>
+                        </div>
+                        <div class="row-control">
+                            <button class="btn btn-neutral">Set Automatically</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+             <!-- SECTION: APPEARANCE -->
+            <section id="appearance" class="settings-section">
+                <header class="section-header">
+                    <div class="section-icon-large" style="background: #b29dae;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10"></path></svg></div>
+                    <h1 class="section-title">Appearance</h1>
+                </header>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                             <span class="row-title">Appearance</span>
+                        </div>
+                        <div class="row-control select-wrapper">
+                            <select>
+                                <option>Auto</option>
+                                <option>Light</option>
+                                <option>Dark</option>
+                            </select>
+                            <div class="select-arrow"></div>
+                        </div>
+                    </div>
+                     <div class="setting-row">
+                        <div class="row-label">
+                             <span class="row-title">Accent Color</span>
+                        </div>
+                         <div class="row-control" style="display: flex; gap: 8px;">
+                            <div style="width: 16px; height: 16px; border-radius: 50%; background: #d345b7; box-shadow: 0 0 0 2px white, 0 0 0 4px #d345b7;"></div>
+                            <div style="width: 16px; height: 16px; border-radius: 50%; background: #f53a53;"></div>
+                            <div style="width: 16px; height: 16px; border-radius: 50%; background: #ff9500;"></div>
+                            <div style="width: 16px; height: 16px; border-radius: 50%; background: #71ab50;"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+             <!-- SECTION: ACCESSIBILITY -->
+             <section id="accessibility" class="settings-section">
+                <header class="section-header">
+                    <div class="section-icon-large" style="background: #d345b7;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg></div>
+                    <h1 class="section-title">Accessibility</h1>
+                </header>
+                
+                 <div class="section-subtitle">Vision</div>
+                 <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Screen Reader</span>
+                        </div>
+                        <div class="row-control">
+                            <span class="status-badge">Off</span>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Zoom</span>
+                        </div>
+                        <div class="row-control">
+                             <span class="status-badge">Off</span>
+                        </div>
+                    </div>
+                     <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Display</span>
+                        </div>
+                        <div class="row-control">
+                             <span class="status-badge">Default</span>
+                        </div>
+                    </div>
+                </div>
+
+                 <div class="section-subtitle">Hearing</div>
+                 <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Live Caption</span>
+                        </div>
+                        <div class="row-control">
+                            <span class="status-badge">Off</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- SECTION: CONTROL PANEL -->
+             <section id="controlcenter" class="settings-section">
+                <header class="section-header">
+                   <div class="section-icon-large" style="background: #9e8398;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></div>
+                    <h1 class="section-title">Control Panel</h1>
+                </header>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Show in Menu Bar</span>
+                        </div>
+                        <div class="row-control">
+                            <input type="checkbox" class="toggle-switch" checked>
+                        </div>
+                    </div>
+                </div>
+                
+                 <div class="section-subtitle">Modules</div>
+                <div class="settings-group">
+                     <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Wi-Fi</span>
+                        </div>
+                        <div class="row-control select-wrapper">
+                            <select>
+                                <option>Show in Menu Bar</option>
+                                <option>Don't Show</option>
+                            </select>
+                            <div class="select-arrow"></div>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Bluetooth</span>
+                        </div>
+                        <div class="row-control select-wrapper">
+                            <select>
+                                <option>Show in Menu Bar</option>
+                                <option>Don't Show</option>
+                            </select>
+                            <div class="select-arrow"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- SECTION: ASSISTANT -->
+             <section id="siri" class="settings-section">
+                <header class="section-header">
+                     <div class="section-icon-large" style="background: linear-gradient(135deg, #53354d 0%, #0f060d 100%);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:white;"><path d="M12 2a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></div>
+                    <h1 class="section-title">Assistant & Search</h1>
+                </header>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Ask Assistant</span>
+                        </div>
+                        <div class="row-control">
+                            <input type="checkbox" class="toggle-switch" checked>
+                        </div>
+                    </div>
+                     <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Keyboard Shortcut</span>
+                        </div>
+                        <div class="row-control select-wrapper">
+                            <select>
+                                <option>Hold Alt Space</option>
+                                <option>Off</option>
+                            </select>
+                            <div class="select-arrow"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: DISPLAY -->
+            <section id="display" class="settings-section">
+                <header class="section-header">
+                    <div class="section-icon-large" style="background: #d345b7;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line></svg></div>
+                    <h1 class="section-title">Display</h1>
+                </header>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Dark Mode</span>
+                            <span class="row-desc">Use dark appearance</span>
+                        </div>
+                        <div class="row-control">
+                            <input type="checkbox" class="toggle-switch" id="darkModeToggle" aria-label="Toggle Dark Mode">
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Night Light</span>
+                            <span class="row-desc">Off until tomorrow</span>
+                        </div>
+                        <div class="row-control">
+                            <input type="checkbox" class="toggle-switch" aria-label="Toggle Night Light">
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Ambient Match</span>
+                            <span class="row-desc">Automatically adapt display to ambient lighting</span>
+                        </div>
+                        <div class="row-control">
+                            <input type="checkbox" class="toggle-switch" checked aria-label="Toggle Ambient Match">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Brightness</span>
+                        </div>
+                        <div class="row-control slider-container">
+                            <svg class="slider-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle></svg>
+                            <input type="range" min="0" max="100" value="75" aria-label="Brightness Slider">
+                            <svg class="slider-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line></svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Refresh Rate</span>
+                        </div>
+                        <div class="row-control select-wrapper">
+                            <select aria-label="Refresh Rate">
+                                <option>Fluid Motion (120Hz)</option>
+                                <option>60Hz</option>
+                            </select>
+                            <div class="select-arrow"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: SOUND -->
+            <section id="sound" class="settings-section">
+                <header class="section-header">
+                    <div class="section-icon-large" style="background: #f43851;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon></svg></div>
+                    <h1 class="section-title">Sound</h1>
+                </header>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Silent Mode</span>
+                        </div>
+                        <div class="row-control">
+                            <input type="checkbox" class="toggle-switch" id="muteToggle" aria-label="Toggle Silent Mode">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Output Volume</span>
+                        </div>
+                        <div class="row-control slider-container">
+                            <svg class="slider-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon></svg>
+                            <input type="range" min="0" max="100" value="50" aria-label="Volume Slider">
+                            <svg class="slider-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Alert Volume</span>
+                        </div>
+                        <div class="row-control slider-container">
+                            <span style="font-size: 12px; color: var(--text-secondary); margin-right: 8px;">Low</span>
+                            <input type="range" min="0" max="100" value="80" aria-label="Alert Volume Slider">
+                            <span style="font-size: 12px; color: var(--text-secondary); margin-left: 8px;">High</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Play user interface sound effects</span>
+                        </div>
+                        <div class="row-control">
+                            <input type="checkbox" class="toggle-switch" checked>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+             <!-- SECTION: NOTIFICATIONS -->
+             <section id="notifications" class="settings-section">
+                <header class="section-header">
+                    <div class="section-icon-large" style="background: #f53a53;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></div>
+                    <h1 class="section-title">Notifications</h1>
+                </header>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Allow Notifications</span>
+                        </div>
+                        <div class="row-control">
+                             <input type="checkbox" class="toggle-switch" checked>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-subtitle">Application Style</div>
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label" style="flex-direction: row; align-items: center; gap: 12px;">
+                            <div style="width: 28px; height: 28px; background: #71ab50; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">M</div>
+                            <span class="row-title">Messaging</span>
+                        </div>
+                        <div class="row-control select-wrapper">
+                            <select>
+                                <option>Banners</option>
+                                <option>Alerts</option>
+                                <option>None</option>
+                            </select>
+                            <div class="select-arrow"></div>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="row-label" style="flex-direction: row; align-items: center; gap: 12px;">
+                             <div style="width: 28px; height: 28px; background: #d755bd; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">C</div>
+                            <span class="row-title">Calendar</span>
+                        </div>
+                        <div class="row-control select-wrapper">
+                            <select>
+                                <option>Banners</option>
+                                <option>Alerts</option>
+                            </select>
+                            <div class="select-arrow"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- SECTION: DIGITAL BALANCE -->
+             <section id="screentime" class="settings-section">
+                <header class="section-header">
+                     <div class="section-icon-large" style="background: #d755bd;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></div>
+                    <h1 class="section-title">Digital Balance</h1>
+                </header>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                         <div class="row-label">
+                            <span class="row-title">Weekly Total</span>
+                            <span class="row-desc">3h 12m Daily Average</span>
+                        </div>
+                        <div class="row-control">
+                            <div class="progress-bar" style="width: 100px;">
+                                <div class="progress-fill" style="width: 45%; background: var(--color-purple);"></div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Downtime</span>
+                            <span class="row-desc">Schedule time away from the screen</span>
+                        </div>
+                         <div class="row-control">
+                             <span class="status-badge">Off</span>
+                        </div>
+                    </div>
+                     <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">App Limits</span>
+                        </div>
+                         <div class="row-control">
+                             <span class="status-badge">0 Limits</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: WALLPAPER -->
+            <section id="wallpaper" class="settings-section">
+                <header class="section-header">
+                    <div class="section-icon-large" style="background: #d345b7;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div>
+                    <h1 class="section-title">Wallpaper</h1>
+                </header>
+
+                <div class="wallpaper-grid">
+                    <div class="wallpaper-item active">
+                        <div class="wallpaper-preview" style="background: linear-gradient(135deg, #eaa4dc 0%, #eaa4dc 100%);"></div>
+                        <div class="wallpaper-name">Lion Light</div>
+                    </div>
+                    <div class="wallpaper-item">
+                        <div class="wallpaper-preview" style="background: linear-gradient(135deg, #821f6e 0%, #96237f 100%);"></div>
+                        <div class="wallpaper-name">Lion Dark</div>
+                    </div>
+                    <div class="wallpaper-item">
+                        <div class="wallpaper-preview" style="background: linear-gradient(135deg, #fa9fab 0%, #fecfef 99%, #fecfef 100%);"></div>
+                        <div class="wallpaper-name">Sunset</div>
+                    </div>
+                    <div class="wallpaper-item">
+                        <div class="wallpaper-preview" style="background: linear-gradient(135deg, #e07dcc 0%, #fbc2eb 100%);"></div>
+                        <div class="wallpaper-name">Aurora</div>
+                    </div>
+                </div>
+
+                <div class="settings-group" style="margin-top: 24px;">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Show on all Spaces</span>
+                        </div>
+                        <div class="row-control">
+                            <input type="checkbox" class="toggle-switch" checked>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: PRIVACY -->
+            <section id="privacy" class="settings-section">
+                <header class="section-header">
+                    <div class="section-icon-large" style="background: #d345b7;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div>
+                    <h1 class="section-title">Privacy & Security</h1>
+                </header>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Location Services</span>
+                        </div>
+                        <div class="row-control">
+                            <input type="checkbox" class="toggle-switch" checked aria-label="Toggle Location Services">
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Tracking</span>
+                            <span class="row-desc">Allow apps to request to track</span>
+                        </div>
+                        <div class="row-control">
+                            <input type="checkbox" class="toggle-switch" aria-label="Toggle Tracking">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Camera</span>
+                            <span class="row-desc">Applications that have requested access to Camera</span>
+                        </div>
+                         <div class="row-control">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; color: var(--text-tertiary);"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                    </div>
+                     <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Microphone</span>
+                            <span class="row-desc">Applications that have requested access to Microphone</span>
+                        </div>
+                         <div class="row-control">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; color: var(--text-tertiary);"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title" style="color: var(--color-danger)">Reset Location & Privacy</span>
+                            <span class="row-desc">Return settings to default</span>
+                        </div>
+                        <div class="row-control">
+                            <button class="btn btn-danger" id="resetBtn">Reset...</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+             <!-- SECTION: BATTERY -->
+             <section id="battery" class="settings-section">
+                <header class="section-header">
+                    <div class="section-icon-large" style="background: #71ab50;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="6" width="18" height="12" rx="2" ry="2"></rect><line x1="23" y1="13" x2="23" y2="11"></line></svg></div>
+                    <h1 class="section-title">Battery</h1>
+                </header>
+
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Low Power Mode</span>
+                            <span class="row-desc">Reduces background activity to save power</span>
+                        </div>
+                        <div class="row-control">
+                            <input type="checkbox" class="toggle-switch" aria-label="Toggle Low Power Mode">
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="row-label">
+                            <span class="row-title">Battery Health</span>
+                        </div>
+                        <div class="row-control">
+                            <span class="status-badge status-success">Normal</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; color: var(--text-tertiary); margin-left: 8px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        
+            <section id="pages" class="settings-section pages-section"><iframe id="pageFrame" title="Settings page" loading="lazy"></iframe></section>
+        </main>
+    </div>
+</body>
+</html>
+
+

@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Leonux OS - Task Manager</title>
+
+    <style>
+        /**
+         * LEONUX TASK MANAGER DESIGN SYSTEM
+         */
+        :root {
+            --bg-body: #1d101c;
+            --surface-base: rgba(42,25,41,0.84);
+            --surface-panel: rgba(58,38,57,0.55);
+            --surface-hover: rgba(var(--ov),0.08);
+            --surface-active: rgba(var(--ov),0.13);
+            --border-glass: rgba(var(--ov),0.09);
+            --border-mid: rgba(var(--ov),0.17);
+            
+            --text-main: #e3d5e1;
+            --text-muted: #b5a0b2;
+            
+            --accent: #d47abc;
+            --accent-glow: rgba(212,122,188,0.35);
+            --danger: #ff8a94;
+            --warning: #f2b04a; /* Network Upload Yellow */
+            --success: #7bc74d; /* Network Download Green */
+            --gpu-color: #eaa4dc;
+            
+            --shadow-win: 0 40px 100px -20px rgba(10,3,9,0.95);
+            --glass-blur: blur(40px) saturate(180%);
+            --radius-xl: clamp(16px, 2vh, 24px);
+            --radius-l: clamp(8px, 1vh, 12px);
+            --radius-pill: 9999px;
+            --ease-leonux: cubic-bezier(0.2, 1, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--surface-hover); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--surface-active); }
+
+        .noise-layer {
+            position: fixed; inset: 0; opacity: 0.03; pointer-events: none; z-index: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* App Window */
+        .task-frame {
+            position: relative;
+            width: 95vw;
+            max-width: 1200px;
+            height: 90vh;
+            max-height: 850px;
+            background: var(--surface-base);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-win);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            overflow: hidden;
+            animation: window-open 0.6s var(--ease-leonux) forwards;
+        }
+
+        @keyframes window-open {
+            from { opacity: 0; transform: scale(0.97) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Top Navigation */
+        .header-nav {
+            display: flex;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-glass);
+            gap: 24px;
+            background: rgba(var(--ovd),0.25);
+        }
+
+        .window-controls { display: flex; gap: 8px; margin-right: 16px; }
+        .win-btn { width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer; }
+        .win-close { background: #f75e73; }
+        .win-min { background: #e5a648; }
+        .win-max { background: #6ca34d; }
+
+        .nav-tabs { display: flex; gap: 8px; }
+        .nav-tab {
+            background: transparent; border: none; color: var(--text-muted); font-size: 14px; font-weight: 600;
+            padding: 8px 16px; border-radius: var(--radius-pill); cursor: pointer; transition: 0.3s;
+        }
+        .nav-tab:hover { color: var(--text-main); background: var(--surface-hover); }
+        .nav-tab.active { color: var(--bg-body); background: var(--text-main); }
+
+        /* Main Content Area */
+        .content-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .tab-panel {
+            position: absolute; inset: 0; padding: 20px;
+            display: none; flex-direction: column; overflow: hidden;
+            animation: fade-in 0.3s ease forwards;
+        }
+        .tab-panel.active { display: flex; }
+
+        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Data Tables --- */
+        .table-container { flex: 1; overflow-y: auto; background: var(--surface-panel); border-radius: var(--radius-l); border: 1px solid var(--border-glass); }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th { position: sticky; top: 0; background: #21151f; color: var(--text-muted); padding: 12px 16px; font-weight: 600; border-bottom: 1px solid var(--border-mid); z-index: 2; }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--border-glass); color: var(--text-main); }
+        tr:hover td { background: var(--surface-hover); }
+        
+        .proc-name { display: flex; align-items: center; gap: 12px; font-weight: 500; }
+        .proc-icon { width: 24px; height: 24px; fill: var(--text-muted); }
+        .val-high { color: var(--danger); font-weight: 600; }
+        .val-med { color: var(--warning); }
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: var(--surface-hover); }
+        .status-running { color: var(--success); background: color-mix(in srgb,var(--success) 16%,transparent); }
+        .status-stopped { color: var(--text-muted); }
+
+        /* --- Performance Tab Layout --- */
+        .perf-layout { display: flex; height: 100%; gap: 20px; width: 100%; }
+        
+        .perf-sidebar {
+            width: 280px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto;
+            border-right: 1px solid var(--border-glass); padding-right: 12px;
+        }
+        .perf-main {
+            flex: 1; display: flex; flex-direction: column; background: var(--surface-panel);
+            border-radius: var(--radius-l); border: 1px solid var(--border-glass); padding: 24px;
+            overflow-y: auto; position: relative;
+        }
+        
+        .hw-item {
+            padding: 12px 16px; border-radius: var(--radius-l); border: 1px solid transparent;
+            cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; gap: 6px;
+            background: rgba(var(--ov),0.01);
+        }
+        .hw-item:hover { background: var(--surface-hover); }
+        .hw-item.active { background: var(--surface-active); border-color: var(--border-mid); }
+        
+        .hw-header { display: flex; justify-content: space-between; font-weight: 600; font-size: 14px; }
+        .hw-sparkline { height: 35px; width: 100%; margin-top: 4px; }
+        .hw-stats { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
+
+        /* Main Chart Controls & Header */
+        .chart-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+        .chart-title-area { display: flex; flex-direction: column; }
+        .chart-title { font-size: 24px; font-weight: 600; }
+        .chart-subtitle { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+        .chart-main-val { font-size: 32px; font-weight: 300; text-align: right; }
+        
+        /* Interactive Controls Container */
+        .chart-control-bar {
+            display: flex; gap: 8px; margin-bottom: 16px; background: rgba(var(--ovd),0.15);
+            padding: 6px; border-radius: 8px; border: 1px solid var(--border-glass);
+            align-self: flex-start;
+        }
+        .ctrl-btn {
+            background: transparent; border: none; color: var(--text-muted); font-size: 12px;
+            font-weight: 600; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s;
+        }
+        .ctrl-btn:hover { color: var(--text-main); background: var(--surface-hover); }
+        .ctrl-btn.active { color: var(--text-main); background: rgba(var(--ov),0.1); box-shadow: 0 2px 4px rgba(var(--ovd),0.1); }
+
+        /* Dynamic Canvas Display Contexts */
+        .main-canvas-wrapper {
+            width: 100%; height: 260px; position: relative; border: 1px solid var(--border-glass);
+            border-radius: 8px; background: rgba(var(--ovd),0.2); margin-bottom: 20px; overflow: hidden;
+        }
+        canvas { width: 100%; height: 100%; display: block; }
+        
+        /* Multi-Chart and Split Panels Layouts */
+        .canvas-split-container { display: none; flex-direction: column; gap: 12px; width: 100%; height: 260px; margin-bottom: 20px; }
+        .canvas-split-container.active { display: flex; }
+        .split-panel { flex: 1; position: relative; border: 1px solid var(--border-glass); border-radius: 8px; background: rgba(var(--ovd),0.2); overflow: hidden; }
+        .split-label { position: absolute; top: 8px; left: 12px; font-size: 11px; color: var(--text-muted); z-index: 5; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
+
+        /* Thread History Grid View (CPU) */
+        .cpu-thread-charts { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; width: 100%; height: 260px; overflow-y: auto; }
+        .cpu-thread-charts.active { display: grid; }
+        .thread-chart-wrapper { border: 1px solid var(--border-glass); border-radius: 6px; background: rgba(var(--ovd),0.25); height: 80px; position: relative; overflow: hidden; }
+        .thread-chart-label { position: absolute; top: 4px; left: 6px; font-size: 10px; color: var(--text-muted); font-weight: 500; z-index: 2; }
+        .thread-chart-val { position: absolute; top: 4px; right: 6px; font-size: 10px; color: var(--accent); font-weight: 600; z-index: 2; }
+
+        /* Stats Grid Layout */
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .stat-box { background: rgba(var(--ovd),0.2); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-glass); }
+        .stat-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-val { font-size: 16px; font-weight: 600; }
+
+        /* Custom Toggle Switch for Forms/Tables */
+        .toggle { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: rgba(var(--ov),0.1); transition: .3s; border-radius: 20px; border: 1px solid var(--border-mid); }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px; background-color: var(--text-muted); transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); border-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(20px); background-color: var(--bg-body); }
+    </style>
+<style id="malva-overrides">body{background:#1d101c url(../../brand/wallpapers/malva-dusk-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f6f0f6 url(../../brand/wallpapers/malva-dawn-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style><style id="ltask-malva">
+:root{color-scheme:dark;--ov:227,213,225;--ovd:15,6,13;--on-accent:#1a0817;--th-bg:#2a1929;--header-bg:rgba(15,6,13,.25);
+ --c-cpu:#d47abc;--c-mem:#a592f2;--c-disk:#8fd0a0;--c-netup:#f2b04a;--c-netdown:#8fd0a0;--c-gpu:#ff8a94;--c-swap:#e999d2;--c-gpu2:#e999d2;--c-enc:#8fd0a0;--c-dec:#f2b04a}
+[data-theme="light"]{color-scheme:light;--ov:56,32,52;--ovd:126,55,106;--on-accent:#ffffff;--th-bg:#efe5ef;--header-bg:rgba(255,255,255,.4);
+ --bg-body:#f6f0f6;--surface-base:rgba(251,248,251,.9);--surface-panel:rgba(255,255,255,.66);--text-main:#382034;--text-muted:#6c4e67;
+ --accent:#7e376a;--accent-glow:rgba(126,55,106,.25);--danger:#c0414e;--warning:#9a5b00;--success:#3f7f1b;
+ --shadow-win:0 40px 80px -20px rgba(94,36,78,.3);
+ --c-cpu:#7e376a;--c-mem:#5b4bb5;--c-disk:#2f7a4f;--c-netup:#9a5b00;--c-netdown:#2f7a4f;--c-gpu:#c0414e;--c-swap:#a14c8c;--c-gpu2:#a14c8c;--c-enc:#2f7a4f;--c-dec:#9a5b00}
+#tab-processes,#tmdlg{--font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--panel:#321f30;--alt:#3a2639;--line:rgba(var(--ov),.11);--hover:rgba(var(--ov),.06);
+ --text:var(--text-main);--muted:var(--text-muted);--accent-strong:#bf62a6;--accent-soft:rgba(212,122,188,.22);--accent-text:#e999d2;--ok:#7bc74d;--ok-soft:rgba(123,199,77,.16);
+ --warn:#f2b04a;--danger-soft:rgba(255,138,148,.16);--h1:rgba(212,122,188,.10);--h2:rgba(212,122,188,.18);--h3:rgba(212,122,188,.30);--h4:rgba(242,176,74,.34);
+ --on-solid:#1a0817;--win:#2a1929;--shadow:0 0 0 1px var(--line),0 24px 60px rgba(10,3,9,.55)}
+[data-theme="light"] #tab-processes,[data-theme="light"] #tmdlg{--panel:#ffffff;--alt:#e8dce9;--accent-strong:#7e376a;--accent-soft:rgba(126,55,106,.14);--accent-text:#6b2a59;
+ --ok:#3f7f1b;--ok-soft:rgba(63,127,27,.12);--warn:#9a5b00;--danger-soft:rgba(192,65,78,.10);--h1:rgba(126,55,106,.07);--h2:rgba(126,55,106,.14);--h3:rgba(126,55,106,.24);
+ --h4:rgba(240,150,50,.34);--on-solid:#ffffff;--win:#f6f0f6;--shadow:0 0 0 1px var(--line),0 24px 60px rgba(94,36,78,.22)}
+#tab-processes .i,#tmdlg .i{fill:currentColor;flex-shrink:0}
+#tab-processes .num,#tmdlg .num{font-variant-numeric:tabular-nums}
+#tab-processes .search,#tmdlg .search{position:relative;flex:1;max-width:480px;margin-left:12px}
+#tab-processes .search .i,#tmdlg .search .i{position:absolute;left:13px;top:15px;color:var(--muted);pointer-events:none}
+#tab-processes .search input,#tmdlg .search input{width:100%;height:44px;border:0;border-radius:8px;background:var(--alt);padding:0 12px 0 36px;font-size:13px}
+#tab-processes .search input::placeholder,#tmdlg .search input::placeholder{color:var(--muted);opacity:1}
+#tab-processes .head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#tab-processes .head h1{flex:1;font-size:22px;font-weight:600;line-height:1.25;min-width:140px}
+#tab-processes .btn,#tmdlg .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 16px;border-radius:8px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);font-size:13px;font-weight:500;white-space:nowrap}
+#tab-processes .btn:hover,#tmdlg .btn:hover{background:var(--alt)}
+#tab-processes .btn .i,#tmdlg .btn .i{color:var(--accent-text)}
+#tab-processes .btn.eff[aria-pressed="true"],#tmdlg .btn.eff[aria-pressed="true"]{background:var(--ok-soft);box-shadow:inset 0 0 0 1px var(--ok)}
+#tab-processes .btn.eff .i,#tmdlg .btn.eff .i{color:var(--ok)}
+#tab-processes .btn.danger,#tmdlg .btn.danger{background:var(--danger-soft);color:var(--danger);font-weight:600;box-shadow:none}
+#tab-processes .btn.danger .i,#tmdlg .btn.danger .i{color:var(--danger)}
+#tab-processes .btn.primary,#tmdlg .btn.primary{background:var(--accent-strong);color:var(--on-solid);font-weight:600;box-shadow:none}
+#tab-processes .btn.primary .i,#tmdlg .btn.primary .i{color:var(--on-solid)}
+#tab-processes .btn.primary:hover,#tmdlg .btn.primary:hover{background:var(--accent)}
+#tab-processes .btn.solid-danger,#tmdlg .btn.solid-danger{background:#C42A1E;color:var(--on-solid);font-weight:600;box-shadow:none}
+#tab-processes .card{background:var(--panel);border-radius:12px;box-shadow:0 0 0 1px var(--line)}
+#tab-processes .table{display:flex;flex-direction:column;min-height:0;flex:1;border-radius:12px 12px 0 0;overflow:hidden}
+#tab-processes .t-head{display:flex;padding:0 8px;border-bottom:1px solid var(--line);flex-shrink:0}
+#tab-processes .t-head .pad{width:28px;flex-shrink:0}
+#tab-processes .cols{display:grid;flex:1;min-width:0;grid-template-columns:minmax(0,3.2fr) minmax(0,1.4fr) repeat(4,minmax(0,1fr));align-items:stretch}
+#tab-processes .th{display:flex;flex-direction:column;justify-content:flex-end;gap:1px;padding:0 12px 8px;height:64px;font-size:12px;font-weight:600;color:var(--muted)}
+#tab-processes .th.l{align-items:flex-start;padding:0 8px 10px}
+#tab-processes .th.r{align-items:flex-end}
+#tab-processes .th .tot{font-size:15px;color:var(--text);font-weight:600}
+#tab-processes .th:hover{background:var(--hover)}
+#tab-processes .th .lbl{display:flex;align-items:center;gap:4px}
+#tab-processes .th[aria-sort="ascending"],#tab-processes .th[aria-sort="descending"]{color:var(--text)}
+#tab-processes .t-body{flex:1;min-height:0;overflow:auto;padding:0 8px 8px}
+#tab-processes .grp{display:flex;align-items:center;gap:8px;height:40px;padding:8px 8px 0;font-size:13px;font-weight:600;color:var(--accent-text)}
+#tab-processes .row{display:flex;align-items:center;border-radius:8px}
+#tab-processes .row:hover{background:var(--hover)}
+#tab-processes .row.is-sel{background:var(--accent-soft);box-shadow:inset 0 0 0 1.5px var(--accent)}
+#tab-processes .exp,#tab-processes .exp-sp{width:28px;height:44px;flex-shrink:0;display:grid;place-items:center;color:var(--muted);border-radius:8px}
+#tab-processes .exp .i{transition:transform .12s}
+#tab-processes .exp[aria-expanded="true"] .i{transform:rotate(90deg)}
+#tab-processes .sel{display:grid;flex:1;min-width:0;grid-template-columns:minmax(0,3.2fr) minmax(0,1.4fr) repeat(4,minmax(0,1fr));align-items:stretch;height:44px;border-radius:8px}
+#tab-processes .c{display:flex;align-items:center;min-width:0}
+#tab-processes .c.name{gap:10px;padding:0 8px}
+#tab-processes .c.name.child{padding-left:32px}
+#tab-processes .ic,#tmdlg .ic{display:grid;place-items:center;width:28px;height:28px;border-radius:7px;background:var(--accent-soft);color:var(--accent-text);flex-shrink:0}
+#tab-processes .child .ic{background:var(--alt);color:var(--muted)}
+#tab-processes .nm{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tab-processes .child .nm{font-weight:500}
+#tab-processes .cnt{font-size:12px;color:var(--muted)}
+#tab-processes .c.status{gap:6px;padding:0 8px;font-size:12px;font-weight:500;color:var(--muted);white-space:nowrap}
+#tab-processes .c.status.eff{color:var(--ok)}
+#tab-processes .c.status.hung{color:var(--warn)}
+#tab-processes .c.n{justify-content:flex-end;padding:0 12px;font-size:13px;white-space:nowrap}
+#tab-processes [data-h="1"]{background:var(--h1)}
+#tab-processes [data-h="2"]{background:var(--h2)}
+#tab-processes [data-h="3"]{background:var(--h3)}
+#tab-processes [data-h="4"]{background:var(--h4)}
+#tab-processes .th[data-h]{background:var(--h2)}
+#tab-processes .statusbar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;min-height:44px;padding:0 4px;margin:0 -24px;padding-inline:24px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);flex-shrink:0;background:var(--win)}
+#tab-processes .statusbar b{color:var(--text);font-weight:600}
+#tab-processes .statusbar .sp{flex:1}
+#tab-processes .empty{display:grid;place-items:center;gap:6px;padding:40px 16px;color:var(--muted);text-align:center;font-size:13px}
+#tmdlg{width:min(560px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:0;border:0;border-radius:14px;background:var(--win);color:var(--text);box-shadow:var(--shadow);overflow:auto}
+#tmdlg::backdrop{background:rgba(20,24,34,.5)}
+#tmdlg .dlg{display:flex;flex-direction:column;gap:14px;padding:24px 24px 0}
+#tmdlg .dlg-head{display:flex;align-items:center;gap:14px}
+#tmdlg .dlg-ico{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;flex-shrink:0;background:var(--accent-soft);color:var(--accent-text)}
+#tmdlg .dlg-ico.danger{background:var(--danger-soft);color:var(--danger)}
+#tmdlg .dlg h2{font-size:20px;font-weight:600;line-height:1.3}
+#tmdlg .dlg-head p{font-size:13px;color:var(--muted)}
+#tmdlg .target{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:var(--panel);box-shadow:0 0 0 1px var(--line)}
+#tmdlg .target .tx{flex:1;min-width:0;display:flex;flex-direction:column}
+#tmdlg .target .tx b{font-size:13px}
+#tmdlg .target .tx small{font-size:12px;color:var(--muted)}
+#tmdlg .target .cnt2{font-size:13px;font-weight:600;color:var(--accent-text)}
+#tmdlg fieldset{border:0;margin:0;padding:0;min-width:0;display:flex;flex-direction:column;gap:8px}
+#tmdlg legend{padding:0 0 6px;font-size:12px;font-weight:600;color:var(--muted)}
+#tmdlg .opt{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 16px;border-radius:10px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);cursor:pointer}
+#tmdlg .opt:has(input:checked){background:var(--accent-soft);box-shadow:inset 0 0 0 1.5px var(--accent)}
+#tmdlg .opt input,#tmdlg .chk input{width:18px;height:18px;margin:0;accent-color:var(--accent);flex-shrink:0}
+#tmdlg .opt b{display:block;font-size:14px;font-weight:600}
+#tmdlg .opt small{font-size:12px;color:var(--muted)}
+#tmdlg .chk{display:flex;align-items:center;gap:12px;min-height:44px;font-size:13px;cursor:pointer}
+#tmdlg .dlg-foot{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin:6px -24px 0;padding:14px 24px;border-top:1px solid var(--line)}
+#tmdlg .field{display:flex;flex-direction:column;gap:6px}
+#tmdlg .field label{font-size:12px;font-weight:600;color:var(--muted)}
+#tmdlg .field .row2{display:flex;gap:8px}
+#tmdlg .field input[type=text]{flex:1;min-width:0;height:44px;padding:0 14px;border:0;border-radius:8px;background:var(--panel);box-shadow:inset 0 0 0 1.5px var(--accent);font-size:14px}
+#tmdlg .recent{display:flex;flex-direction:column;border-radius:10px;background:var(--panel);box-shadow:0 0 0 1px var(--line);overflow:hidden}
+#tmdlg .recent button{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 14px;border-top:1px solid var(--line);font-size:13px;font-weight:500}
+#tmdlg .recent button:first-child{border-top:0}
+#tmdlg .recent button:hover{background:var(--alt)}
+#tmdlg .recent small{margin-left:auto;font-size:12px;color:var(--muted);font-weight:400}
+#tmdlg .recent .none{padding:12px 14px;font-size:13px;color:var(--muted)}
+#tmdlg .ic.sm{width:26px;height:26px}
+#tab-processes .toasts{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;align-items:center;z-index:5;pointer-events:none;width:max-content;max-width:calc(100% - 32px)}
+#tab-processes .toast{padding:10px 16px;border-radius:10px;background:#26262B;color:#fff;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+
+#tab-processes button,#tmdlg button{background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;cursor:pointer;text-align:inherit}
+#tab-processes h1,#tmdlg h2,#tmdlg p{margin:0}#tab-processes input,#tmdlg input{font:inherit;color:inherit}
+#tab-processes,#tmdlg{font:400 14px/1.4 var(--font)}
+.header-nav{background:var(--header-bg)}
+.nav-tab.active,.nav-tab.active:hover{color:var(--on-accent);background:var(--accent)}
+td{vertical-align:middle}
+.proc-name{display:table-cell}
+.proc-name .proc-icon{display:inline-block;vertical-align:middle;margin-right:12px}
+th{background:var(--th-bg)}
+.status-running{background:color-mix(in srgb,var(--success) 16%,transparent)}
+.theme-btn{margin-left:auto;width:36px;height:36px;border-radius:50%;border:1px solid var(--border-glass);background:var(--surface-hover);color:var(--text-main);display:grid;place-items:center;cursor:pointer;transition:.2s}
+.theme-btn:hover{background:var(--surface-active)}
+.theme-btn .sun{display:none}[data-theme="light"] .theme-btn .sun{display:block}[data-theme="light"] .theme-btn .moon{display:none}
+#tab-processes{gap:14px;padding:20px 24px 14px}
+#tab-processes .head h1{font-size:22px}
+#tab-processes .search{flex:0 1 250px;margin:0}
+#tab-processes .search input{width:100%;height:44px;border:0;border-radius:8px;background:var(--alt);padding:0 12px 0 36px;font-size:13px;color:var(--text);outline:none}
+#tab-processes .search input:focus{box-shadow:0 0 0 2px var(--accent)}
+#tab-processes .toast{background:var(--surface-base);color:var(--text-main);border:1px solid var(--border-mid);backdrop-filter:blur(20px)}
+#tab-processes button:disabled{cursor:not-allowed;opacity:.5}
+#tab-processes .t-body{scrollbar-width:thin}
+#tmdlg{color:var(--text);margin:auto}
+</style></head>
+<body>
+
+    <div class="noise-layer"></div>
+
+    <!-- Embedded System Icons definitions for 100% Offline Resilience -->
+    <svg style="display:none;" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="i-globe" viewBox="0 0 512 512"><path d="M352 256Q352 289 349 320H163Q160 289 160 256Q160 223 163 192H349Q352 223 352 256ZM381 192H504H381H504Q512 223 512 256Q512 289 504 320H381Q384 289 384 256Q384 223 381 192ZM493 160H377H493H377Q361 62 321 8Q381 25 426 64Q470 104 493 160ZM344 160H168H344H168Q177 105 195 65Q211 30 228 14Q245 -1 256 0Q267 -1 284 14Q301 30 317 65Q335 105 344 160ZM135 160H19H135H19Q42 104 86 64Q131 25 191 8Q151 62 135 160ZM8 192H131H8H131Q128 223 128 256Q128 289 131 320H8Q0 289 0 256Q0 223 8 192ZM195 447Q177 407 168 352H344Q335 407 317 447Q301 482 284 498Q267 513 256 512Q245 513 228 498Q211 482 195 447ZM135 352Q151 450 191 504Q131 487 86 448Q42 408 19 352H135ZM493 352Q470 408 426 448Q381 487 322 504Q361 450 377 352H493Z"/></symbol>
+<symbol id="i-microchip" viewBox="0 0 512 512"><path d="M176 24Q174 2 152 0Q130 2 128 24V64Q101 65 83 83Q65 101 64 128H24Q2 130 0 152Q2 174 24 176H64V232H24Q2 234 0 256Q2 278 24 280H64V336H24Q2 338 0 360Q2 382 24 384H64Q65 411 83 429Q101 447 128 448V488Q130 510 152 512Q174 510 176 488V448H232V488Q234 510 256 512Q278 510 280 488V448H336V488Q338 510 360 512Q382 510 384 488V448Q411 447 429 429Q447 411 448 384H488Q510 382 512 360Q510 338 488 336H448V280H488Q510 278 512 256Q510 234 488 232H448V176H488Q510 174 512 152Q510 130 488 128H448Q447 101 429 83Q411 65 384 64V24Q382 2 360 0Q338 2 336 24V64H280V24Q278 2 256 0Q234 2 232 24V64H176V24ZM160 128H352H160H352Q366 128 375 137Q384 146 384 160V352Q384 366 375 375Q366 384 352 384H160Q146 384 137 375Q128 366 128 352V160Q128 146 137 137Q146 128 160 128ZM352 160H160H352H160V352H352V160Z"/></symbol>
+<symbol id="i-folder" viewBox="0 0 512 512"><path d="M64 480H448H64H448Q475 479 493 461Q511 443 512 416V160Q511 133 493 115Q475 97 448 96H288Q272 96 262 83L243 58Q224 33 192 32H64Q37 33 19 51Q1 69 0 96V416Q1 443 19 461Q37 479 64 480Z"/></symbol>
+<symbol id="i-terminal" viewBox="0 0 576 512"><path d="M9 87Q0 77 0 64Q0 51 9 41Q19 32 32 32Q45 32 55 41L247 233Q256 243 256 256Q256 269 247 279L55 471Q45 480 32 480Q19 480 9 471Q0 461 0 448Q0 435 9 425L179 256L9 87ZM256 416H544H256H544Q558 416 567 425Q576 434 576 448Q576 462 567 471Q558 480 544 480H256Q242 480 233 471Q224 462 224 448Q224 434 233 425Q242 416 256 416Z"/></symbol>
+<symbol id="i-note-sticky" viewBox="0 0 448 512"><path d="M64 32Q37 33 19 51Q1 69 0 96V416Q1 443 19 461Q37 479 64 480H288V368Q289 348 302 334Q316 321 336 320H448V96Q447 69 429 51Q411 33 384 32H64ZM448 352H403H448H336Q321 353 320 368V435V480L352 448L416 384L448 352Z"/></symbol>
+<symbol id="i-hard-drive" viewBox="0 0 512 512"><path d="M0 96Q1 69 19 51Q37 33 64 32H448Q475 33 493 51Q511 69 512 96V280Q486 257 448 256H64Q26 257 0 280V96ZM64 288H448H64H448Q475 289 493 307Q511 325 512 352V416Q511 443 493 461Q475 479 448 480H64Q37 479 19 461Q1 443 0 416V352Q1 325 19 307Q37 289 64 288ZM320 416Q334 416 343 407Q352 398 352 384Q352 370 343 361Q334 352 320 352Q306 352 297 361Q288 370 288 384Q288 398 297 407Q306 416 320 416ZM448 384Q448 370 439 361Q430 352 416 352Q402 352 393 361Q384 370 384 384Q384 398 393 407Q402 416 416 416Q430 416 439 407Q448 398 448 384Z"/></symbol>
+<symbol id="i-calculator" viewBox="0 0 384 512"><path d="M64 0Q37 1 19 19Q1 37 0 64V448Q1 475 19 493Q37 511 64 512H320Q347 511 365 493Q383 475 384 448V64Q383 37 365 19Q347 1 320 0H64ZM96 64H288H96H288Q302 64 311 73Q320 82 320 96V128Q320 142 311 151Q302 160 288 160H96Q82 160 73 151Q64 142 64 128V96Q64 82 73 73Q82 64 96 64ZM128 224Q128 238 119 247Q110 256 96 256Q82 256 73 247Q64 238 64 224Q64 210 73 201Q82 192 96 192Q110 192 119 201Q128 210 128 224ZM96 352Q82 352 73 343Q64 334 64 320Q64 306 73 297Q82 288 96 288Q110 288 119 297Q128 306 128 320Q128 334 119 343Q110 352 96 352ZM64 416Q64 402 73 393Q82 384 96 384H192Q206 384 215 393Q224 402 224 416Q224 430 215 439Q206 448 192 448H96Q82 448 73 439Q64 430 64 416ZM192 256Q178 256 169 247Q160 238 160 224Q160 210 169 201Q178 192 192 192Q206 192 215 201Q224 210 224 224Q224 238 215 247Q206 256 192 256ZM224 320Q224 334 215 343Q206 352 192 352Q178 352 169 343Q160 334 160 320Q160 306 169 297Q178 288 192 288Q206 288 215 297Q224 306 224 320ZM288 256Q274 256 265 247Q256 238 256 224Q256 210 265 201Q274 192 288 192Q302 192 311 201Q320 210 320 224Q320 238 311 247Q302 256 288 256ZM320 320Q320 334 311 343Q302 352 288 352Q274 352 265 343Q256 334 256 320Q256 306 265 297Q274 288 288 288Q302 288 311 297Q320 306 320 320ZM288 448Q274 448 265 439Q256 430 256 416Q256 402 265 393Q274 384 288 384Q302 384 311 393Q320 402 320 416Q320 430 311 439Q302 448 288 448Z"/></symbol>
+<symbol id="i-gear" viewBox="0 0 512 512"><path d="M496 167Q500 181 490 191L446 231Q448 243 448 256Q448 269 446 281L490 321Q500 331 496 345Q489 363 480 380L475 388Q465 404 453 419Q443 430 429 426L373 408Q353 424 329 433L317 491Q313 505 298 508Q278 512 256 512Q234 512 213 508Q199 505 195 491L183 433Q159 424 139 408L83 426Q69 430 59 419Q46 404 37 388L32 380Q23 363 16 346Q12 331 22 321L66 282Q64 269 64 256Q64 243 66 231L22 191Q12 181 16 167Q23 149 32 132L37 124Q46 108 59 93Q69 82 83 86L139 104Q159 88 183 78L195 21Q199 7 214 4Q234 0 256 0Q278 0 299 4Q313 7 317 21L329 78Q353 88 373 104L429 86Q443 82 453 93Q466 108 476 124L480 132Q489 149 496 167ZM256 336Q301 335 325 296Q347 256 325 216Q301 177 256 176Q211 177 187 216Q165 256 187 296Q211 335 256 336Z"/></symbol>
+<symbol id="i-chevron-right" viewBox="0 0 320 512"><path d="M311 233Q320 243 320 256Q320 269 311 279L119 471Q109 480 96 480Q83 480 73 471Q64 461 64 448Q64 435 73 425L243 256L73 87Q64 77 64 64Q64 51 73 41Q83 32 96 32Q109 32 119 41L311 233Z"/></symbol>
+<symbol id="i-chevron-down" viewBox="0 0 512 512"><path d="M233 407Q243 416 256 416Q269 416 279 407L471 215Q480 205 480 192Q480 179 471 169Q461 160 448 160Q435 160 425 169L256 339L87 169Q77 160 64 160Q51 160 41 169Q32 179 32 192Q32 205 41 215L233 407Z"/></symbol>
+<symbol id="i-sort-up" viewBox="0 0 320 512"><path d="M183 41Q173 32 160 32Q147 32 137 41L9 169Q-5 185 2 204Q11 223 32 224H288Q309 223 318 204Q325 185 311 169L183 41Z"/></symbol>
+<symbol id="i-sort-down" viewBox="0 0 320 512"><path d="M183 471Q173 480 160 480Q147 480 137 471L9 343Q-5 327 2 308Q11 289 32 288H288Q309 289 318 308Q325 327 311 343L183 471Z"/></symbol>
+<symbol id="i-play" viewBox="0 0 384 512"><path d="M73 39Q49 25 25 38Q1 52 0 80V432Q1 460 25 474Q49 487 73 473L361 297Q383 283 384 256Q383 230 361 215L73 39Z"/></symbol>
+<symbol id="i-leaf" viewBox="0 0 512 512"><path d="M272 96Q212 97 167 131Q122 164 104 219Q155 193 216 192H304Q319 193 320 208Q319 223 304 224H288H216Q216 224 216 224Q216 224 216 224Q191 224 168 229Q129 238 96 260Q96 260 96 260Q52 290 26 336Q1 383 0 440V456Q2 478 24 480Q46 478 48 456V440Q50 365 102 317Q118 375 164 411Q210 447 272 448H273Q340 447 394 408Q448 369 479 303Q511 238 512 157Q512 92 491 37Q489 32 483 32Q478 32 475 37Q460 64 434 80Q408 96 376 96H272Z"/></symbol>
+<symbol id="i-xmark" viewBox="0 0 384 512"><path d="M343 151Q352 141 352 128Q352 115 343 105Q333 96 320 96Q307 96 297 105L192 211L87 105Q77 96 64 96Q51 96 41 105Q32 115 32 128Q32 141 41 151L147 256L41 361Q32 371 32 384Q32 397 41 407Q51 416 64 416Q77 416 87 407L192 301L297 407Q307 416 320 416Q333 416 343 407Q352 397 352 384Q352 371 343 361L237 256L343 151Z"/></symbol>
+<symbol id="i-triangle-exclamation" viewBox="0 0 512 512"><path d="M256 32Q279 33 291 52L507 420Q517 440 507 460Q495 479 472 480H40Q17 479 5 460Q-5 440 5 420L222 52Q234 33 256 32ZM256 160Q234 162 232 184V296Q234 318 256 320Q278 318 280 296V184Q278 162 256 160ZM288 384Q288 370 279 361Q270 352 256 352Q242 352 233 361Q224 370 224 384Q224 398 233 407Q242 416 256 416Q270 416 279 407Q288 398 288 384Z"/></symbol>
+<symbol id="i-pause" viewBox="0 0 320 512"><path d="M48 64Q28 65 14 78Q1 92 0 112V400Q1 420 14 434Q28 447 48 448H80Q100 447 114 434Q127 420 128 400V112Q127 92 114 78Q100 65 80 64H48ZM240 64Q220 65 206 78Q193 92 192 112V400Q193 420 206 434Q220 447 240 448H272Q292 447 306 434Q319 420 320 400V112Q319 92 306 78Q292 65 272 64H240Z"/></symbol>
+<symbol id="i-magnifying-glass" viewBox="0 0 512 512"><path d="M416 208Q415 278 376 331L503 457Q512 467 512 480Q512 493 503 503Q493 512 480 512Q467 512 457 503L331 376Q278 415 208 416Q120 414 61 355Q2 296 0 208Q2 120 61 61Q120 2 208 0Q296 2 355 61Q414 120 416 208ZM208 352Q247 352 280 333Q313 314 333 280Q352 246 352 208Q352 170 333 136Q313 102 280 83Q247 64 208 64Q169 64 136 83Q103 102 83 136Q64 170 64 208Q64 246 83 280Q103 314 136 333Q169 352 208 352Z"/></symbol>
+        <symbol id="icon-app" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18" stroke="currentColor" stroke-width="2" opacity="0.3"/></symbol>
+        <symbol id="icon-sys" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+        <symbol id="icon-backspace" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line>
+        </symbol>
+    </svg>
+
+    <main class="task-frame">
+        <header class="header-nav">
+            <div class="window-controls">
+                <button class="win-btn win-close" title="Close"></button>
+                <button class="win-btn win-min" title="Minimize"></button>
+                <button class="win-btn win-max" title="Maximize"></button>
+            </div>
+            <div class="nav-tabs" id="nav-tabs">
+                <button class="nav-tab active" data-target="processes">Processes</button>
+                <button class="nav-tab" data-target="performance">Performance</button>
+                <button class="nav-tab" data-target="startup">Startup apps</button>
+                <button class="nav-tab" data-target="services">Services</button>
+            </div>
+        <button class="theme-btn" id="theme-btn" aria-label="Switch theme" title="Switch theme"><svg class="moon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+        </header>
+
+        <div class="content-area">
+            
+            <!-- Tab 1: PROCESSES (Task Manager processes screen) -->
+            <div class="tab-panel active" id="tab-processes">
+                <div class="head">
+                    <h1>Processes</h1>
+                    <div class="search"><svg class="i" width="14" height="14" aria-hidden="true" style="position:absolute;left:13px;top:15px;color:var(--muted);pointer-events:none"><use href="#i-magnifying-glass"/></svg><input id="q" type="search" autocomplete="off" placeholder="Search by name or PID" aria-label="Search"></div>
+                    <button class="btn" id="runBtn"><svg class="i" width="12" height="12" aria-hidden="true"><use href="#i-play"/></svg>Run new task</button>
+                    <button class="btn eff" id="effBtn" aria-pressed="false"><svg class="i" width="13" height="13" aria-hidden="true"><use href="#i-leaf"/></svg><span id="effLbl">Efficiency mode</span></button>
+                    <button class="btn danger" id="endBtn"><svg class="i" width="12" height="12" aria-hidden="true"><use href="#i-xmark"/></svg>End task</button>
+                </div>
+                <div class="card table"><div class="t-head" id="procHead"></div><div class="t-body" id="procBody" role="table" aria-label="Running processes"></div></div>
+                <div class="statusbar" id="procStatus"></div>
+                <div class="toasts" id="tmToasts" role="status" aria-live="polite"></div>
+            </div>
+
+            <!-- Tab 2: PERFORMANCE -->
+            <div class="tab-panel" id="tab-performance">
+                <div class="perf-layout">
+                    
+                    <!-- Hardware Sidebar Navigation -->
+                    <div class="perf-sidebar" id="hw-sidebar">
+                        <div class="hw-item active" data-hw="cpu">
+                            <div class="hw-header"><span>CPU</span> <span id="sb-cpu-val">0%</span></div>
+                            <canvas class="hw-sparkline" id="spark-cpu"></canvas>
+                            <div class="hw-stats"><span>Intel Core i9</span><span>Threads: 16</span></div>
+                        </div>
+                        <div class="hw-item" data-hw="mem">
+                            <div class="hw-header"><span>Memory</span> <span id="sb-mem-val">0%</span></div>
+                            <canvas class="hw-sparkline" id="spark-mem"></canvas>
+                            <div class="hw-stats"><span>System Swap Enabled</span><span></span></div>
+                        </div>
+                        <div class="hw-item" data-hw="disk">
+                            <div class="hw-header"><span>Disks</span> <span id="sb-disk-val">0%</span></div>
+                            <canvas class="hw-sparkline" id="spark-disk"></canvas>
+                            <div class="hw-stats"><span>2 Mounts Active</span><span></span></div>
+                        </div>
+                        <div class="hw-item" data-hw="net">
+                            <div class="hw-header"><span>Network</span> <span id="sb-net-val">0/0 Kbps</span></div>
+                            <canvas class="hw-sparkline" id="spark-net"></canvas>
+                            <div class="hw-stats"><span>wlan0 (WIFI)</span><span></span></div>
+                        </div>
+                        <div class="hw-item" data-hw="gpu">
+                            <div class="hw-header"><span>GPU</span> <span id="sb-gpu-val">0%</span></div>
+                            <canvas class="hw-sparkline" id="spark-gpu"></canvas>
+                            <div class="hw-stats"><span>NVIDIA RTX 4090</span><span></span></div>
+                        </div>
+                    </div>
+
+                    <!-- Telemetry Core Panels -->
+                    <div class="perf-main">
+                        <div class="chart-header">
+                            <div class="chart-title-area">
+                                <div class="chart-title" id="main-hw-title">CPU</div>
+                                <div class="chart-subtitle" id="main-hw-sub">Intel Core i9-13900K @ 3.00 GHz</div>
+                            </div>
+                            <div class="chart-main-val" id="main-hw-val">0%</div>
+                        </div>
+
+                        <!-- Graph Mode Interactive Selection Bar -->
+                        <div class="chart-control-bar" id="chart-controls">
+                            <!-- Populated dynamically depending on selected hardware element -->
+                        </div>
+                        
+                        <!-- Telemetry Display Containers -->
+                        <!-- A: Combined Single Main Chart -->
+                        <div class="main-canvas-wrapper" id="single-chart-wrapper">
+                            <canvas id="main-chart"></canvas>
+                        </div>
+
+                        <!-- B: Split Charts View (Double graphs vertically stacked) -->
+                        <div class="canvas-split-container" id="split-chart-wrapper">
+                            <div class="split-panel">
+                                <div class="split-label" id="split-lbl-1">PANEL 1</div>
+                                <canvas id="split-chart-1"></canvas>
+                            </div>
+                            <div class="split-panel">
+                                <div class="split-label" id="split-lbl-2">PANEL 2</div>
+                                <canvas id="split-chart-2"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- C: CPU 16-Thread Live Historic Graphs View -->
+                        <div class="cpu-thread-charts" id="cpu-threads-wrapper">
+                            <!-- Dynamic rendering of 16 mini-historic canvas grids -->
+                        </div>
+
+                        <!-- Stat Readout Blocks -->
+                        <div id="dynamic-stats">
+                            <!-- Populated contextually -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Tab 3: STARTUP -->
+            <div class="tab-panel" id="tab-startup">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Publisher</th>
+                                <th>Status</th>
+                                <th>Startup Impact</th>
+                                <th style="text-align:right; width: 100px;">Control</th>
+                            </tr>
+                        </thead>
+                        <tbody id="startup-list">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 4: SERVICES -->
+            <div class="tab-panel" id="tab-services">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>PID</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Group</th>
+                            </tr>
+                        </thead>
+                        <tbody id="services-list">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        (function() {
+            "use strict";
+
+            // --- Styling Variables ---
+            const colors = {};
+            function readColors() {
+                const cs = getComputedStyle(document.documentElement), g = n => cs.getPropertyValue(n).trim();
+                colors.cpu = g('--c-cpu'); colors.mem = g('--c-mem'); colors.disk = g('--c-disk'); colors.netUp = g('--c-netup'); colors.netDown = g('--c-netdown');
+                colors.gpu = g('--c-gpu'); colors.swap = g('--c-swap'); colors.gpu2 = g('--c-gpu2'); colors.enc = g('--c-enc'); colors.dec = g('--c-dec');
+                colors.text = g('--text-main'); colors.grid = 'rgba(' + g('--ov') + ',0.07)';
+            }
+            function withAlpha(hex, a) { const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || ''); return m ? `rgba(${parseInt(m[1],16)},${parseInt(m[2],16)},${parseInt(m[3],16)},${a})` : hex; }
+            readColors();
+
+            let currentHardwareSelection = 'cpu';
+
+            // Available Telemetry Display configurations per Hardware Selection
+            const displayConfig = {
+                cpu: { mode: 'average' },      // 'average', 'threads'
+                mem: { mode: 'combined' },     // 'combined', 'split'
+                disk: { selectedDisk: 0 },     // 0: nvme0n1, 1: sda1
+                net: { mode: 'combined' },     // 'combined', 'split'
+                gpu: { mode: 'combined' }      // 'combined', 'engines'
+            };
+
+            // Rolling history size
+            const HistoryLength = 60;
+            let _sd = 7; const _r = () => (_sd = (_sd * 1664525 + 1013904223) % 4294967296) / 4294967296;
+            function seedHist(base) { let v = base; return Array.from({length: HistoryLength}, () => { v += (_r() - 0.5) * Math.max(3, base * 0.55); v += (base - v) * 0.18; return Math.min(98, Math.max(1, v)); }); }
+
+            // --- Multi-channel Data State Simulation ---
+            const HardwareDataStore = {
+                cpu: {
+                    avgHist: seedHist(12),
+                    threads: Array.from({length: 16}, () => seedHist(8)),
+                    stats: { speed: "3.20 GHz", sockets: "1", cores: "16", logical: "16", virt: "Enabled", cache: "36.0 MB" }
+                },
+                mem: {
+                    ramHist: seedHist(42),  // RAM average percentage usage
+                    swapHist: seedHist(18), // Swap average percentage usage
+                    stats: { ramTotal: "32.0 GB", ramInUse: "13.4 GB", ramFree: "18.6 GB", swapTotal: "16.0 GB", swapInUse: "2.8 GB", swapFree: "13.2 GB" }
+                },
+                disk: {
+                    disks: [
+                        {
+                            id: 'nvme0n1',
+                            name: "nvme0n1 (System SSD /)",
+                            hist: seedHist(5),
+                            stats: { type: "NVMe SSD", size: "512 GB", read: "12.4 MB/s", write: "8.1 MB/s", fs: "ext4", mount: "/" }
+                        },
+                        {
+                            id: 'sda1',
+                            name: "sda1 (Storage HDD /mnt/data)",
+                            hist: seedHist(2),
+                            stats: { type: "SATA HDD", size: "2.0 TB", read: "0.2 MB/s", write: "1.4 MB/s", fs: "btrfs", mount: "/mnt/data" }
+                        }
+                    ]
+                },
+                net: {
+                    downHist: seedHist(22),
+                    upHist: seedHist(8),
+                    sourceName: "Leonux_Enterprise_Fiber_5G",
+                    stats: { adapter: "wlan0 (PCIe Wireless)", ipv4: "10.0.4.156", gateway: "10.0.4.1", signal: "96%", mac: "00:1A:2B:3C:4D:5E" }
+                },
+                gpu: {
+                    combinedHist: seedHist(15),
+                    engines: {
+                        threeD: seedHist(20),
+                        copy: seedHist(5),
+                        videoEnc: seedHist(0),
+                        videoDec: seedHist(0)
+                    },
+                    stats: { driver: "NVIDIA Linux x64 545.84", temp: "45°C", pcie: "Gen4 x16", dedicated: "24.5 GB GDDR6X", shared: "16.0 GB System" }
+                }
+            };
+
+            window.__lt = { store: HardwareDataStore, n: HistoryLength };
+
+            // Simulation structures
+            const baseProcesses = [
+                { name: "Leonux System Daemon", type: "sys", pid: 1, cpu: 0.1, mem: 45 },
+                { name: "Xorg / Display Server", type: "sys", pid: 820, cpu: 2.4, mem: 140 },
+                { name: "Leonux Web Browser (32)", type: "app", pid: 4125, cpu: 8.5, mem: 2150 },
+                { name: "Container Engine daemon", type: "sys", pid: 905, cpu: 1.2, mem: 340 },
+                { name: "Node Environment Core", type: "app", pid: 15430, cpu: 4.8, mem: 620 },
+                { name: "Virtual IDE Process", type: "app", pid: 8520, cpu: 1.0, mem: 810 },
+                { name: "System Journal Service", type: "sys", pid: 312, cpu: 0.2, mem: 40 },
+                { name: "Desktop Shell UI", type: "app", pid: 1205, cpu: 2.1, mem: 430 },
+                { name: "DBus Bus Daemon", type: "sys", pid: 480, cpu: 0.0, mem: 15 }
+            ];
+
+            const startupApps = [
+                { name: "Leonux Sync Utility", pub: "Leonux Software", status: "Enabled", impact: "Medium" },
+                { name: "NVIDIA Display App", pub: "NVIDIA Corp", status: "Enabled", impact: "High" },
+                { name: "Steam Engine client", pub: "Valve Corp", status: "Disabled", impact: "High" },
+                { name: "Security Watchdog", pub: "Leonux Core Team", status: "Enabled", impact: "Low" }
+            ];
+
+            const servicesList = [
+                { name: "systemd-resolved", pid: 410, desc: "Network Name Resolution", status: "Running", grp: "NetworkManager" },
+                { name: "ssh-daemon", pid: 911, desc: "OpenSSH Secure Shell Daemon", status: "Running", grp: "Security" },
+                { name: "cups-printing", pid: 0, desc: "Common Unix Printing System", status: "Stopped", grp: "Hardware" },
+                { name: "docker-daemon", pid: 1250, desc: "Docker Application Container Engine", status: "Running", grp: "Virtualization" },
+                { name: "postgresql-db", pid: 0, desc: "PostgreSQL Database Engine", status: "Stopped", grp: "Database" },
+                { name: "pulseaudio", pid: 1052, desc: "PulseAudio Audio Server", status: "Running", grp: "Media" }
+            ];
+
+            // --- Jitter utility to emulate hardware state fluctuations ---
+            function runJitter(val, range, min = 0, max = 100) {
+                const step = (Math.random() * range * 2) - range;
+                return Math.min(max, Math.max(min, val + step));
+            }
+
+            // --- Render Dynamic Task Switcher controls ---
+            function rebuildGraphControls() {
+                const ctrlBar = document.getElementById('chart-controls');
+                ctrlBar.innerHTML = '';
+                
+                if (currentHardwareSelection === 'cpu') {
+                    ctrlBar.innerHTML = `
+                        <button class="ctrl-btn ${displayConfig.cpu.mode === 'average' ? 'active' : ''}" id="btn-cpu-avg">Single Average Usage</button>
+                        <button class="ctrl-btn ${displayConfig.cpu.mode === 'threads' ? 'active' : ''}" id="btn-cpu-threads">16-Thread Core Grid</button>
+                    `;
+                    document.getElementById('btn-cpu-avg').addEventListener('click', () => {
+                        displayConfig.cpu.mode = 'average';
+                        rebuildGraphControls();
+                        refreshDisplayLayouts();
+                    });
+                    document.getElementById('btn-cpu-threads').addEventListener('click', () => {
+                        displayConfig.cpu.mode = 'threads';
+                        rebuildGraphControls();
+                        refreshDisplayLayouts();
+                    });
+                }
+                else if (currentHardwareSelection === 'mem') {
+                    ctrlBar.innerHTML = `
+                        <button class="ctrl-btn ${displayConfig.mem.mode === 'combined' ? 'active' : ''}" id="btn-mem-comb">Combined Average View</button>
+                        <button class="ctrl-btn ${displayConfig.mem.mode === 'split' ? 'active' : ''}" id="btn-mem-split">Split RAM & SWAP View</button>
+                    `;
+                    document.getElementById('btn-mem-comb').addEventListener('click', () => {
+                        displayConfig.mem.mode = 'combined';
+                        rebuildGraphControls();
+                        refreshDisplayLayouts();
+                    });
+                    document.getElementById('btn-mem-split').addEventListener('click', () => {
+                        displayConfig.mem.mode = 'split';
+                        rebuildGraphControls();
+                        refreshDisplayLayouts();
+                    });
+                }
+                else if (currentHardwareSelection === 'disk') {
+                    ctrlBar.innerHTML = HardwareDataStore.disk.disks.map((d, index) => `
+                        <button class="ctrl-btn ${displayConfig.disk.selectedDisk === index ? 'active' : ''}" data-disk-idx="${index}">${d.name}</button>
+                    `).join('');
+                    
+                    ctrlBar.querySelectorAll('[data-disk-idx]').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            displayConfig.disk.selectedDisk = parseInt(e.target.dataset.diskIdx);
+                            rebuildGraphControls();
+                            refreshDisplayLayouts();
+                        });
+                    });
+                }
+                else if (currentHardwareSelection === 'net') {
+                    ctrlBar.innerHTML = `
+                        <button class="ctrl-btn ${displayConfig.net.mode === 'combined' ? 'active' : ''}" id="btn-net-comb">Combined I/O Graph</button>
+                        <button class="ctrl-btn ${displayConfig.net.mode === 'split' ? 'active' : ''}" id="btn-net-split">Split Upload / Download</button>
+                    `;
+                    document.getElementById('btn-net-comb').addEventListener('click', () => {
+                        displayConfig.net.mode = 'combined';
+                        rebuildGraphControls();
+                        refreshDisplayLayouts();
+                    });
+                    document.getElementById('btn-net-split').addEventListener('click', () => {
+                        displayConfig.net.mode = 'split';
+                        rebuildGraphControls();
+                        refreshDisplayLayouts();
+                    });
+                }
+                else if (currentHardwareSelection === 'gpu') {
+                    ctrlBar.innerHTML = `
+                        <button class="ctrl-btn ${displayConfig.gpu.mode === 'combined' ? 'active' : ''}" id="btn-gpu-comb">Single Combined</button>
+                        <button class="ctrl-btn ${displayConfig.gpu.mode === 'engines' ? 'active' : ''}" id="btn-gpu-engines">Split Hardware Engine-wise View</button>
+                    `;
+                    document.getElementById('btn-gpu-comb').addEventListener('click', () => {
+                        displayConfig.gpu.mode = 'combined';
+                        rebuildGraphControls();
+                        refreshDisplayLayouts();
+                    });
+                    document.getElementById('btn-gpu-engines').addEventListener('click', () => {
+                        displayConfig.gpu.mode = 'engines';
+                        rebuildGraphControls();
+                        refreshDisplayLayouts();
+                    });
+                }
+            }
+
+            // --- Switch displayed element nodes based on selected visual state ---
+            function refreshDisplayLayouts() {
+                const singleWrap = document.getElementById('single-chart-wrapper');
+                const splitWrap = document.getElementById('split-chart-wrapper');
+                const threadsWrap = document.getElementById('cpu-threads-wrapper');
+
+                // Hide all layout envelopes by default
+                singleWrap.style.display = 'none';
+                splitWrap.classList.remove('active');
+                threadsWrap.classList.remove('active');
+
+                if (currentHardwareSelection === 'cpu') {
+                    if (displayConfig.cpu.mode === 'average') {
+                        singleWrap.style.display = 'block';
+                    } else {
+                        threadsWrap.classList.add('active');
+                        // Inject 16 logical canvas contexts on first switch or keep them refreshed
+                        rebuildThreadCanvasesDOM();
+                    }
+                } 
+                else if (currentHardwareSelection === 'mem') {
+                    if (displayConfig.mem.mode === 'combined') {
+                        singleWrap.style.display = 'block';
+                    } else {
+                        splitWrap.classList.add('active');
+                        document.getElementById('split-lbl-1').textContent = 'Physical RAM Utilization';
+                        document.getElementById('split-lbl-2').textContent = 'Linux SWAP Allocation';
+                    }
+                }
+                else if (currentHardwareSelection === 'disk') {
+                    // Disk views always use single wrapper with contextual parameters applied
+                    singleWrap.style.display = 'block';
+                }
+                else if (currentHardwareSelection === 'net') {
+                    if (displayConfig.net.mode === 'combined') {
+                        singleWrap.style.display = 'block';
+                    } else {
+                        splitWrap.classList.add('active');
+                        document.getElementById('split-lbl-1').textContent = 'Upload Throughput (Speed)';
+                        document.getElementById('split-lbl-2').textContent = 'Download Throughput (Speed)';
+                    }
+                }
+                else if (currentHardwareSelection === 'gpu') {
+                    if (displayConfig.gpu.mode === 'combined') {
+                        singleWrap.style.display = 'block';
+                    } else {
+                        splitWrap.classList.add('active');
+                        document.getElementById('split-lbl-1').textContent = 'Compute / 3D Graphics Engine';
+                        document.getElementById('split-lbl-2').textContent = 'Video Encoding & Decoding Process';
+                    }
+                }
+
+                // Immediately trigger fresh drawing routines
+                triggerTelemetryRepaint();
+            }
+
+            // --- CPU Thread elements DOM Setup ---
+            function rebuildThreadCanvasesDOM() {
+                const wrapper = document.getElementById('cpu-threads-wrapper');
+                wrapper.innerHTML = '';
+                for (let i = 0; i < 16; i++) {
+                    const box = document.createElement('div');
+                    box.className = 'thread-chart-wrapper';
+                    box.innerHTML = `
+                        <div class="thread-chart-label">Core ${i}</div>
+                        <div class="thread-chart-val" id="thread-val-${i}">0%</div>
+                        <canvas id="canvas-thread-${i}"></canvas>
+                    `;
+                    wrapper.appendChild(box);
+                }
+            }
+
+            // --- Dynamic Navigation & View Manager ---
+            document.getElementById('nav-tabs').addEventListener('click', (e) => {
+                const btn = e.target.closest('.nav-tab');
+                if (!btn) return;
+                
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                btn.classList.add('active');
+                
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById(`tab-${btn.dataset.target}`).classList.add('active');
+
+                if (btn.dataset.target === 'performance') {
+                    rebuildGraphControls();
+                    refreshDisplayLayouts();
+                }
+            });
+
+            // --- Navigation Item selection in Performance tab ---
+            document.getElementById('hw-sidebar').addEventListener('click', (e) => {
+                const item = e.target.closest('.hw-item');
+                if (!item) return;
+
+                document.querySelectorAll('.hw-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+
+                currentHardwareSelection = item.dataset.hw;
+                
+                // Update basic header descriptions
+                const titleNode = document.getElementById('main-hw-title');
+                const subNode = document.getElementById('main-hw-sub');
+                
+                if (currentHardwareSelection === 'cpu') {
+                    titleNode.textContent = "CPU Utilization";
+                    subNode.textContent = "Intel Core i9-13900K @ 3.00 GHz";
+                } else if (currentHardwareSelection === 'mem') {
+                    titleNode.textContent = "Memory Allocation";
+                    subNode.textContent = "RAM Speed: 5200 MT/s | SWAP Device Configured";
+                } else if (currentHardwareSelection === 'disk') {
+                    titleNode.textContent = "Disks I/O Speed";
+                    subNode.textContent = "Mounted system partitions & speed statistics";
+                } else if (currentHardwareSelection === 'net') {
+                    titleNode.textContent = "Network Adaptor Status";
+                    subNode.textContent = "Ethernet Interface Control System";
+                } else if (currentHardwareSelection === 'gpu') {
+                    titleNode.textContent = "NVIDIA System GPU";
+                    subNode.textContent = "GeForce RTX 4090 PCIe 4.0 Interface";
+                }
+
+                rebuildGraphControls();
+                refreshDisplayLayouts();
+            });
+
+            // --- Formulate dynamic elements into Lists (Startup & Services) ---
+            function compileLists() {
+                const startList = document.getElementById('startup-list');
+                startList.innerHTML = startupApps.map((app, i) => `
+                    <tr>
+                        <td class="proc-name"><svg class="proc-icon"><use href="#icon-app"></use></svg>${app.name}</td>
+                        <td>${app.pub}</td>
+                        <td><span class="status-badge ${app.status === 'Enabled' ? 'status-running' : 'status-stopped'}">${app.status}</span></td>
+                        <td class="${app.impact === 'High' ? 'val-high' : ''}">${app.impact}</td>
+                        <td style="text-align:right;">
+                            <label class="toggle">
+                                <input type="checkbox" ${app.status === 'Enabled' ? 'checked' : ''} onchange="window.__ltStartup(${i}, this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </td>
+                    </tr>
+                `).join('');
+
+                const srvList = document.getElementById('services-list');
+                srvList.innerHTML = servicesList.map(srv => `
+                    <tr>
+                        <td class="proc-name"><svg class="proc-icon"><use href="#icon-sys"></use></svg>${srv.name}</td>
+                        <td>${srv.pid === 0 ? '-' : srv.pid}</td>
+                        <td>${srv.desc}</td>
+                        <td><span class="status-badge ${srv.status === 'Running' ? 'status-running' : 'status-stopped'}">${srv.status}</span></td>
+                        <td>${srv.grp}</td>
+                    </tr>
+                `).join('');
+            }
+
+            window.__ltStartup = (i, on) => { startupApps[i].status = on ? 'Enabled' : 'Disabled'; compileLists(); };
+
+            // --- Continuous telemetry simulated updates loop ---
+            function cycleSystemSimulation() {
+                // 1. CPU Telemetry Calculations
+                const cpuStorage = HardwareDataStore.cpu;
+                const lastAvg = cpuStorage.avgHist[HistoryLength - 1];
+                const nextAvg = runJitter(lastAvg, 8, 5, 95);
+                cpuStorage.avgHist.shift();
+                cpuStorage.avgHist.push(nextAvg);
+
+                for (let i = 0; i < 16; i++) {
+                    const lastThreadVal = cpuStorage.threads[i][HistoryLength - 1];
+                    const nextThreadVal = runJitter(lastThreadVal, 15, 2, 100);
+                    cpuStorage.threads[i].shift();
+                    cpuStorage.threads[i].push(nextThreadVal);
+                }
+
+                // 2. Memory Telemetry (Physically mapped RAM & Virtual SWAP swapfile)
+                const memStorage = HardwareDataStore.mem;
+                const nextRAM = runJitter(memStorage.ramHist[HistoryLength - 1], 1.5, 10, 95);
+                const nextSwap = runJitter(memStorage.swapHist[HistoryLength - 1], 0.5, 2, 80);
+                memStorage.ramHist.shift(); memStorage.ramHist.push(nextRAM);
+                memStorage.swapHist.shift(); memStorage.swapHist.push(nextSwap);
+
+                const ramInUseNum = (nextRAM / 100 * 32).toFixed(1);
+                memStorage.stats.ramInUse = `${ramInUseNum} GB`;
+                memStorage.stats.ramFree = `${(32 - ramInUseNum).toFixed(1)} GB`;
+                
+                const swapInUseNum = (nextSwap / 100 * 16).toFixed(1);
+                memStorage.stats.swapInUse = `${swapInUseNum} GB`;
+                memStorage.stats.swapFree = `${(16 - swapInUseNum).toFixed(1)} GB`;
+
+                // 3. Disk telemetry for multiple mounts
+                const diskStorage = HardwareDataStore.disk;
+                diskStorage.disks.forEach(d => {
+                    const lastD = d.hist[HistoryLength - 1];
+                    const nextD = Math.random() < 0.25 ? runJitter(lastD, 20, 0, 100) : runJitter(lastD, 2, 0, 100);
+                    d.hist.shift();
+                    d.hist.push(nextD);
+
+                    d.stats.read = nextD > 10 ? `${(nextD * 12.5).toFixed(1)} MB/s` : `${(nextD * 0.8).toFixed(1)} MB/s`;
+                    d.stats.write = nextD > 10 ? `${(nextD * 4.2).toFixed(1)} MB/s` : `${(nextD * 0.3).toFixed(1)} MB/s`;
+                });
+
+                // 4. Network Telemetry I/O speeds (distinct Up/Down)
+                const netStorage = HardwareDataStore.net;
+                const nextDown = runJitter(netStorage.downHist[HistoryLength - 1], 15, 2, 100);
+                const nextUp = runJitter(netStorage.upHist[HistoryLength - 1], 5, 1, 95);
+                netStorage.downHist.shift(); netStorage.downHist.push(nextDown);
+                netStorage.upHist.shift(); netStorage.upHist.push(nextUp);
+
+                // Express rates inside structural stat arrays
+                netStorage.stats.recv = `${(nextDown * 120).toFixed(0)} Kbps`;
+                netStorage.stats.send = `${(nextUp * 35).toFixed(0)} Kbps`;
+
+                // 5. GPU Telemetry details
+                const gpuStorage = HardwareDataStore.gpu;
+                const nextGPU = runJitter(gpuStorage.combinedHist[HistoryLength - 1], 4, 2, 98);
+                gpuStorage.combinedHist.shift();
+                gpuStorage.combinedHist.push(nextGPU);
+
+                const next3D = runJitter(gpuStorage.engines.threeD[HistoryLength - 1], 6, 2, 100);
+                const nextCopy = runJitter(gpuStorage.engines.copy[HistoryLength - 1], 1, 0, 40);
+                const nextEnc = runJitter(gpuStorage.engines.videoEnc[HistoryLength - 1], 0.5, 0, 15);
+                const nextDec = runJitter(gpuStorage.engines.videoDec[HistoryLength - 1], 0.5, 0, 20);
+
+                gpuStorage.engines.threeD.shift(); gpuStorage.engines.threeD.push(next3D);
+                gpuStorage.engines.copy.shift(); gpuStorage.engines.copy.push(nextCopy);
+                gpuStorage.engines.videoEnc.shift(); gpuStorage.engines.videoEnc.push(nextEnc);
+                gpuStorage.engines.videoDec.shift(); gpuStorage.engines.videoDec.push(nextDec);
+
+                gpuStorage.stats.util = `${nextGPU.toFixed(0)}%`;
+                gpuStorage.stats.temp = `${(40 + (nextGPU * 0.3)).toFixed(0)}°C`;
+
+                // Update physical values on sidebar sparkline elements
+                document.getElementById('sb-cpu-val').textContent = `${nextAvg.toFixed(0)}%`;
+                document.getElementById('sb-mem-val').textContent = `${nextRAM.toFixed(0)}%`;
+                
+                const avgDiskActive = ((diskStorage.disks[0].hist[HistoryLength-1] + diskStorage.disks[1].hist[HistoryLength-1]) / 2).toFixed(0);
+                document.getElementById('sb-disk-val').textContent = `${avgDiskActive}%`;
+                
+                document.getElementById('sb-net-val').textContent = `${(nextDown * 12).toFixed(0)}/${(nextUp * 3).toFixed(0)}K`;
+                document.getElementById('sb-gpu-val').textContent = `${nextGPU.toFixed(0)}%`;
+
+                // Process list simulated cycles
+                if (window.__tmTick) window.__tmTick();
+
+                // Dispatch repaint calls for graphs
+                triggerTelemetryRepaint();
+                renderSparklines();
+            }
+
+            // --- Update Table list for processes with dynamic simulated variations ---
+            function updateProcessesState(cpuVal, memVal) {
+                if (!document.getElementById('tab-processes').classList.contains('active')) return;
+
+                const processedList = baseProcesses.map(p => {
+                    const scaledCpu = runJitter(p.cpu, p.cpu * 0.3 + 0.1, 0, 100);
+                    const scaledMem = runJitter(p.mem, p.mem * 0.02, 5, 4096);
+                    
+                    const diskIOPotential = Math.random() < 0.2 ? (Math.random() * 8.2).toFixed(1) : "0.0";
+                    const netIOPotential = Math.random() < 0.15 ? (Math.random() * 4.5).toFixed(1) : "0.0";
+
+                    return {
+                        ...p,
+                        cpu: scaledCpu,
+                        mem: scaledMem,
+                        disk: diskIOPotential,
+                        net: netIOPotential
+                    };
+                });
+
+                // Display lists sorted by CPU consumption
+                processedList.sort((a, b) => b.cpu - a.cpu);
+
+                const procTbody = document.getElementById('process-list');
+                procTbody.innerHTML = processedList.map(p => {
+                    let cpuAlertClass = p.cpu > 20 ? 'val-high' : (p.cpu > 5 ? 'val-med' : '');
+                    let memAlertClass = p.mem > 1000 ? 'val-med' : '';
+                    let diskAlertClass = parseFloat(p.disk) > 4.0 ? 'val-med' : '';
+                    let netAlertClass = parseFloat(p.net) > 2.0 ? 'val-med' : '';
+
+                    return `
+                        <tr>
+                            <td class="proc-name"><svg class="proc-icon"><use href="${p.type === 'sys' ? '#icon-sys' : '#icon-app'}"></use></svg>${p.name}</td>
+                            <td><span class="status-badge status-running">Running</span></td>
+                            <td style="text-align:right;" class="${cpuAlertClass}">${p.cpu.toFixed(1)}%</td>
+                            <td style="text-align:right;" class="${memAlertClass}">${p.mem.toFixed(0)} MB</td>
+                            <td style="text-align:right;" class="${diskAlertClass}">${p.disk} MB/s</td>
+                            <td style="text-align:right;" class="${netAlertClass}">${p.net} Mbps</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // --- Custom Canvas Plotting Utility ---
+            function plotLineGraph(canvas, datasetCollection, isFill = true) {
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                
+                // Adjust width to scale crisp vectors on high definition screens
+                const scaleFactor = window.devicePixelRatio || 1;
+                const designWidth = canvas.clientWidth;
+                const designHeight = canvas.clientHeight;
+                
+                if (canvas.width !== designWidth * scaleFactor || canvas.height !== designHeight * scaleFactor) {
+                    canvas.width = designWidth * scaleFactor;
+                    canvas.height = designHeight * scaleFactor;
+                }
+                
+                ctx.save();
+                ctx.scale(scaleFactor, scaleFactor);
+                ctx.clearRect(0, 0, designWidth, designHeight);
+
+                // Draw Grid Layout
+                ctx.strokeStyle = colors.grid;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for (let i = 1; i < 4; i++) {
+                    const y = designHeight * 0.25 * i;
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(designWidth, y);
+                }
+                for (let i = 1; i < 10; i++) {
+                    const x = designWidth * 0.1 * i;
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, designHeight);
+                }
+                ctx.stroke();
+
+                // Plot Datasets
+                datasetCollection.forEach(ds => {
+                    const points = ds.data;
+                    if (points.length === 0) return;
+
+                    const spacingX = designWidth / (points.length - 1);
+                    ctx.beginPath();
+                    
+                    // Constrain points to canvas height bounds safely
+                    const getPixelY = (val) => designHeight - ((Math.min(100, Math.max(0, val)) / 100) * designHeight);
+                    
+                    ctx.moveTo(0, getPixelY(points[0]));
+                    for (let i = 1; i < points.length; i++) {
+                        ctx.lineTo(i * spacingX, getPixelY(points[i]));
+                    }
+
+                    ctx.strokeStyle = ds.lineColor || colors.text;
+                    ctx.lineWidth = ds.lineWidth || 2;
+                    ctx.lineJoin = 'round';
+                    ctx.lineCap = 'round';
+                    
+                    if (ds.dashed) {
+                        ctx.setLineDash(ds.dashed);
+                    } else {
+                        ctx.setLineDash([]);
+                    }
+                    
+                    ctx.stroke();
+
+                    // Optional Linear Gradient underneath line path
+                    if (isFill && ds.fillColorGrad) {
+                        ctx.lineTo(designWidth, designHeight);
+                        ctx.lineTo(0, designHeight);
+                        ctx.closePath();
+                        
+                        const grad = ctx.createLinearGradient(0, 0, 0, designHeight);
+                        grad.addColorStop(0, withAlpha(ds.lineColor, 0.24));
+                        grad.addColorStop(1, 'transparent');
+                        ctx.fillStyle = grad;
+                        ctx.fill();
+                    }
+                });
+
+                ctx.restore();
+            }
+
+            // --- Sparklines Draw Orchestration ---
+            function renderSparklines() {
+                // CPU
+                plotLineGraph(document.getElementById('spark-cpu'), [{
+                    data: HardwareDataStore.cpu.avgHist, lineColor: colors.cpu
+                }], false);
+
+                // MEM
+                plotLineGraph(document.getElementById('spark-mem'), [{
+                    data: HardwareDataStore.mem.ramHist, lineColor: colors.mem
+                }], false);
+
+                // DISK (Combined System SSD average)
+                const diskAvg = HardwareDataStore.disk.disks[0].hist;
+                plotLineGraph(document.getElementById('spark-disk'), [{
+                    data: diskAvg, lineColor: colors.disk
+                }], false);
+
+                // NETWORK (Down on Green, Up on Yellow)
+                plotLineGraph(document.getElementById('spark-net'), [
+                    { data: HardwareDataStore.net.downHist, lineColor: colors.netDown },
+                    { data: HardwareDataStore.net.upHist, lineColor: colors.netUp, dashed: [2, 2] }
+                ], false);
+
+                // GPU
+                plotLineGraph(document.getElementById('spark-gpu'), [{
+                    data: HardwareDataStore.gpu.combinedHist, lineColor: colors.gpu
+                }], false);
+            }
+
+            // --- Full Graphic Telemetry Repaint Routing ---
+            function triggerTelemetryRepaint() {
+                if (!document.getElementById('tab-performance').classList.contains('active')) return;
+
+                const singleChart = document.getElementById('main-chart');
+                const splitChart1 = document.getElementById('split-chart-1');
+                const splitChart2 = document.getElementById('split-chart-2');
+
+                // Apply UI metrics based on currentHardwareSelection
+                if (currentHardwareSelection === 'cpu') {
+                    const cpuData = HardwareDataStore.cpu;
+                    const lastAvg = cpuData.avgHist[HistoryLength - 1];
+                    document.getElementById('main-hw-val').textContent = `${lastAvg.toFixed(0)}%`;
+
+                    if (displayConfig.cpu.mode === 'average') {
+                        plotLineGraph(singleChart, [{
+                            data: cpuData.avgHist,
+                            lineColor: colors.cpu,
+                            fillColorGrad: true
+                        }]);
+                    } else {
+                        // Plot independent historic core threads
+                        for (let i = 0; i < 16; i++) {
+                            const coreCanvas = document.getElementById(`canvas-thread-${i}`);
+                            if (coreCanvas) {
+                                const coreHistory = cpuData.threads[i];
+                                document.getElementById(`thread-val-${i}`).textContent = `${coreHistory[HistoryLength - 1].toFixed(0)}%`;
+                                plotLineGraph(coreCanvas, [{
+                                    data: coreHistory,
+                                    lineColor: colors.cpu,
+                                    lineWidth: 1.5,
+                                    fillColorGrad: true
+                                }]);
+                            }
+                        }
+                    }
+                    
+                    // Render stats block
+                    document.getElementById('dynamic-stats').innerHTML = `
+                        <div class="grid-stats">
+                            <div class="stat-box"><div class="stat-label">Virtualization</div><div class="stat-val">${cpuData.stats.virt}</div></div>
+                            <div class="stat-box"><div class="stat-label">Cores</div><div class="stat-val">${cpuData.stats.cores}</div></div>
+                            <div class="stat-box"><div class="stat-label">Sockets</div><div class="stat-val">${cpuData.stats.sockets}</div></div>
+                            <div class="stat-box"><div class="stat-label">L3 Cache</div><div class="stat-val">${cpuData.stats.cache}</div></div>
+                        </div>
+                    `;
+                }
+                
+                else if (currentHardwareSelection === 'mem') {
+                    const memData = HardwareDataStore.mem;
+                    const lastRAM = memData.ramHist[HistoryLength - 1];
+                    const lastSwap = memData.swapHist[HistoryLength - 1];
+                    
+                    document.getElementById('main-hw-val').textContent = `${lastRAM.toFixed(0)}%`;
+
+                    if (displayConfig.mem.mode === 'combined') {
+                        plotLineGraph(singleChart, [
+                            { data: memData.ramHist, lineColor: colors.mem, fillColorGrad: true },
+                            { data: memData.swapHist, lineColor: colors.swap, dashed: [4, 4] }
+                        ]);
+                    } else {
+                        plotLineGraph(splitChart1, [{ data: memData.ramHist, lineColor: colors.mem, fillColorGrad: true }]);
+                        plotLineGraph(splitChart2, [{ data: memData.swapHist, lineColor: colors.swap, fillColorGrad: true }]);
+                    }
+
+                    document.getElementById('dynamic-stats').innerHTML = `
+                        <div class="grid-stats">
+                            <div class="stat-box"><div class="stat-label">Memory In-Use</div><div class="stat-val">${memData.stats.ramInUse}</div></div>
+                            <div class="stat-box"><div class="stat-label">Memory Free</div><div class="stat-val">${memData.stats.ramFree}</div></div>
+                            <div class="stat-box"><div class="stat-label">Swap In-Use</div><div class="stat-val">${memData.stats.swapInUse}</div></div>
+                            <div class="stat-box"><div class="stat-label">Swap Free</div><div class="stat-val">${memData.stats.swapFree}</div></div>
+                        </div>
+                    `;
+                }
+                
+                else if (currentHardwareSelection === 'disk') {
+                    const disksData = HardwareDataStore.disk.disks;
+                    const selectedIndex = displayConfig.disk.selectedDisk;
+                    const targetDisk = disksData[selectedIndex];
+                    const lastAct = targetDisk.hist[HistoryLength - 1];
+
+                    document.getElementById('main-hw-val').textContent = `${lastAct.toFixed(0)}% Active`;
+
+                    plotLineGraph(singleChart, [{
+                        data: targetDisk.hist,
+                        lineColor: colors.disk,
+                        fillColorGrad: true
+                    }]);
+
+                    document.getElementById('dynamic-stats').innerHTML = `
+                        <div class="grid-stats">
+                            <div class="stat-box"><div class="stat-label">Active Time</div><div class="stat-val">${lastAct.toFixed(0)}%</div></div>
+                            <div class="stat-box"><div class="stat-label">Read Rate</div><div class="stat-val">${targetDisk.stats.read}</div></div>
+                            <div class="stat-box"><div class="stat-label">Write Rate</div><div class="stat-val">${targetDisk.stats.write}</div></div>
+                            <div class="stat-box"><div class="stat-label">File System</div><div class="stat-val">${targetDisk.stats.fs}</div></div>
+                        </div>
+                    `;
+                }
+                
+                else if (currentHardwareSelection === 'net') {
+                    const netData = HardwareDataStore.net;
+                    const lastDown = netData.downHist[HistoryLength - 1];
+                    const lastUp = netData.upHist[HistoryLength - 1];
+
+                    document.getElementById('main-hw-val').textContent = `${(lastDown * 12).toFixed(0)} Kbps`;
+                    document.getElementById('main-hw-sub').textContent = `Connected: ${netData.sourceName}`;
+
+                    if (displayConfig.net.mode === 'combined') {
+                        plotLineGraph(singleChart, [
+                            { data: netData.downHist, lineColor: colors.netDown, fillColorGrad: true },
+                            { data: netData.upHist, lineColor: colors.netUp }
+                        ]);
+                    } else {
+                        plotLineGraph(splitChart1, [{ data: netData.upHist, lineColor: colors.netUp, fillColorGrad: true }]);
+                        plotLineGraph(splitChart2, [{ data: netData.downHist, lineColor: colors.netDown, fillColorGrad: true }]);
+                    }
+
+                    document.getElementById('dynamic-stats').innerHTML = `
+                        <div class="grid-stats">
+                            <div class="stat-box"><div class="stat-label">Signal Quality</div><div class="stat-val">${netData.stats.signal}</div></div>
+                            <div class="stat-box"><div class="stat-label">IPv4 Address</div><div class="stat-val">${netData.stats.ipv4}</div></div>
+                            <div class="stat-box"><div class="stat-label">Hardware Gateway</div><div class="stat-val">${netData.stats.gateway}</div></div>
+                            <div class="stat-box"><div class="stat-label">MAC Reference</div><div class="stat-val">${netData.stats.mac}</div></div>
+                        </div>
+                    `;
+                }
+                
+                else if (currentHardwareSelection === 'gpu') {
+                    const gpuData = HardwareDataStore.gpu;
+                    const lastGPU = gpuData.combinedHist[HistoryLength - 1];
+
+                    document.getElementById('main-hw-val').textContent = `${lastGPU.toFixed(0)}%`;
+
+                    if (displayConfig.gpu.mode === 'combined') {
+                        plotLineGraph(singleChart, [{
+                            data: gpuData.combinedHist,
+                            lineColor: colors.gpu,
+                            fillColorGrad: true
+                        }]);
+                    } else {
+                        // Plot Split hardware context: 3D Compute engines overlay vs encoder I/O engines
+                        plotLineGraph(splitChart1, [
+                            { data: gpuData.engines.threeD, lineColor: colors.gpu, fillColorGrad: true },
+                            { data: gpuData.engines.copy, lineColor: colors.gpu2 }
+                        ]);
+                        plotLineGraph(splitChart2, [
+                            { data: gpuData.engines.videoEnc, lineColor: colors.enc },
+                            { data: gpuData.engines.videoDec, lineColor: colors.dec }
+                        ]);
+                    }
+
+                    document.getElementById('dynamic-stats').innerHTML = `
+                        <div class="grid-stats">
+                            <div class="stat-box"><div class="stat-label">Adapter Temp</div><div class="stat-val">${gpuData.stats.temp}</div></div>
+                            <div class="stat-box"><div class="stat-label">PCIe Bus Width</div><div class="stat-val">${gpuData.stats.pcie}</div></div>
+                            <div class="stat-box"><div class="stat-label">Dedicated VRAM</div><div class="stat-val">${gpuData.stats.dedicated}</div></div>
+                            <div class="stat-box"><div class="stat-label">Shared System VRAM</div><div class="stat-val">${gpuData.stats.shared}</div></div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Window Controls (Visual only)
+            document.querySelector('.win-close').addEventListener('click', () => {
+                document.querySelector('.task-frame').style.animation = "window-open 0.4s var(--ease-leonux) reverse forwards";
+                setTimeout(() => document.body.innerHTML = "<h2 style='color:var(--text-muted); font-weight:300;'>Task Manager Session Terminated.</h2>", 400);
+            });
+
+            document.getElementById('theme-btn').addEventListener('click', () => {
+                const r = document.documentElement;
+                if (r.getAttribute('data-theme') === 'light') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', 'light');
+                readColors(); triggerTelemetryRepaint(); renderSparklines();
+            });
+
+            // Initial Bootstrap Sequence
+            compileLists();
+            cycleSystemSimulation();
+            setInterval(cycleSystemSimulation, 1000); // 1-second accurate telemetry refresh rate
+
+            // Handle UI Window resize bounds securely
+            window.addEventListener('resize', () => {
+                if (document.getElementById('tab-performance').classList.contains('active')) {
+                    triggerTelemetryRepaint();
+                    renderSparklines();
+                }
+            });
+
+        })();
+    </script>
+<dialog id="tmdlg" aria-labelledby="dlgTitle"></dialog>
+<script id="tm-processes">
+(function(){
+"use strict";
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+var ico=function(n,sz,st){return '<svg class="i" width="'+sz+'" height="'+sz+'" aria-hidden="true"'+(st?' style="'+st+'"':'')+'><use href="#i-'+n+'"/></svg>'};
+var clamp=function(v,a,b){return Math.max(a,Math.min(b,v))};
+var seed=11;function rnd(){seed=(seed*1664525+1013904223)%4294967296;return seed/4294967296}
+var N=60,TOTAL_MEM=16384,BASE_MEM=6300;
+
+
+var S={sel:'browser',open:{browser:true},sort:{key:'cpu',dir:-1},q:'',snap:{}};
+var T={up:3*3600+12*60+8,cpu:12,ram:42,disk:5,net:8};
+function tick(){
+  var lt=window.__lt;if(lt){var st=lt.store,n=lt.n;T.cpu=st.cpu.avgHist[n-1];T.ram=st.mem.ramHist[n-1];T.disk=st.disk.disks[0].hist[n-1];T.net=Math.min(100,st.net.downHist[n-1])}
+  T.up++;var raw=0,r={},id,p;
+  for(id in P){p=P[id];var b=p.b.cpu;if(p.flag==='susp')b=0;if(p.eff)b*=.35;r[id]=b*(.65+.7*rnd());raw+=r[id]}
+  var k=raw>0?T.cpu/raw:0;
+  for(id in P){p=P[id];p.cpu=r[id]*k;p.mem=p.b.mem*(1+(rnd()-.5)*.012);
+    p.disk=p.b.disk>0?(rnd()<.18?p.b.disk*(.4+rnd()*2.2):p.b.disk*.25*rnd()):(rnd()<.01?.2*rnd():0);
+    p.net=p.b.net>0?(rnd()<.3?p.b.net*(.5+rnd()*2.5):p.b.net*.3*rnd()):0;
+    if(p.eff){p.disk*=.4;p.net*=.4}}
+}
+/* ---------- process data ---------- */
+var P={};
+function sample(){
+  P={};
+  function add(o){P[o.id]=Object.assign({kids:[],flag:null,eff:false,cpu:0,mem:0,disk:0,net:0,user:'user',related:[]},o)}
+  add({id:'browser',name:'Web Browser',icon:'globe',group:'apps',pid:3141,b:{cpu:.8,mem:220,disk:.1,net:.1},kids:['b1','b2','b3']});
+  add({id:'b1',name:'Tab: LionOS documentation',icon:'globe',group:'apps',parent:'browser',pid:3178,b:{cpu:2.4,mem:241,disk:0,net:.4}});
+  add({id:'b2',name:'Tab: Maps',icon:'globe',group:'apps',parent:'browser',pid:3190,b:{cpu:3.6,mem:388,disk:.1,net:.5}});
+  add({id:'b3',name:'GPU process',icon:'microchip',group:'apps',parent:'browser',pid:3155,b:{cpu:.4,mem:142,disk:0,net:0}});
+  add({id:'files',name:'Files',icon:'folder',group:'apps',pid:2870,b:{cpu:.3,mem:96,disk:.3,net:0},related:['tracker']});
+  add({id:'term',name:'Terminal',icon:'terminal',group:'apps',pid:2933,b:{cpu:.4,mem:58,disk:0,net:0}});
+  add({id:'notes',name:'Notes',icon:'note-sticky',group:'apps',pid:3302,b:{cpu:.2,mem:74,disk:0,net:0},eff:true});
+  add({id:'diskmgr',name:'LDisk',icon:'hard-drive',group:'apps',pid:3410,b:{cpu:.8,mem:64,disk:1.2,net:0},related:['tracker']});
+  add({id:'calc',name:'Calculator',icon:'calculator',group:'apps',pid:3455,b:{cpu:.1,mem:31,disk:0,net:0},flag:'susp'});
+  add({id:'viewer',name:'Image Viewer',icon:'folder',group:'apps',pid:3502,b:{cpu:.2,mem:188,disk:0,net:0},flag:'hung'});
+  add({id:'shell',name:'lion-shell',icon:'gear',group:'bg',pid:902,b:{cpu:1.9,mem:210,disk:0,net:0}});
+  add({id:'comp',name:'lion-compositor',icon:'gear',group:'bg',pid:871,b:{cpu:3.1,mem:164,disk:0,net:0}});
+  add({id:'pw',name:'pipewire',icon:'gear',group:'bg',pid:1044,b:{cpu:.6,mem:28,disk:0,net:0}});
+  add({id:'nm',name:'NetworkManager',icon:'gear',group:'bg',pid:702,user:'root',b:{cpu:.1,mem:36,disk:0,net:.2}});
+  add({id:'bt',name:'bluetoothd',icon:'gear',group:'bg',pid:733,user:'root',b:{cpu:.05,mem:12,disk:0,net:0}});
+  add({id:'tracker',name:'tracker-miner-fs',icon:'gear',group:'bg',pid:1520,b:{cpu:.1,mem:88,disk:.6,net:0}});
+  add({id:'dbus',name:'dbus-daemon',icon:'gear',group:'bg',pid:618,b:{cpu:.02,mem:9,disk:0,net:0}});
+  add({id:'journal',name:'systemd-journald',icon:'gear',group:'bg',pid:312,user:'root',b:{cpu:.1,mem:40,disk:.15,net:0}});
+}
+function agg(p){var a={cpu:p.cpu,mem:p.mem,disk:p.disk,net:p.net};
+  p.kids.forEach(function(k){var c=P[k];if(c){a.cpu+=c.cpu;a.mem+=c.mem;a.disk+=c.disk;a.net+=c.net}});return a}
+function rootOf(id){var p=P[id];return p&&p.parent?P[p.parent]:p}
+function procCount(){return 196+Object.keys(P).length}
+
+function fCpu(v){return v<.05?'0%':v.toFixed(1)+'%'}
+function fMem(v){return v>=1000?(v/1024).toFixed(1)+' GB':v.toFixed(1)+' MB'}
+function fDisk(v){return v.toFixed(1)+' MB/s'}
+function fNet(v){return v.toFixed(1)+' Mbps'}
+function lvl(k,v){var T={cpu:[.1,1,4,10],mem:[40,120,300,700],disk:[.05,.5,2,8],net:[.05,.3,1,5]}[k];
+  return v<T[0]?0:v<T[1]?1:v<T[2]?2:v<T[3]?3:4}
+function fUp(s){var h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h+':'+(m<10?'0':'')+m+':'+(x<10?'0':'')+x}
+
+/* ---------- toasts ---------- */
+function toast(msg){var el=document.createElement('div');el.className='toast';el.textContent=msg;$('#tmToasts').appendChild(el);
+  setTimeout(function(){el.remove()},3200)}
+
+/* ---------- processes view ---------- */
+function snapshot(){S.snap={};for(var id in P)S.snap[id]=agg(P[id])}
+function matchQ(p){var q=S.q.trim().toLowerCase();return !q||p.name.toLowerCase().indexOf(q)>=0||String(p.pid).indexOf(q)>=0}
+function cmp(a,b){var k=S.sort.key;if(k==='name')return S.sort.dir*a.name.localeCompare(b.name);
+  return S.sort.dir*(((S.snap[a.id]||{})[k]||0)-((S.snap[b.id]||{})[k]||0))}
+function model(){
+  var out=[],searching=!!S.q.trim();
+  [['apps','Apps'],['bg','Background processes']].forEach(function(g){
+    var tops=Object.keys(P).map(function(i){return P[i]}).filter(function(p){return p.group===g[0]&&!p.parent}).sort(cmp),items=[];
+    tops.forEach(function(p){
+      var kids=p.kids.map(function(k){return P[k]}).filter(Boolean).sort(cmp),mk=kids.filter(matchQ);
+      if(searching&&!matchQ(p)&&!mk.length)return;
+      var open=searching?mk.length>0:!!S.open[p.id];open=open&&kids.length>0;
+      items.push({p:p,depth:0,canExp:kids.length>0,open:open,nk:kids.length});
+      if(open)(searching?mk:kids).forEach(function(c){items.push({p:c,depth:1})});
+    });
+    if(items.length)out.push({label:g[1]+' ('+items.filter(function(i){return !i.depth}).length+')',items:items});
+  });
+  return out;
+}
+function statusOf(p){
+  if(p.flag==='hung')return {t:'Not responding',c:'hung',i:'triangle-exclamation'};
+  if(p.flag==='susp')return {t:'Suspended',c:'',i:'pause'};
+  if(p.eff)return {t:'Efficiency mode',c:'eff',i:'leaf'};
+  return {t:'',c:'',i:''}}
+function headHtml(){
+  var cols=[['name','Name','l'],['status','Status','l'],['cpu','CPU','r'],['mem','Memory','r'],['disk','Disk','r'],['net','Network','r']];
+  return '<span class="pad"></span><div class="cols">'+cols.map(function(c){
+    var sorted=S.sort.key===c[0],al=c[0]==='status'?'':' aria-sort="'+(sorted?(S.sort.dir>0?'ascending':'descending'):'none')+'"';
+    var inner=c[2]==='r'?'<span class="tot num" data-tot="'+c[0]+'"></span>':'';
+    var arrow=sorted?ico(S.sort.dir>0?'sort-up':'sort-down',9):'';
+    if(c[0]==='status')return '<span class="th l" data-col="status">Status</span>';
+    return '<button class="th '+c[2]+'" data-sort="'+c[0]+'" data-col="'+c[0]+'"'+al+(c[2]==='r'?' data-h="2"':'')+'>'+inner+'<span class="lbl">'+c[1]+arrow+'</span></button>'}).join('')+'</div>'}
+function rowHtml(it){
+  var p=it.p,s=statusOf(p),sel=S.sel===p.id,ch=it.depth?' child':'';
+  var left=it.canExp?'<button class="exp" data-act="toggle" aria-expanded="'+it.open+'" aria-label="'+(it.open?'Collapse ':'Expand ')+esc(p.name)+'">'+ico('chevron-right',9)+'</button>'
+    :'<span class="exp-sp"></span>';
+  return '<div class="row'+(sel?' is-sel':'')+'" data-id="'+p.id+'" role="row">'+left+
+   '<button class="sel" data-act="select" aria-pressed="'+sel+'"><span class="c name'+ch+'"><span class="ic">'+ico(p.icon,13)+'</span><span class="nm">'+esc(p.name)+'</span>'+
+   (it.canExp?'<span class="cnt">('+(it.nk+1)+')</span>':'')+'</span>'+
+   '<span class="c status '+s.c+'">'+(s.i?ico(s.i,11):'')+s.t+'</span>'+
+   '<span class="c n num" data-c="cpu"></span><span class="c n num" data-c="mem"></span><span class="c n num" data-c="disk"></span><span class="c n num" data-c="net"></span></button></div>'}
+function renderProc(){
+  $('#procHead').innerHTML=headHtml();
+  var m=model(),h='';
+  m.forEach(function(g){h+='<div class="grp">'+ico('chevron-down',10)+g.label+'</div>';g.items.forEach(function(it){h+=rowHtml(it)})});
+  if(!m.length)h='<div class="empty"><b>No matching processes</b><span>Try a different name or PID.</span></div>';
+  $('#procBody').innerHTML=h;updProc();updSel();
+}
+function updProc(){
+  $$('#procBody .row').forEach(function(r){var p=P[r.dataset.id];if(!p)return;var v=agg(p);
+    var set=function(k,t,l){var e=r.querySelector('[data-c="'+k+'"]');if(e){e.textContent=t;e.dataset.h=l}};
+    set('cpu',fCpu(v.cpu),lvl('cpu',v.cpu));set('mem',fMem(v.mem),lvl('mem',v.mem));set('disk',fDisk(v.disk),lvl('disk',v.disk));set('net',fNet(v.net),lvl('net',v.net))});
+  var tot={cpu:T.cpu.toFixed(0)+'%',mem:T.ram.toFixed(0)+'%',disk:T.disk.toFixed(0)+'%',net:T.net.toFixed(0)+'%'};
+  var lv={cpu:T.cpu<10?1:T.cpu<30?2:3,mem:T.ram<40?1:T.ram<70?3:4,disk:1,net:0};
+  $$('[data-tot]').forEach(function(e){e.textContent=tot[e.dataset.tot];var th=e.closest('.th');if(th)th.dataset.h=lv[e.dataset.tot]||''});
+  var p=P[S.sel];
+  $('#procStatus').innerHTML=(p?'<b>'+esc(p.name)+'</b><span>PID '+p.pid+'</span><span>'+p.user+'</span><span>'+(p.kids.length+1)+(p.kids.length?' processes':' process')+'</span>':'<span>Nothing selected</span>')+
+    '<span class="sp"></span><span>'+procCount()+' processes</span><span>Up '+fUp(T.up)+'</span>';
+}
+function updSel(){
+  $$('#procBody .row').forEach(function(r){var on=r.dataset.id===S.sel;r.classList.toggle('is-sel',on);var b=r.querySelector('.sel');if(b)b.setAttribute('aria-pressed',on)});
+  var p=P[S.sel],root=p?rootOf(p.id):null;
+  $('#effBtn').disabled=!root;$('#endBtn').disabled=!p;
+  $('#effBtn').setAttribute('aria-pressed',!!(root&&root.eff));
+  $('#effLbl').textContent=root&&root.eff?'Resume normal mode':'Efficiency mode';
+}
+$('#procBody').addEventListener('click',function(e){
+  var b=e.target.closest('[data-act]');if(!b)return;var row=b.closest('.row'),id=row.dataset.id;
+  if(b.dataset.act==='toggle'){S.open[id]=!S.open[id];snapshot();renderProc();var nb=$('.row[data-id="'+id+'"] .exp');if(nb)nb.focus()}
+  else{S.sel=id;updSel();updProc()}
+});
+$('#procHead').addEventListener('click',function(e){
+  var b=e.target.closest('[data-sort]');if(!b)return;var k=b.dataset.sort;
+  if(S.sort.key===k)S.sort.dir*=-1;else{S.sort.key=k;S.sort.dir=k==='name'?1:-1}
+  snapshot();renderProc();var nb=$('[data-sort="'+k+'"]');if(nb)nb.focus()});
+$('#effBtn').addEventListener('click',function(){
+  var root=rootOf(S.sel);if(!root)return;root.eff=!root.eff;
+  toast(root.eff?root.name+' is now in efficiency mode':root.name+' is back to normal');snapshot();renderProc()});
+
+/* ---------- dialogs ---------- */
+var dlg=$('#tmdlg');
+function closeDlg(){if(dlg.open)dlg.close()}
+dlg.addEventListener('click',function(e){if(e.target===dlg)closeDlg()});
+dlg.addEventListener('click',function(e){var b=e.target.closest('[data-close]');if(b)closeDlg()});
+function openEnd(id){
+  var p=P[id];if(!p)return;var n=1+p.kids.length,hung=p.flag==='hung';
+  var rel=p.related.map(function(r){return P[r]}).filter(Boolean);
+  dlg.innerHTML='<form class="dlg" method="dialog" id="endForm"><div class="dlg-head"><span class="dlg-ico danger">'+ico('triangle-exclamation',20)+'</span><div><h2 id="dlgTitle">End “'+esc(p.name)+'”?</h2><p>Unsaved work in this app will be lost.</p></div></div>'+
+   '<div class="target"><span class="ic">'+ico(p.icon,14)+'</span><span class="tx"><b>'+esc(p.name)+'</b><small>PID '+p.pid+(p.kids.length?', '+p.kids.length+' helper'+(p.kids.length>1?'s':''):'')+'</small></span><span class="cnt2">'+n+(n>1?' processes':' process')+' will end</span></div>'+
+   '<fieldset><legend>How should it end?</legend>'+
+   '<label class="opt"><input type="radio" name="how" value="term"'+(hung?'':' checked')+'><span><b>Quit gracefully</b><small>Ask the app to close and save its work first (SIGTERM).</small></span></label>'+
+   '<label class="opt"><input type="radio" name="how" value="kill"'+(hung?' checked':'')+'><span><b>Force quit</b><small>Stop it right now. Use this if the app is not responding (SIGKILL).</small></span></label></fieldset>'+
+   (rel.length?'<label class="chk"><input type="checkbox" id="endRel" checked>Also end related: '+esc(rel.map(function(r){return r.name}).join(', '))+'</label>':'')+
+   '<div class="dlg-foot"><button type="button" class="btn" data-close autofocus>Cancel</button><button type="submit" class="btn solid-danger" id="endGo">'+(hung?'Force quit':'End task')+'</button></div></form>';
+  var go=$('#endGo');$$('input[name=how]',dlg).forEach(function(r){r.addEventListener('change',function(){go.textContent=r.value==='kill'?'Force quit':'End task'})});
+  $('#endForm').addEventListener('submit',function(){
+    var how=$('input[name=how]:checked',dlg).value,both=$('#endRel')&&$('#endRel').checked,gone=n;
+    var kill=function(i){var q=P[i];if(!q)return;q.kids.forEach(function(k){delete P[k]});delete P[i]};
+    if(both)rel.forEach(function(r){gone+=1+r.kids.length;kill(r.id)});
+    if(p.parent){var par=P[p.parent];if(par)par.kids=par.kids.filter(function(k){return k!==p.id})}
+    kill(p.id);
+    if(!P[S.sel])S.sel=null;snapshot();renderProc();
+    toast('Ended “'+p.name+'” ('+gone+(gone>1?' processes':' process')+', '+(how==='kill'?'SIGKILL':'SIGTERM')+')')});
+  dlg.showModal();
+}
+var RECENT=[['lion-terminal','terminal','Today'],['lion-files ~/Documents','folder','Yesterday'],['lion-notes','note-sticky','Mon'],['lion-calculator','calculator','Last week']];
+function recentHtml(q){q=q.trim().toLowerCase();
+  var l=RECENT.filter(function(r){return !q||r[0].toLowerCase().indexOf(q)>=0}).slice(0,3);
+  return l.length?l.map(function(r){return '<button type="button" data-fill="'+esc(r[0])+'"><span class="ic sm">'+ico(r[1],12)+'</span>'+esc(r[0])+'<small>'+r[2]+'</small></button>'}).join(''):'<div class="none">No recent commands match.</div>'}
+function openRun(){
+  dlg.innerHTML='<form class="dlg" method="dialog" id="runForm"><div class="dlg-head"><span class="dlg-ico">'+ico('play',18)+'</span><div><h2 id="dlgTitle">Run new task</h2><p>Start a program, open a folder or run a command.</p></div></div>'+
+   '<div class="field"><label for="cmd">Open</label><div class="row2"><input id="cmd" type="text" autocomplete="off" placeholder="Type a program name, folder or command"><button type="button" class="btn" id="browseBtn">'+ico('folder',13)+'Browse</button></div></div>'+
+   '<div><div class="field"><label>Recent</label></div><div class="recent" id="recent" style="margin-top:6px">'+recentHtml('')+'</div></div>'+
+   '<label class="chk"><input type="checkbox" id="runAdmin">Run with administrator privileges</label>'+
+   '<div class="dlg-foot"><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn primary">'+ico('play',12)+'Run</button></div></form>';
+  var inp=$('#cmd');
+  inp.addEventListener('input',function(){$('#recent').innerHTML=recentHtml(inp.value)});
+  $('#recent').addEventListener('click',function(e){var b=e.target.closest('[data-fill]');if(b){inp.value=b.dataset.fill;inp.focus();$('#recent').innerHTML=recentHtml(inp.value)}});
+  $('#browseBtn').addEventListener('click',function(){toast('File browsing is not available in this preview')});
+  $('#runForm').addEventListener('submit',function(e){
+    var v=inp.value.trim();if(!v){e.preventDefault();inp.focus();toast('Type a program or command to run');return}
+    var name=v.split(/\s+/)[0].replace(/^.*\//,''),pid=4000+Math.floor(rnd()*3000),admin=$('#runAdmin').checked;
+    var icon=/term/.test(name)?'terminal':/file/.test(name)?'folder':/note/.test(name)?'note-sticky':/calc/.test(name)?'calculator':'play';
+    P['n'+pid]={id:'n'+pid,name:name,icon:icon,group:'apps',pid:pid,user:admin?'root':'user',kids:[],flag:null,eff:false,cpu:0,mem:0,disk:0,net:0,related:[],b:{cpu:.5+rnd()*1.5,mem:40+rnd()*120,disk:0,net:0}};
+    S.sel='n'+pid;S.q='';$('#q').value='';tick();snapshot();renderProc();
+    var row=$('.row[data-id="'+S.sel+'"]');if(row)row.scrollIntoView({block:'nearest'});
+    toast('Started '+name+' (PID '+pid+')')});
+  dlg.showModal();
+}
+$('#endBtn').addEventListener('click',function(){if(S.sel)openEnd(S.sel)});
+$('#runBtn').addEventListener('click',openRun);
+$('#q').addEventListener('input',function(){S.q=this.value;snapshot();renderProc()});
+sample();for(var bi=0;bi<8;bi++)tick();snapshot();renderProc();
+window.__tmTick=function(){tick();if($('#tab-processes').classList.contains('active'))updProc()};
+})();
+</script>
+</body>
+</html>

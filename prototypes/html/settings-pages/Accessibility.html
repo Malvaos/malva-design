@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Accessibility - LionOS</title>
+    <style>
+        /* --- 1. LIONOS DESIGN SYSTEM --- */
+        :root {
+            /* Palette - Obsidian (Dark) */
+            --bg-body: #0f060d;
+            --bg-glass-card: rgba(var(--ov),0.04);
+            --bg-glass-hover: rgba(var(--ov),0.08);
+            --bg-glass-active: rgba(var(--ov),0.12);
+            --bg-header: rgba(15,6,13,0.85);
+            
+            /* Text */
+            --text-primary: rgba(var(--ov),0.95);
+            --text-secondary: rgba(var(--ov),0.55);
+            
+            /* Accents */
+            --accent-primary: #d859bf; 
+            --accent-success: #5b8940;
+            
+            /* Borders */
+            --border-subtle: 1px solid rgba(var(--ov),0.08);
+            --border-separator: 1px solid rgba(var(--ov),0.05);
+            
+            /* Dimensions */
+            --radius-window: 24px;
+            --radius-card: 16px;
+            --padding-page: 32px;
+            
+            /* Animation */
+            --ease-fluid: cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        /* High Contrast Mode Overrides (Triggered by JS) */
+        [data-high-contrast="true"] {
+            --bg-body: #0f060d;
+            --bg-glass-card: #0f060d;
+            --bg-glass-hover: #20141d;
+            --bg-glass-active: #3e283a;
+            --bg-header: #0f060d;
+            --text-primary: #f8f1f7;
+            --text-secondary: #df9320; /* Yellow for secondary */
+            --accent-primary: #d345b7; /* Cyan for actions */
+            --accent-success: #73ad52;
+            --border-subtle: 2px solid #f8f1f7;
+            --border-separator: 1px solid #f8f1f7;
+        }
+
+        /* --- 2. BASE --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            background-image: radial-gradient(circle at 50% 0%, rgba(var(--ov),0.03) 0%, transparent 80%);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+            transition: filter 0.3s ease, background 0.3s;
+        }
+
+        .window-frame {
+            width: 100%;
+            max-width: 800px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: var(--padding-page);
+            overflow-y: auto;
+            scrollbar-width: none;
+            animation: fadeInUp 0.6s var(--ease-fluid);
+        }
+        .window-frame::-webkit-scrollbar { display: none; }
+
+        /* --- 3. HEADER --- */
+        .header {
+            display: flex; align-items: center; margin-bottom: 24px;
+            position: sticky; top: 0; z-index: 20;
+            background: var(--bg-header);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            padding-bottom: 16px;
+            border-bottom: var(--border-separator);
+            margin-left: -20px; margin-right: -20px; padding-left: 20px;
+        }
+
+        .btn-back {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--bg-glass-card); border: var(--border-subtle);
+            color: var(--text-primary); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; margin-right: 16px;
+        }
+        .btn-back:hover { background: var(--bg-glass-hover); }
+        .page-title { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+
+        /* --- 4. SECTIONS --- */
+        .category-header {
+            display: flex; align-items: center; gap: 12px;
+            margin-top: 32px; margin-bottom: 16px;
+            color: var(--accent-primary);
+        }
+        .category-header:first-of-type { margin-top: 0; }
+        .cat-icon { width: 24px; height: 24px; }
+        .cat-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        .settings-group {
+            background: var(--bg-glass-card); border: var(--border-subtle);
+            border-radius: var(--radius-window); padding: 0 24px;
+            overflow: hidden;
+        }
+
+        /* --- 5. CONTROLS --- */
+        .row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 18px 0; border-bottom: var(--border-separator);
+        }
+        .row:last-child { border-bottom: none; }
+        
+        .row-info { display: flex; flex-direction: column; gap: 4px; max-width: 70%; }
+        .label-main { font-size: 16px; font-weight: 500; }
+        .label-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.4; }
+
+        /* Switch */
+        .switch {
+            width: 50px; height: 30px; background: rgba(var(--ov),0.1);
+            border-radius: 99px; position: relative; cursor: pointer;
+            transition: background 0.3s; border: 1px solid rgba(var(--ov),0.1);
+        }
+        .switch-knob {
+            position: absolute; top: 2px; left: 2px;
+            width: 24px; height: 24px; background: white; border-radius: 50%;
+            transition: transform 0.3s var(--ease-fluid);
+            box-shadow: 0 2px 4px rgba(15,6,13,0.2);
+        }
+        .chk:checked + .switch { background: var(--accent-primary); border-color: var(--accent-primary); }
+        .chk:checked + .switch .switch-knob { transform: translateX(20px); }
+        .chk { display: none; }
+
+        /* Sliders */
+        .slider-container { width: 100%; padding-top: 8px; }
+        input[type=range] {
+            -webkit-appearance: none; width: 100%; background: transparent;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 6px; background: rgba(var(--ov),0.1);
+            border-radius: 99px; cursor: pointer;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 24px; width: 24px; border-radius: 50%;
+            background: #f8f1f7; cursor: pointer;
+            -webkit-appearance: none; margin-top: -9px;
+            box-shadow: 0 2px 6px rgba(15,6,13,0.2);
+            transition: transform 0.2s;
+        }
+
+        /* Buttons */
+        .btn-test {
+            padding: 8px 16px; background: rgba(var(--ov),0.1);
+            border: 1px solid rgba(var(--ov),0.1); border-radius: 8px;
+            color: var(--text-primary); cursor: pointer; font-size: 13px;
+            transition: all 0.2s;
+        }
+        .btn-test:active { transform: scale(0.95); background: var(--accent-primary); }
+        .btn-test.success { background: var(--accent-success); border-color: var(--accent-success); }
+
+        /* --- 6. VISUAL ALERTS OVERLAY --- */
+        #flash-overlay {
+            position: fixed; inset: 0; background: white;
+            opacity: 0; pointer-events: none; z-index: 9999;
+            transition: opacity 0.1s;
+        }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+<style id="malva-tokens">
+:root{--ov:227,213,225;--bg-body:#1d101c;--bg-glass-card:rgba(227,213,225,.05);--bg-glass-hover:rgba(227,213,225,.09);--bg-glass-active:rgba(227,213,225,.14);--bg-glass-panel:rgba(42,25,41,.72);--bg-header:rgba(29,16,28,.82);
+--text-primary:#e3d5e1;--text-secondary:#b5a0b2;--text-tertiary:#8f7a8c;--accent-primary:#d47abc;--accent-glow:rgba(212,122,188,.45);--accent-success:#7bc74d;--accent-warn:#f2b04a;--accent-danger:#ff8a94;--accent-purple:#b99cf0;--accent-cyan:#72c9d8;--accent-rose:#ff8a94;--accent-amber:#f2b04a;--accent-violet:#a592f2;--accent-eco:#7bc74d;--accent-perf:#d47abc;--accent-pink:#e999d2;
+--border-subtle:1px solid rgba(227,213,225,.12);--border-separator:1px solid rgba(227,213,225,.06)}
+[data-theme="light"]{--ov:56,32,52;--bg-body:#f6f0f6;--bg-glass-card:rgba(255,255,255,.72);--bg-glass-hover:rgba(255,255,255,.9);--bg-glass-active:#ffffff;--bg-glass-panel:rgba(251,248,251,.85);--bg-header:rgba(246,240,246,.85);
+--text-primary:#382034;--text-secondary:#6c4e67;--text-tertiary:#8a6f85;--accent-primary:#7e376a;--accent-glow:rgba(126,55,106,.35);--accent-success:#3f7f1b;--accent-warn:#9a5b00;--accent-danger:#c0414e;--accent-purple:#6a4bb5;--accent-cyan:#1f7f95;--accent-rose:#c0414e;--accent-amber:#9a5b00;--accent-violet:#5b4bb5;--accent-eco:#3f7f1b;--accent-perf:#7e376a;--accent-pink:#a14c8c;
+--border-subtle:1px solid rgba(56,32,52,.14);--border-separator:1px solid rgba(56,32,52,.07)}
+html,body{color:var(--text-primary)}.window-frame>*{flex-shrink:0}html.embedded,html.embedded body{background:transparent!important;background-image:none!important}
+html.embedded .window-frame{max-width:none;padding:26px 34px}
+html.embedded .btn-back{display:none!important}html.embedded .header{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border-bottom:0!important;position:static!important}
+</style></head>
+<body>
+
+    <!-- Visual Alert Flash Overlay -->
+    <div id="flash-overlay"></div>
+
+    <div class="window-frame">
+        
+        <header class="header">
+            <button class="btn-back" onclick="console.log('Back')" aria-label="Go Back">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <h1 class="page-title">Accessibility</h1>
+        </header>
+
+        <!-- 1. SEEING (VISION) -->
+        <div class="category-header">
+            <svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span class="cat-title">Seeing</span>
+        </div>
+        
+        <div class="settings-group">
+            <!-- Screen Reader -->
+            <div class="row">
+                <div class="row-info">
+                    <span class="label-main">Orca Screen Reader</span>
+                    <span class="label-desc">Read on-screen content aloud. Supports Braille.</span>
+                </div>
+                <label>
+                    <input type="checkbox" class="chk" onchange="toggleOrca(this)">
+                    <div class="switch"><div class="switch-knob"></div></div>
+                </label>
+            </div>
+
+            <!-- Magnifier -->
+            <div class="row" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="row-info">
+                        <span class="label-main">Magnifier</span>
+                        <span class="label-desc">Enlarge parts of the screen.</span>
+                    </div>
+                    <label>
+                        <input type="checkbox" class="chk" id="magnifier-toggle">
+                        <div class="switch"><div class="switch-knob"></div></div>
+                    </label>
+                </div>
+                <div class="slider-container">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; color:var(--text-secondary);">
+                        <span>1.0x</span><span>Zoom Level</span><span>10.0x</span>
+                    </div>
+                    <input type="range" min="100" max="1000" value="100" id="zoom-slider">
+                </div>
+            </div>
+
+            <!-- High Contrast -->
+            <div class="row">
+                <div class="row-info">
+                    <span class="label-main">High Contrast Mode</span>
+                    <span class="label-desc">Increase contrast for better legibility.</span>
+                </div>
+                <label>
+                    <input type="checkbox" class="chk" onchange="toggleHighContrast(this)">
+                    <div class="switch"><div class="switch-knob"></div></div>
+                </label>
+            </div>
+
+            <!-- Text Scaling -->
+            <div class="row" style="flex-direction: column; align-items: stretch;">
+                <div class="row-info" style="margin-bottom:12px;">
+                    <span class="label-main">Large Text</span>
+                    <span class="label-desc">Scale UI fonts and elements.</span>
+                </div>
+                <input type="range" min="100" max="150" value="100" oninput="document.body.style.fontSize = (16 * (this.value/100)) + 'px'">
+            </div>
+
+            <!-- Cursor Size -->
+            <div class="row">
+                <div class="row-info">
+                    <span class="label-main">Cursor Size</span>
+                    <span class="label-desc">Make the mouse pointer easier to find.</span>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-test" onclick="setCursor(1)">S</button>
+                    <button class="btn-test" onclick="setCursor(2)">M</button>
+                    <button class="btn-test" onclick="setCursor(3)">L</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. HEARING -->
+        <div class="category-header">
+            <svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 10v3a6 6 0 0 0 6 6h9a3 3 0 0 0 3-3v-3a6 6 0 0 0-6-6H5a3 3 0 0 0-3 3z"></path></svg>
+            <span class="cat-title">Hearing</span>
+        </div>
+
+        <div class="settings-group">
+            <div class="row">
+                <div class="row-info">
+                    <span class="label-main">Visual Alerts</span>
+                    <span class="label-desc">Flash screen for system sounds.</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <button class="btn-test" onclick="testFlash()">Test Flash</button>
+                    <label>
+                        <input type="checkbox" class="chk" id="flash-toggle" checked>
+                        <div class="switch"><div class="switch-knob"></div></div>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="row-info">
+                    <span class="label-main">Captions</span>
+                    <span class="label-desc">Show subtitles for media where available.</span>
+                </div>
+                <label>
+                    <input type="checkbox" class="chk">
+                    <div class="switch"><div class="switch-knob"></div></div>
+                </label>
+            </div>
+        </div>
+
+        <!-- 3. TYPING & KEYBOARD -->
+        <div class="category-header">
+            <svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.001M10 8h.001M14 8h.001M18 8h.001M6 12h.001M10 12h.001M14 12h.001M18 12h.001M6 16h12"/></svg>
+            <span class="cat-title">Typing</span>
+        </div>
+
+        <div class="settings-group">
+            <div class="row">
+                <div class="row-info">
+                    <span class="label-main">On-Screen Keyboard</span>
+                    <span class="label-desc">Use mouse or touch to type.</span>
+                </div>
+                <label>
+                    <input type="checkbox" class="chk">
+                    <div class="switch"><div class="switch-knob"></div></div>
+                </label>
+            </div>
+            <div class="row">
+                <div class="row-info">
+                    <span class="label-main">Sticky Keys</span>
+                    <span class="label-desc">Press modifier keys one by one.</span>
+                </div>
+                <label>
+                    <input type="checkbox" class="chk">
+                    <div class="switch"><div class="switch-knob"></div></div>
+                </label>
+            </div>
+            <div class="row">
+                <div class="row-info">
+                    <span class="label-main">Slow Keys</span>
+                    <span class="label-desc">Delay before key acceptance.</span>
+                </div>
+                <label>
+                    <input type="checkbox" class="chk">
+                    <div class="switch"><div class="switch-knob"></div></div>
+                </label>
+            </div>
+            <div class="row">
+                <div class="row-info">
+                    <span class="label-main">Bounce Keys</span>
+                    <span class="label-desc">Ignore repeated key presses.</span>
+                </div>
+                <label>
+                    <input type="checkbox" class="chk">
+                    <div class="switch"><div class="switch-knob"></div></div>
+                </label>
+            </div>
+        </div>
+
+        <!-- 4. POINTING & CLICKING -->
+        <div class="category-header">
+            <svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></svg>
+            <span class="cat-title">Pointing & Clicking</span>
+        </div>
+
+        <div class="settings-group">
+            <div class="row">
+                <div class="row-info">
+                    <span class="label-main">Mouse Keys</span>
+                    <span class="label-desc">Control pointer with numpad.</span>
+                </div>
+                <label>
+                    <input type="checkbox" class="chk">
+                    <div class="switch"><div class="switch-knob"></div></div>
+                </label>
+            </div>
+            <div class="row">
+                <div class="row-info">
+                    <span class="label-main">Click Assist</span>
+                    <span class="label-desc">Auto-click when hovering (Dwell).</span>
+                </div>
+                <label>
+                    <input type="checkbox" class="chk">
+                    <div class="switch"><div class="switch-knob"></div></div>
+                </label>
+            </div>
+            <div class="row">
+                <div class="row-info">
+                    <span class="label-main">Simulated Secondary Click</span>
+                    <span class="label-desc">Hold left click to right click.</span>
+                </div>
+                <label>
+                    <input type="checkbox" class="chk">
+                    <div class="switch"><div class="switch-knob"></div></div>
+                </label>
+            </div>
+            <!-- Double Click Speed Tester -->
+            <div class="row" style="flex-direction: column; align-items: stretch; gap:12px;">
+                <div style="display:flex; justify-content:space-between;">
+                    <div class="row-info">
+                        <span class="label-main">Double-Click Speed</span>
+                        <span class="label-desc">Adjust recognition speed.</span>
+                    </div>
+                    <button class="btn-test" id="dbl-click-test">Test Here</button>
+                </div>
+                <input type="range" min="100" max="1000" value="400" id="dbl-speed-range">
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-tertiary);">
+                    <span>Fast (0.1s)</span><span>Slow (1.0s)</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. HIGH CONTRAST LOGIC ---
+        function toggleHighContrast(el) {
+            if (el.checked) {
+                document.documentElement.setAttribute('data-high-contrast', 'true');
+            } else {
+                document.documentElement.removeAttribute('data-high-contrast');
+            }
+        }
+
+        // --- 2. SCREEN READER SIMULATION ---
+        function toggleOrca(el) {
+            if (el.checked && 'speechSynthesis' in window) {
+                const utter = new SpeechSynthesisUtterance("Orca Screen Reader enabled. Welcome to LionOS Accessibility.");
+                window.speechSynthesis.speak(utter);
+            } else if (!el.checked && 'speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        // --- 3. CURSOR SIZE LOGIC ---
+        // Injecting a style tag to override cursor globally
+        const styleTag = document.createElement('style');
+        document.head.appendChild(styleTag);
+
+        function setCursor(size) {
+            let cursorStyle = 'auto';
+            if (size === 2) {
+                // Simulating medium cursor with CSS transform (limited in pure CSS cursor)
+                // In real app, we load SVG. Here we just demo concept.
+                styleTag.innerHTML = `* { cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>') 0 0, auto !important; }`;
+            } else if (size === 3) {
+                 styleTag.innerHTML = `* { cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>') 0 0, auto !important; }`;
+            } else {
+                styleTag.innerHTML = ''; // Reset
+            }
+        }
+
+        // --- 4. VISUAL ALERT ---
+        function testFlash() {
+            const overlay = document.getElementById('flash-overlay');
+            overlay.style.opacity = 1;
+            setTimeout(() => {
+                overlay.style.opacity = 0;
+            }, 150);
+        }
+
+        // --- 5. DOUBLE CLICK TESTER ---
+        const testBtn = document.getElementById('dbl-click-test');
+        const speedRange = document.getElementById('dbl-speed-range');
+        let lastClick = 0;
+
+        testBtn.addEventListener('click', () => {
+            const now = new Date().getTime();
+            const threshold = parseInt(speedRange.value); // Slider value is the ms gap
+            const diff = now - lastClick;
+
+            if (diff < threshold && diff > 0) {
+                testBtn.textContent = "Success!";
+                testBtn.classList.add('success');
+                setTimeout(() => {
+                    testBtn.textContent = "Test Here";
+                    testBtn.classList.remove('success');
+                }, 1000);
+            }
+            lastClick = now;
+        });
+
+    </script>
+<script>(function(){if(self!==top)document.documentElement.classList.add('embedded');addEventListener('message',function(e){var t=e.data&&e.data.malvaTheme;if(t)document.documentElement.setAttribute('data-theme',t)})})();</script></body>
+</html>
+

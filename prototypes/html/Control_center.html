@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LionOS Control Center</title>
+    <style>
+        /* --- DESIGN TOKENS --- */
+        :root {
+            --bg-body: #1d101c;
+            --bg-panel: rgba(42,25,41,0.85);
+            --bg-card: rgba(227,213,225,0.08);
+            --bg-card-hover: rgba(227,213,225,0.12);
+            --bg-card-active: rgba(227,213,225,0.25);
+            
+            --text-primary: #e3d5e1;
+            --text-secondary: rgba(227,213,225,0.62);
+            --text-tertiary: rgba(227,213,225,0.32);
+            
+            --accent-blue: #d47abc;
+            --accent-green: #7bc74d;
+            --accent-red: #ff8a94;
+            --accent-orange: #f2b04a;
+            --accent-active: var(--accent-blue);
+
+            --radius-panel: 36px;
+            --radius-card: 24px;
+            --radius-squircle: 22px;
+            --radius-pill: 999px;
+            
+            --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-smooth: cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f6f0f6;
+            --bg-panel: rgba(255,255,255,0.8);
+            --bg-card: rgba(126,55,106,0.07);
+            --bg-card-hover: rgba(126,55,106,0.12);
+            --bg-card-active: rgba(126,55,106,0.2);
+            --text-primary: #382034;
+            --text-secondary: rgba(56,32,52,0.62);
+            --text-tertiary: rgba(56,32,52,0.38);
+        }
+
+        /* --- RESET & BASE --- */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-body);
+            height: 100vh; width: 100vw;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            transition: background 0.4s ease;
+        }
+
+        /* --- GEOMETRY UTILITIES --- */
+        .circle { border-radius: 50%; flex-shrink: 0; aspect-ratio: 1 / 1; }
+        .squircle { border-radius: var(--radius-squircle); aspect-ratio: 1 / 1; flex-shrink: 0; }
+
+        /* --- PANEL CONTAINER --- */
+        .control-panel {
+            width: 100%;
+            max-width: 460px;
+            max-height: 95vh;
+            background: var(--bg-panel);
+            backdrop-filter: blur(50px) saturate(140%);
+            -webkit-backdrop-filter: blur(50px) saturate(140%);
+            border-radius: var(--radius-panel);
+            border: 1px solid rgba(248,241,247,0.1);
+            box-shadow: 0 40px 100px -20px rgba(15,6,13,0.5);
+            padding: 24px;
+            display: flex; flex-direction: column; gap: 20px;
+            overflow-y: auto;
+            animation: popIn 0.5s var(--ease-smooth) forwards;
+        }
+        .control-panel::-webkit-scrollbar { display: none; }
+
+        /* --- HEADER --- */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 0 4px; }
+        .user-profile { display: flex; align-items: center; gap: 14px; }
+        .avatar {
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, #53354d, #291b26);
+            border: 2px solid rgba(248,241,247,0.1);
+        }
+        .sys-time { display: flex; flex-direction: column; }
+        .time-text { font-size: 18px; font-weight: 700; color: var(--text-primary); line-height: 1.1; }
+        .date-text { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+        .header-actions { display: flex; gap: 10px; }
+        .icon-btn {
+            width: 44px; height: 44px;
+            background: var(--bg-card);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-primary); cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .icon-btn:hover { background: var(--bg-card-hover); }
+        .icon-btn:active { transform: scale(0.92); }
+
+        /* --- MAIN GRID LAYOUT --- */
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        /* --- CONNECTIVITY CARDS --- */
+        .card {
+            background: var(--bg-card); border-radius: var(--radius-card); padding: 18px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            height: 110px; cursor: pointer; transition: all 0.3s var(--ease-smooth);
+            position: relative; overflow: hidden;
+        }
+        .card:hover { background: var(--bg-card-hover); }
+        .card:active { transform: scale(0.98); }
+        .card.active { background: var(--accent-active); box-shadow: 0 8px 25px -5px rgba(15,6,13,0.3); }
+        .card.active .label, .card.active .status, .card.active .card-icon { color: #f8f1f7; }
+        .card.active .card-icon { background: rgba(248,241,247,0.25); }
+        .card-icon {
+            width: 38px; height: 38px; background: rgba(155,99,144,0.15);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-primary); transition: background 0.3s;
+        }
+        .label { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+        .status { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-top: 2px; }
+
+        /* --- SLIDERS --- */
+        .slider-group { grid-column: span 2; display: flex; flex-direction: column; gap: 16px; }
+        .slider {
+            width: 100%; height: 64px; background: var(--bg-card);
+            border-radius: var(--radius-card); position: relative; overflow: hidden;
+            display: flex; align-items: center; padding: 0 20px;
+            cursor: ew-resize; touch-action: none;
+        }
+        .slider-track {
+            position: absolute; left: 0; top: 0; bottom: 0; width: 0%;
+            background: #f8f1f7; opacity: 0.15; pointer-events: none;
+            transition: width 0.05s linear, opacity 0.2s;
+        }
+        .slider.active .slider-track { opacity: 1; background: #f8f1f7; }
+        .slider.active .sl-icon, .slider.active .sl-val { color: #0f060d; z-index: 5; }
+        .sl-icon { color: var(--text-secondary); display: flex; z-index: 2; }
+        .sl-val { margin-left: auto; font-weight: 700; font-size: 14px; color: var(--text-primary); z-index: 2; }
+
+        /* --- SQUARE TOGGLES --- */
+        .toggles-grid {
+            grid-column: span 2; display: grid;
+            grid-template-columns: repeat(4, 1fr); /* Adjusted for 8 items */
+            gap: 12px;
+            justify-items: center;
+        }
+        /* Make it 5 cols on larger if desired, but 4 looks neat for 8 items */
+        @media (min-width: 400px) {
+            .toggles-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        .toggle-item {
+            width: 100%; max-width: 80px; background: var(--bg-card);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-primary);
+            transition: all 0.3s var(--ease-elastic);
+        }
+        .toggle-item:hover { background: var(--bg-card-hover); }
+        .toggle-item:active { transform: scale(0.9); }
+        .toggle-item.active { background: var(--accent-active); color: #f8f1f7; box-shadow: 0 0 20px var(--accent-active); }
+        
+        /* Custom Colors */
+        .toggle-item[data-tool="hotspot"].active { background: var(--accent-green); box-shadow: 0 0 20px var(--accent-green); }
+        .toggle-item[data-tool="battery"].active { background: var(--accent-orange); box-shadow: 0 0 20px var(--accent-orange); }
+        .toggle-item svg { width: 24px; height: 24px; pointer-events: none; }
+
+        /* --- PERFORMANCE PILL --- */
+        .perf-container {
+            grid-column: span 2; height: 54px; background: var(--bg-card);
+            border-radius: var(--radius-pill); padding: 4px; position: relative; display: flex;
+        }
+        .perf-bg {
+            position: absolute; top: 4px; left: 4px; bottom: 4px; width: calc(33.33% - 6px);
+            background: var(--accent-active); border-radius: var(--radius-pill);
+            transition: transform 0.3s var(--ease-elastic), background 0.3s; z-index: 1;
+        }
+        .perf-opt {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700; color: var(--text-secondary);
+            z-index: 2; cursor: pointer; transition: color 0.2s;
+        }
+        .perf-opt.selected { color: #f8f1f7; }
+
+        /* --- CLIPBOARD HISTORY (NEW MODULE) --- */
+        .clipboard-module {
+            grid-column: span 2;
+            background: var(--bg-card);
+            border-radius: var(--radius-card);
+            padding: 16px;
+            display: flex; flex-direction: column; gap: 12px;
+            max-height: 200px;
+        }
+
+        .clip-header {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px; font-weight: 600; color: var(--text-secondary);
+            padding: 0 4px;
+        }
+
+        .clip-list {
+            display: flex; flex-direction: column; gap: 8px;
+            overflow-y: auto;
+            max-height: 140px;
+            padding-right: 4px;
+        }
+        
+        .clip-list::-webkit-scrollbar { width: 4px; }
+        .clip-list::-webkit-scrollbar-thumb { background: rgba(248,241,247,0.1); border-radius: 4px; }
+
+        .clip-item {
+            background: rgba(15,6,13,0.2);
+            padding: 10px 12px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+        .clip-item:hover { background: rgba(248,241,247,0.05); }
+        .clip-item:active { transform: scale(0.98); }
+
+        .clip-text {
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;
+        }
+        .clip-time {
+            font-size: 10px; color: var(--text-tertiary);
+        }
+
+        /* --- TOAST & OVERLAYS --- */
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translate(-50%, 50px); opacity: 0;
+            background: rgba(15,6,13,0.8); backdrop-filter: blur(20px); color: #f8f1f7;
+            padding: 12px 24px; border-radius: 99px; font-size: 13px; font-weight: 600;
+            display: flex; align-items: center; gap: 8px; transition: all 0.4s var(--ease-elastic);
+            z-index: 9999; pointer-events: none; white-space: nowrap;
+        }
+        .toast.show { transform: translate(-50%, 0); opacity: 1; }
+        .overlay { position: fixed; inset: 0; pointer-events: none; transition: opacity 0.3s; z-index: 9000; opacity: 0; }
+        #dim-layer { background: #0f060d; }
+        #warm-layer { background: #df9320; mix-blend-mode: multiply; }
+        #flash-layer { background: #f8f1f7; transition: opacity 0.1s; }
+
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.94) translateY(15px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+        .spinning { animation: spin 0.8s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    </style>
+<style id="malva-overrides">.perf-bg{transform:translateX(100%)}:root:not([data-theme="light"]) .card.active .label,:root:not([data-theme="light"]) .card.active .status,:root:not([data-theme="light"]) .card.active .card-icon,:root:not([data-theme="light"]) .toggle-item.active,:root:not([data-theme="light"]) .perf-opt.selected{color:#1a0817}[data-theme="light"] .clip-item{background:rgba(126,55,106,.08)}[data-theme="light"] .slider.active .slider-track{background:#7e376a}body{background:#1d101c url(../../brand/wallpapers/malva-dusk-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f6f0f6 url(../../brand/wallpapers/malva-dawn-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
+<body>
+
+    <!-- Overlays -->
+    <div id="dim-layer" class="overlay"></div>
+    <div id="warm-layer" class="overlay"></div>
+    <div id="flash-layer" class="overlay"></div>
+    
+    <!-- Notification -->
+    <div class="toast" id="toast">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span id="toast-text">Action Completed</span>
+    </div>
+
+    <div class="control-panel">
+        
+        <!-- Header -->
+        <div class="header">
+            <div class="user-profile">
+                <div class="avatar circle"></div>
+                <div class="sys-time">
+                    <span class="time-text" id="clk-time">--:--</span>
+                    <span class="date-text" id="clk-date">LionOS</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="icon-btn circle" onclick="toggleTheme()" title="Theme">
+                    <svg id="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </div>
+                <div class="icon-btn circle" onclick="msg('Settings Opened')" title="Settings">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            
+            <!-- WiFi -->
+            <div class="card" onclick="toggleConn(this, 'LionNet 6', 'Off')">
+                <div class="card-icon circle"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg></div>
+                <div><div class="label">Wi-Fi</div><div class="status">Off</div></div>
+            </div>
+            
+            <!-- Bluetooth -->
+            <div class="card active" onclick="toggleConn(this, 'AirPods', 'Off')">
+                <div class="card-icon circle"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 7 10 10-5 5V2l5 5L7 17"></path></svg></div>
+                <div><div class="label">Bluetooth</div><div class="status">AirPods</div></div>
+            </div>
+
+            <!-- Sliders -->
+            <div class="slider-group">
+                <div class="slider active" id="sl-bright" data-type="bright">
+                    <div class="slider-track" style="width: 85%;"></div>
+                    <div class="sl-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></div>
+                    <div class="sl-val">85%</div>
+                </div>
+                <div class="slider" id="sl-vol" data-type="vol">
+                    <div class="slider-track" style="width: 40%;"></div>
+                    <div class="sl-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg></div>
+                    <div class="sl-val">40%</div>
+                </div>
+            </div>
+
+            <!-- Toggles (8 Items now) -->
+            <div class="toggles-grid">
+                <!-- 1. AirPlane -->
+                <div class="toggle-item squircle" onclick="toggle(this)" title="Airplane">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.2-1.1.7l-1.2 4 6 3.2-2 2-4-1.5L1 16l7.4 1.6c.7.1 1.4-.1 1.9-.5l7.6-7.4z"></path></svg>
+                </div>
+                <!-- 2. Hotspot -->
+                <div class="toggle-item squircle" onclick="toggle(this)" data-tool="hotspot" title="Hotspot">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M12 20a.01.01 0 0 1 0 0"></path></svg>
+                </div>
+                <!-- 3. Location -->
+                <div class="toggle-item squircle active" onclick="toggle(this)" title="Location">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                </div>
+                <!-- 4. Eye Protect -->
+                <div class="toggle-item squircle" onclick="toggleEye(this)" title="Eye Protect">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </div>
+                <!-- 5. DND -->
+                <div class="toggle-item squircle" onclick="toggle(this)" title="DND">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </div>
+                <!-- 6. Lock -->
+                <div class="toggle-item squircle active" onclick="toggle(this)" title="Rotation">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
+                </div>
+                <!-- 7. Screenshot -->
+                <div class="toggle-item squircle" onclick="snap(this)" title="Screenshot">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                </div>
+                <!-- 8. Battery -->
+                <div class="toggle-item squircle" onclick="toggleBatt(this)" data-tool="battery" title="Saver">
+                    <svg id="bt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="18" height="12" rx="2" ry="2"></rect><line x1="23" y1="13" x2="23" y2="11"></line></svg>
+                </div>
+            </div>
+
+            <!-- Performance Pill -->
+            <div class="perf-container">
+                <div class="perf-bg" id="p-bg"></div>
+                <div class="perf-opt" onclick="setPerf(0, this)">Eco</div>
+                <div class="perf-opt selected" onclick="setPerf(1, this)">Balanced</div>
+                <div class="perf-opt" onclick="setPerf(2, this)">Beast</div>
+            </div>
+
+            <!-- CLIPBOARD HISTORY -->
+            <div class="clipboard-module">
+                <div class="clip-header">
+                    <span>Clipboard History</span>
+                    <span style="font-size: 11px; opacity: 0.6; cursor: pointer;" onclick="clearHistory()">Clear</span>
+                </div>
+                <div class="clip-list" id="clip-list">
+                    <!-- History items injected by JS -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+
+        // --- CLIPBOARD LOGIC ---
+        const historyData = [
+            { text: 'LionOS Config: Stable', time: '10:42 AM' },
+            { text: 'https://lionos.dev/docs', time: '9:30 AM' },
+            { text: '#d859bf', time: 'Yesterday' }
+        ];
+
+        function renderHistory() {
+            const list = $('clip-list');
+            list.innerHTML = '';
+            historyData.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'clip-item';
+                div.onclick = () => {
+                    navigator.clipboard.writeText(item.text);
+                    msg('Copied: ' + item.text.substring(0, 15) + '...');
+                };
+                div.innerHTML = `
+                    <span class="clip-text">${item.text}</span>
+                    <span class="clip-time">${item.time}</span>
+                `;
+                list.appendChild(div);
+            });
+        }
+        
+        function addToHistory(text) {
+            const now = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            historyData.unshift({ text: text, time: now });
+            renderHistory();
+        }
+
+        function clearHistory() {
+            historyData.length = 0;
+            renderHistory();
+            msg('History Cleared');
+        }
+
+        renderHistory(); // Init
+
+        // --- STANDARD LOGIC ---
+        const updateTime = () => {
+            const now = new Date();
+            $('clk-time').textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            $('clk-date').textContent = now.toLocaleDateString([], {weekday:'short', month:'short', day:'numeric'});
+        };
+        setInterval(updateTime, 1000); updateTime();
+
+        const msg = (txt) => {
+            const t = $('toast');
+            $('toast-text').textContent = txt;
+            t.classList.add('show');
+            setTimeout(()=> t.classList.remove('show'), 2000);
+        };
+
+        function toggle(el) {
+            el.classList.toggle('active');
+            msg(el.getAttribute('title') + (el.classList.contains('active') ? ': On' : ': Off'));
+        }
+
+        function toggleConn(el, name, offName) {
+            if(el.classList.contains('active')) {
+                el.classList.remove('active');
+                el.querySelector('.status').textContent = offName;
+            } else {
+                const ico = el.querySelector('.card-icon');
+                const stat = el.querySelector('.status');
+                const originalSvg = ico.innerHTML;
+                
+                stat.textContent = "Connecting...";
+                ico.innerHTML = '<svg class="spinning" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>';
+                
+                setTimeout(() => {
+                    el.classList.add('active');
+                    stat.textContent = name;
+                    ico.innerHTML = originalSvg;
+                    msg('Connected: ' + name);
+                    addToHistory(`Network: ${name}`); // AUTO-COPY TEST
+                }, 800);
+            }
+        }
+
+        document.querySelectorAll('.slider').forEach(el => {
+            const track = el.querySelector('.slider-track');
+            const valEl = el.querySelector('.sl-val');
+            const type = el.dataset.type;
+            if(type === 'bright') $('dim-layer').style.opacity = 0.15;
+
+            const update = (x) => {
+                const rect = el.getBoundingClientRect();
+                let p = Math.max(0, Math.min(100, ((x - rect.left) / rect.width) * 100));
+                track.style.width = p + '%';
+                valEl.textContent = Math.round(p) + '%';
+                if(p > 0) el.classList.add('active'); else el.classList.remove('active');
+                if(type === 'bright') $('dim-layer').style.opacity = (100 - p) / 100 * 0.9;
+            };
+
+            const drag = (e) => {
+                const x = e.touches ? e.touches[0].clientX : e.clientX;
+                update(x);
+                const move = (ev) => update(ev.touches ? ev.touches[0].clientX : ev.clientX);
+                const end = () => {
+                    document.removeEventListener('mousemove', move);
+                    document.removeEventListener('mouseup', end);
+                    document.removeEventListener('touchmove', move);
+                    document.removeEventListener('touchend', end);
+                };
+                document.addEventListener('mousemove', move);
+                document.addEventListener('mouseup', end);
+                document.addEventListener('touchmove', move);
+                document.addEventListener('touchend', end);
+            };
+            el.addEventListener('mousedown', drag);
+            el.addEventListener('touchstart', drag, {passive:false});
+        });
+
+        function toggleEye(el) {
+            el.classList.toggle('active');
+            const on = el.classList.contains('active');
+            $('warm-layer').style.opacity = on ? 0.3 : 0;
+            msg('Eye Protection: ' + (on ? 'On' : 'Off'));
+        }
+
+        function snap(el) {
+            const f = $('flash-layer');
+            f.style.opacity = 1;
+            setTimeout(() => f.style.opacity = 0, 150);
+            msg('Screenshot Captured');
+            addToHistory('Screenshot_001.png'); // AUTO-COPY
+        }
+
+        function toggleBatt(el) {
+            el.classList.toggle('active');
+            const on = el.classList.contains('active');
+            const icon = $('bt-icon');
+            if(on) {
+                icon.innerHTML = '<rect x="2" y="7" width="16" height="10" rx="1" ry="1" fill="currentColor"></rect><line x1="23" y1="13" x2="23" y2="11"></line>';
+                msg('Low Power Mode');
+            } else {
+                icon.innerHTML = '<rect x="1" y="6" width="18" height="12" rx="2" ry="2"></rect><line x1="23" y1="13" x2="23" y2="11"></line>';
+                msg('Normal Power');
+            }
+        }
+
+        function setPerf(idx, el) {
+            const colors = ['var(--accent-green)', 'var(--accent-blue)', 'var(--accent-red)'];
+            $('p-bg').style.transform = `translateX(${idx*100}%)`;
+            document.documentElement.style.setProperty('--accent-active', colors[idx]);
+            document.querySelectorAll('.perf-opt').forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        let isDark = true;
+        function toggleTheme() {
+            isDark = !isDark;
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            $('theme-icon').innerHTML = isDark 
+                ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>' 
+                : '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+        }
+    </script>
+</body>
+</html>
+
+

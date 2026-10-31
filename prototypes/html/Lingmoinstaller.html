@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lingmo OS Installer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* * 🔳 MONO-GLASS SYSTEM
+         * Strict Black & White aesthetic. PC First.
+         */
+        :root {
+            /* Dark Mode Defaults */
+            --bg-body: #1d101c;
+            --surface-base: #2a1929;
+            --surface-panel: #33202f;
+            --surface-hover: #3a2936;
+            --surface-active: #493544;
+            
+            --border-dim: rgba(227,213,225,0.10);
+            --border-mid: rgba(227,213,225,0.20);
+            --border-bright: rgba(240,147,215,0.85);
+            
+            --text-main: #e3d5e1;
+            --text-muted: #b5a0b2;
+            --text-faint: #6e5a6b;
+            
+            --accent: #d47abc;
+            --accent-inv: #1a0817;
+            
+            --shadow-win: 0 40px 100px rgba(10,3,9,0.8);
+            --glass-blur: blur(20px);
+            
+            --ease-standard: cubic-bezier(0.2, 0.0, 0.2, 1);
+            --ease-entrance: cubic-bezier(0.0, 0.0, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f6f0f6;
+            --surface-base: #fbf8fb;
+            --surface-panel: #e8dce9;
+            --surface-hover: #eee9ef;
+            --surface-active: #e4e0e5;
+            
+            --border-dim: rgba(56,32,52,0.08);
+            --border-mid: rgba(56,32,52,0.2);
+            --border-bright: rgba(94,36,78,0.9);
+            
+            --text-main: #382034;
+            --text-muted: #6c4e67;
+            --text-faint: #c0b0be;
+            
+            --accent: #7e376a;
+            --accent-inv: #ffffff;
+            
+            --shadow-win: 0 40px 80px rgba(94,36,78,0.18);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.4s ease;
+        }
+
+        /* Ambient Texture */
+        .noise-layer {
+            position: fixed; inset: 0; opacity: 0.04; pointer-events: none; z-index: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+        }
+
+        /* Main Window */
+        .installer-frame {
+            position: relative;
+            width: 1100px;
+            height: 750px;
+            background: var(--surface-base);
+            border: 1px solid var(--border-dim);
+            box-shadow: var(--shadow-win);
+            display: flex;
+            z-index: 10;
+            animation: frame-enter 0.6s var(--ease-entrance) forwards;
+            overflow: hidden;
+        }
+
+        @keyframes frame-enter {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Sidebar Navigation */
+        aside.sidebar {
+            width: 280px;
+            background: var(--surface-panel);
+            border-right: 1px solid var(--border-dim);
+            padding: 40px 32px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        aside.sidebar::-webkit-scrollbar { display: none; }
+
+        .brand {
+            font-size: 20px; font-weight: 700; letter-spacing: -0.02em;
+            margin-bottom: 48px; display: flex; align-items: center; gap: 12px;
+            flex-shrink: 0;
+        }
+        .brand-icon { width: 24px; height: 24px; background: var(--text-main); border-radius: 50%; }
+
+        .progress-list { display: flex; flex-direction: column; gap: 4px; }
+        
+        .step-item {
+            display: flex; align-items: center; gap: 16px;
+            padding: 12px 16px; border-radius: 8px;
+            color: var(--text-muted); font-size: 13px; font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .step-item.active {
+            color: var(--text-main);
+            background: var(--surface-active);
+        }
+        
+        .step-item.completed {
+            color: var(--text-main);
+        }
+
+        .step-indicator {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--text-faint);
+            transition: background 0.2s;
+        }
+        .step-item.active .step-indicator { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+        .step-item.completed .step-indicator { background: var(--text-muted); }
+
+        .theme-toggle-container {
+            margin-top: auto;
+            border-top: 1px solid var(--border-dim);
+            padding-top: 24px;
+        }
+        
+        .theme-btn {
+            background: transparent; border: 1px solid var(--border-dim);
+            color: var(--text-muted); padding: 10px; width: 100%;
+            border-radius: 6px; cursor: pointer; font-size: 12px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: all 0.2s;
+        }
+        .theme-btn:hover { border-color: var(--border-mid); color: var(--text-main); }
+
+        /* Main Area */
+        main.main-view {
+            flex: 1;
+            display: flex; flex-direction: column;
+            position: relative;
+        }
+
+        /* Top Bar */
+        .window-bar {
+            height: 48px;
+            display: flex; align-items: center; justify-content: flex-end;
+            padding: 0 24px;
+            border-bottom: 1px solid var(--border-dim);
+            flex-shrink: 0;
+        }
+        .win-btn {
+            width: 12px; height: 12px; border-radius: 50%;
+            border: 1px solid var(--border-mid); margin-left: 8px;
+        }
+
+        /* Content Pages */
+        .content-area {
+            flex: 1;
+            padding: 48px 64px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .page {
+            position: absolute; inset: 48px 64px;
+            opacity: 0; pointer-events: none;
+            transform: translateY(10px);
+            transition: all 0.4s var(--ease-standard);
+            display: flex; flex-direction: column;
+            padding-bottom: 60px;
+        }
+        .page.active {
+            opacity: 1; pointer-events: auto; transform: translateY(0);
+        }
+
+        h1.title { font-size: 32px; font-weight: 300; letter-spacing: -0.03em; margin-bottom: 12px; }
+        p.subtitle { color: var(--text-muted); font-size: 15px; max-width: 500px; line-height: 1.5; margin-bottom: 40px; }
+
+        /* Components: Selection Grid */
+        .grid-select {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+        }
+        
+        .card-select {
+            border: 1px solid var(--border-dim);
+            background: var(--surface-base);
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex; align-items: center; gap: 20px;
+        }
+        .card-select:hover { border-color: var(--text-muted); background: var(--surface-hover); }
+        .card-select.selected {
+            border-color: var(--text-main);
+            background: var(--surface-active);
+            box-shadow: 0 4px 20px rgba(15,6,13,0.1);
+        }
+        
+        .flag-icon { font-size: 24px; filter: grayscale(100%); transition: filter 0.2s; }
+        .card-select.selected .flag-icon { filter: grayscale(0%); }
+        .lang-name { font-size: 15px; font-weight: 600; }
+        .lang-native { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+        /* Components: Form */
+        .form-group { margin-bottom: 24px; }
+        .label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 10px; font-weight: 600; }
+        
+        .input-field {
+            width: 100%;
+            background: var(--surface-base);
+            border: 1px solid var(--border-dim);
+            color: var(--text-main);
+            padding: 16px; font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            border-radius: 0; /* Strict square look */
+        }
+        .input-field:focus { border-color: var(--text-main); }
+        .input-field::placeholder { color: var(--text-faint); }
+
+        /* Components: Disk Viz */
+        .disk-visualizer {
+            border: 1px solid var(--border-dim);
+            height: 60px; display: flex; margin-bottom: 32px;
+            position: relative; background: var(--surface-panel);
+        }
+        .part-block {
+            height: 100%; border-right: 1px solid var(--surface-base);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 600; color: var(--accent-inv);
+            transition: width 0.5s var(--ease-standard);
+            overflow: hidden; white-space: nowrap;
+        }
+        .part-sys { background: var(--text-main); width: 0%; }
+        .part-free { background: transparent; color: var(--text-muted); flex: 1; justify-content: flex-start; padding-left: 16px; }
+
+        .disk-options { display: flex; flex-direction: column; gap: 8px; }
+        .radio-option {
+            display: flex; align-items: center; gap: 12px;
+            padding: 16px; border: 1px solid var(--border-dim);
+            cursor: pointer; transition: background 0.2s;
+        }
+        .radio-option:hover { background: var(--surface-hover); }
+        .radio-option.selected { border-color: var(--text-main); background: var(--surface-active); }
+        .radio-circle {
+            width: 16px; height: 16px; border-radius: 50%;
+            border: 1px solid var(--text-muted);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .radio-option.selected .radio-circle::after {
+            content: ''; width: 8px; height: 8px; background: var(--text-main); border-radius: 50%;
+        }
+
+        /* EULA Box */
+        .eula-container {
+            height: 300px; overflow-y: scroll;
+            background: var(--surface-panel);
+            border: 1px solid var(--border-dim);
+            padding: 24px; font-size: 13px; color: var(--text-muted); line-height: 1.6;
+            margin-bottom: 24px; font-family: 'JetBrains Mono', monospace;
+        }
+        .eula-container::-webkit-scrollbar { width: 6px; }
+        .eula-container::-webkit-scrollbar-thumb { background: var(--border-mid); }
+        
+        .checkbox-row {
+            display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none;
+        }
+        .checkbox-box {
+            width: 20px; height: 20px; border: 1px solid var(--border-bright);
+            display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .checkbox-row.active .checkbox-box { background: var(--text-main); border-color: var(--text-main); color: var(--accent-inv); }
+        .checkbox-box svg { width: 14px; height: 14px; opacity: 0; transform: scale(0.5); transition: all 0.2s; }
+        .checkbox-row.active .checkbox-box svg { opacity: 1; transform: scale(1); }
+        .checkbox-label { font-size: 14px; font-weight: 500; }
+
+        /* Permission Toggles */
+        .perm-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px; border: 1px solid var(--border-dim); margin-bottom: 12px;
+            background: var(--surface-base); transition: background 0.2s;
+        }
+        .perm-item:hover { background: var(--surface-hover); }
+        .perm-info h4 { font-size: 14px; margin-bottom: 4px; font-weight: 600; }
+        .perm-info p { font-size: 12px; color: var(--text-muted); }
+
+        .toggle-switch {
+            width: 44px; height: 24px; border-radius: 12px;
+            background: var(--border-mid); position: relative; cursor: pointer;
+            transition: background 0.3s;
+        }
+        .toggle-switch::after {
+            content:''; position: absolute; left: 2px; top: 2px; width: 20px; height: 20px;
+            background: var(--text-main); border-radius: 50%; transition: transform 0.3s;
+        }
+        .toggle-switch.active { background: var(--text-main); }
+        .toggle-switch.active::after { transform: translateX(20px); background: var(--accent-inv); }
+
+        /* Summary List */
+        .summary-list { display: flex; flex-direction: column; gap: 1px; background: var(--border-dim); border: 1px solid var(--border-dim); }
+        .summary-row {
+            display: flex; justify-content: space-between; padding: 16px 24px;
+            background: var(--surface-base);
+        }
+        .sum-label { font-size: 13px; color: var(--text-muted); }
+        .sum-val { font-size: 13px; font-weight: 600; }
+
+        /* Footer Actions */
+        .footer-bar {
+            height: 80px;
+            border-top: 1px solid var(--border-dim);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 64px;
+            background: var(--surface-base);
+            flex-shrink: 0;
+        }
+
+        .btn {
+            height: 44px; padding: 0 32px;
+            font-size: 13px; font-weight: 600; letter-spacing: 0.05em;
+            cursor: pointer; transition: all 0.2s;
+            border: 1px solid transparent;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        .btn-text { background: transparent; color: var(--text-muted); }
+        .btn-text:hover { color: var(--text-main); }
+        
+        .btn-primary {
+            background: var(--text-main); color: var(--accent-inv);
+            border: 1px solid var(--text-main);
+        }
+        .btn-primary:hover {
+            background: transparent; color: var(--text-main);
+        }
+        .btn-primary:disabled {
+            background: var(--surface-active); color: var(--text-muted); border-color: transparent;
+            cursor: not-allowed;
+        }
+
+        /* Terminal Logs */
+        .terminal-box {
+            background: #0f060d;
+            color: #b4a0b0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            padding: 24px;
+            height: 250px;
+            overflow-y: auto;
+            border: 1px solid var(--border-dim);
+            margin-bottom: 24px;
+        }
+        .log-entry { margin-bottom: 4px; display: flex; gap: 12px; }
+        .log-ts { color: #684260; }
+        .log-txt { color: #e1d9df; }
+
+        .progress-rail {
+            height: 2px; background: var(--surface-active); width: 100%;
+            position: relative; overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%; background: var(--text-main); width: 0%;
+            transition: width 0.2s linear;
+        }
+
+    </style>
+<style id="malva-overrides">body{background:#1d101c url(../../brand/wallpapers/malva-dusk-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f6f0f6 url(../../brand/wallpapers/malva-dawn-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
+<body>
+
+    <div class="noise-layer"></div>
+
+    <div class="installer-frame">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon"></div>
+                LINGMO OS
+            </div>
+
+            <div class="progress-list">
+                <div class="step-item active" id="nav-0">
+                    <div class="step-indicator"></div>
+                    <span>Language</span>
+                </div>
+                <div class="step-item" id="nav-1">
+                    <div class="step-indicator"></div>
+                    <span>Keyboard</span>
+                </div>
+                <div class="step-item" id="nav-2">
+                    <div class="step-indicator"></div>
+                    <span>Agreement</span>
+                </div>
+                <div class="step-item" id="nav-3">
+                    <div class="step-indicator"></div>
+                    <span>Target</span>
+                </div>
+                <div class="step-item" id="nav-4">
+                    <div class="step-indicator"></div>
+                    <span>User Profile</span>
+                </div>
+                <div class="step-item" id="nav-5">
+                    <div class="step-indicator"></div>
+                    <span>Permissions</span>
+                </div>
+                <div class="step-item" id="nav-6">
+                    <div class="step-indicator"></div>
+                    <span>Summary</span>
+                </div>
+                <div class="step-item" id="nav-7">
+                    <div class="step-indicator"></div>
+                    <span>Install</span>
+                </div>
+                <div class="step-item" id="nav-8">
+                    <div class="step-indicator"></div>
+                    <span>Complete</span>
+                </div>
+            </div>
+
+            <div class="theme-toggle-container">
+                <button class="theme-btn" id="theme-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <span>Toggle Theme</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main View -->
+        <main class="main-view">
+            <div class="window-bar">
+                <div class="win-btn"></div>
+                <div class="win-btn"></div>
+                <div class="win-btn" style="background:var(--text-faint); border-color:transparent;"></div>
+            </div>
+
+            <div class="content-area">
+                
+                <!-- PAGE 0: LANGUAGE -->
+                <div class="page active" id="page-0">
+                    <h1 class="title">Select Language</h1>
+                    <p class="subtitle">Welcome to Lingmo OS. Please choose your preferred language for the installation process and system defaults.</p>
+                    
+                    <div class="grid-select">
+                        <div class="card-select selected" onclick="selectCard(this, 'lang', 'English')">
+                            <div class="flag-icon">🇺🇸</div>
+                            <div>
+                                <div class="lang-name">English</div>
+                                <div class="lang-native">United States</div>
+                            </div>
+                        </div>
+                        <div class="card-select" onclick="selectCard(this, 'lang', 'Japanese')">
+                            <div class="flag-icon">🇯🇵</div>
+                            <div>
+                                <div class="lang-name">Japanese</div>
+                                <div class="lang-native">日本語</div>
+                            </div>
+                        </div>
+                        <div class="card-select" onclick="selectCard(this, 'lang', 'German')">
+                            <div class="flag-icon">🇩🇪</div>
+                            <div>
+                                <div class="lang-name">German</div>
+                                <div class="lang-native">Deutsch</div>
+                            </div>
+                        </div>
+                        <div class="card-select" onclick="selectCard(this, 'lang', 'Spanish')">
+                            <div class="flag-icon">🇪🇸</div>
+                            <div>
+                                <div class="lang-name">Spanish</div>
+                                <div class="lang-native">Español</div>
+                            </div>
+                        </div>
+                        <div class="card-select" onclick="selectCard(this, 'lang', 'French')">
+                            <div class="flag-icon">🇫🇷</div>
+                            <div>
+                                <div class="lang-name">French</div>
+                                <div class="lang-native">Français</div>
+                            </div>
+                        </div>
+                        <div class="card-select" onclick="selectCard(this, 'lang', 'Chinese')">
+                            <div class="flag-icon">🇨🇳</div>
+                            <div>
+                                <div class="lang-name">Chinese</div>
+                                <div class="lang-native">中文</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 1: KEYBOARD -->
+                <div class="page" id="page-1">
+                    <h1 class="title">Keyboard Layout</h1>
+                    <p class="subtitle">Choose your keyboard layout. You can change this later in system settings.</p>
+                    
+                    <div class="disk-options">
+                        <div class="radio-option selected" onclick="selectRadio(this, 'kb', 'US QWERTY')">
+                            <div class="radio-circle"></div>
+                            <div>
+                                <div style="font-size:14px; font-weight:600;">English (US)</div>
+                                <div style="font-size:12px; color:var(--text-muted);">QWERTY - Default</div>
+                            </div>
+                        </div>
+                        <div class="radio-option" onclick="selectRadio(this, 'kb', 'UK QWERTY')">
+                            <div class="radio-circle"></div>
+                            <div>
+                                <div style="font-size:14px; font-weight:600;">English (UK)</div>
+                                <div style="font-size:12px; color:var(--text-muted);">Extended QWERTY</div>
+                            </div>
+                        </div>
+                        <div class="radio-option" onclick="selectRadio(this, 'kb', 'DE QWERTZ')">
+                            <div class="radio-circle"></div>
+                            <div>
+                                <div style="font-size:14px; font-weight:600;">German</div>
+                                <div style="font-size:12px; color:var(--text-muted);">QWERTZ</div>
+                            </div>
+                        </div>
+                        <div class="radio-option" onclick="selectRadio(this, 'kb', 'FR AZERTY')">
+                            <div class="radio-circle"></div>
+                            <div>
+                                <div style="font-size:14px; font-weight:600;">French</div>
+                                <div style="font-size:12px; color:var(--text-muted);">AZERTY</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 2: AGREEMENT (PROMISE) -->
+                <div class="page" id="page-2">
+                    <h1 class="title">License Agreement</h1>
+                    <p class="subtitle">Please read and accept the terms and conditions to continue.</p>
+
+                    <div class="eula-container">
+                        LINGMO OS END USER LICENSE AGREEMENT
+                        <br><br>
+                        1. ACCEPTANCE<br>
+                        By installing this software, you agree to be bound by the terms of this agreement. If you do not agree to the terms of this agreement, do not install or use the software.
+                        <br><br>
+                        2. GRANT OF LICENSE<br>
+                        Lingmo OS grants you a revocable, non-exclusive, non-transferable, limited license to download, install and use the software strictly in accordance with the terms of this Agreement.
+                        <br><br>
+                        3. RESTRICTIONS<br>
+                        You agree not to, and you will not permit others to: license, sell, rent, lease, assign, distribute, transmit, host, outsource, disclose or otherwise commercially exploit the software.
+                        <br><br>
+                        4. MODIFICATIONS<br>
+                        Lingmo OS reserves the right to modify, suspend or discontinue, temporarily or permanently, the software or any service to which it connects, with or without notice and without liability to you.
+                        <br><br>
+                        5. TERM AND TERMINATION<br>
+                        This Agreement shall remain in effect until terminated by you or Lingmo OS. Lingmo OS may, in its sole discretion, at any time and for any or no reason, suspend or terminate this Agreement with or without prior notice.
+                        <br><br>
+                        6. PRIVACY PROMISE<br>
+                        We promise to treat your data with respect. We collect minimal telemetry data to improve stability, which can be disabled in the next step. Your personal files remain local.
+                        <br><br>
+                        7. DISCLAIMER<br>
+                        The software is provided "AS IS" without warranty of any kind.
+                    </div>
+
+                    <div class="checkbox-row" onclick="toggleEula(this)">
+                        <div class="checkbox-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                        <div class="checkbox-label">I have read and agree to the Terms of Service</div>
+                    </div>
+                </div>
+
+                <!-- PAGE 3: PARTITION -->
+                <div class="page" id="page-3">
+                    <h1 class="title">Installation Target</h1>
+                    <p class="subtitle">Select a storage device. Lingmo OS requires at least 40GB of free space. Warning: Formatting will erase all data.</p>
+
+                    <div class="form-group">
+                        <label class="label">Target Drive</label>
+                        <select class="input-field" style="cursor:pointer;" id="drive-select">
+                            <option value="NVMe 1TB">NVMe 1TB - Samsung SSD 980</option>
+                            <option value="SATA 512GB">SATA 512GB - Crucial MX500</option>
+                        </select>
+                    </div>
+
+                    <div class="disk-visualizer">
+                        <div class="part-block part-sys" id="disk-fill">LINGMO</div>
+                        <div class="part-block part-free">Free Space (1000 GB)</div>
+                    </div>
+
+                    <div class="disk-options">
+                        <div class="radio-option selected" onclick="selectDiskOption(this, 'full')">
+                            <div class="radio-circle"></div>
+                            <div>
+                                <div style="font-size:14px; font-weight:600;">Erase Disk & Install</div>
+                                <div style="font-size:12px; color:var(--text-muted);">Recommended for new users</div>
+                            </div>
+                        </div>
+                        <div class="radio-option" onclick="selectDiskOption(this, 'manual')">
+                            <div class="radio-circle"></div>
+                            <div>
+                                <div style="font-size:14px; font-weight:600;">Manual Partitioning</div>
+                                <div style="font-size:12px; color:var(--text-muted);">For advanced users only</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 4: USER -->
+                <div class="page" id="page-4">
+                    <h1 class="title">Create User</h1>
+                    <p class="subtitle">Set up your local administrator account and device hostname.</p>
+
+                    <div class="form-group">
+                        <label class="label">Full Name</label>
+                        <input type="text" class="input-field" placeholder="ex. John Doe" id="inp-name" onkeyup="checkForm()">
+                    </div>
+
+                    <div class="grid-select" style="margin-bottom:24px;">
+                        <div>
+                            <label class="label">Username</label>
+                            <input type="text" class="input-field" placeholder="john" id="inp-user" onkeyup="checkForm()">
+                        </div>
+                        <div>
+                            <label class="label">Hostname</label>
+                            <input type="text" class="input-field" placeholder="lingmo-pc" value="lingmo-pc">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Password</label>
+                        <input type="password" class="input-field" placeholder="••••••••" id="inp-pass" onkeyup="checkForm()">
+                    </div>
+                </div>
+
+                <!-- PAGE 5: PERMISSIONS -->
+                <div class="page" id="page-5">
+                    <h1 class="title">Privacy Settings</h1>
+                    <p class="subtitle">Choose your privacy settings. These can be changed later in the Control Center.</p>
+
+                    <div class="perm-item">
+                        <div class="perm-info">
+                            <h4>Location Services</h4>
+                            <p>Allow apps to access your location for weather and maps.</p>
+                        </div>
+                        <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                    </div>
+
+                    <div class="perm-item">
+                        <div class="perm-info">
+                            <h4>Diagnostic Data</h4>
+                            <p>Send optional diagnostic data to help improve Lingmo OS.</p>
+                        </div>
+                        <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                    </div>
+
+                    <div class="perm-item">
+                        <div class="perm-info">
+                            <h4>Tailored Experiences</h4>
+                            <p>Let apps use advertising ID for personalized experiences.</p>
+                        </div>
+                        <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                </div>
+
+                <!-- PAGE 6: SUMMARY -->
+                <div class="page" id="page-6">
+                    <h1 class="title">Review Settings</h1>
+                    <p class="subtitle">Please review your installation choices. Clicking "Install Now" will modify your disk.</p>
+                    
+                    <div class="summary-list">
+                        <div class="summary-row">
+                            <span class="sum-label">Language</span>
+                            <span class="sum-val" id="sum-lang">English</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="sum-label">Keyboard</span>
+                            <span class="sum-val" id="sum-kb">US QWERTY</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="sum-label">Target Drive</span>
+                            <span class="sum-val" id="sum-drive">NVMe 1TB</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="sum-label">Install Type</span>
+                            <span class="sum-val" id="sum-type">Erase Disk</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="sum-label">User Account</span>
+                            <span class="sum-val" id="sum-user">Administrator</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 7: INSTALLING -->
+                <div class="page" id="page-7">
+                    <h1 class="title">Installing...</h1>
+                    <p class="subtitle">Please wait while Lingmo OS is installed on your system. Do not turn off your computer.</p>
+
+                    <div class="terminal-box" id="term-log">
+                        <!-- JS Log -->
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; font-weight:600;">
+                        <span id="progress-status">Initializing...</span>
+                        <span id="progress-perc">0%</span>
+                    </div>
+                    <div class="progress-rail">
+                        <div class="progress-bar" id="progress-bar"></div>
+                    </div>
+                </div>
+
+                <!-- PAGE 8: COMPLETE -->
+                <div class="page" id="page-8" style="align-items:center; justify-content:center; text-align:center;">
+                    <div style="width:80px; height:80px; background:var(--text-main); color:var(--accent-inv); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:32px;">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <h1 class="title">Installation Complete</h1>
+                    <p class="subtitle" style="margin-bottom:0;">Lingmo OS is ready to use.<br>Please remove the installation media and restart.</p>
+                </div>
+
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="footer-bar" id="footer">
+                <button class="btn btn-text" id="btn-back" onclick="nav(-1)" disabled>BACK</button>
+                <button class="btn btn-primary" id="btn-next" onclick="nav(1)">NEXT STEP</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // State
+        let step = 0;
+        const totalSteps = 8;
+        
+        let installData = {
+            lang: 'English',
+            kb: 'US QWERTY',
+            drive: 'NVMe 1TB',
+            method: 'Erase Disk',
+            user: 'User'
+        };
+
+        // Elements
+        const btnNext = document.getElementById('btn-next');
+        const btnBack = document.getElementById('btn-back');
+        const footer = document.getElementById('footer');
+        const termLog = document.getElementById('term-log');
+        const progressBar = document.getElementById('progress-bar');
+        const progressPerc = document.getElementById('progress-perc');
+        const progressStatus = document.getElementById('progress-status');
+        const diskFill = document.getElementById('disk-fill');
+
+        // Nav Logic
+        function nav(dir) {
+            const nextStep = step + dir;
+            if(nextStep < 0 || nextStep > totalSteps) return;
+
+            // Leave current
+            document.getElementById(`page-${step}`).classList.remove('active');
+            document.getElementById(`nav-${step}`).classList.remove('active');
+            if(dir > 0) document.getElementById(`nav-${step}`).classList.add('completed');
+
+            step = nextStep;
+
+            // Enter next
+            document.getElementById(`page-${step}`).classList.add('active');
+            document.getElementById(`nav-${step}`).classList.add('active');
+
+            // Button Logic Updates
+            btnBack.disabled = step === 0;
+            btnNext.innerText = 'NEXT STEP';
+            
+            // Logic per step
+            if(step === 2) { // EULA
+                const agreed = document.querySelector('.checkbox-row.active');
+                btnNext.disabled = !agreed;
+            } else if (step === 3) { // Partition
+                setTimeout(() => { diskFill.style.width = '100%'; }, 200);
+                btnNext.disabled = false;
+            } else if (step === 4) { // User
+                checkForm(); 
+            } else if (step === 6) { // Summary
+                populateSummary();
+                btnNext.innerText = 'INSTALL NOW';
+                btnNext.disabled = false;
+            } else if (step === 7) { // Install
+                footer.style.display = 'none'; // Hide buttons
+                startInstall();
+            } else if (step === 8) { // Finish
+                footer.style.display = 'flex';
+                btnBack.style.display = 'none';
+                btnNext.innerText = 'RESTART SYSTEM';
+                btnNext.onclick = () => window.location.reload();
+            } else {
+                btnNext.disabled = false;
+            }
+        }
+
+        // Selection Handlers
+        function selectCard(el, key, val) {
+            el.parentNode.querySelectorAll('.card-select').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            installData[key] = val;
+        }
+
+        function selectRadio(el, key, val) {
+            el.parentNode.querySelectorAll('.radio-option').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            installData[key] = val;
+        }
+
+        function toggleEula(el) {
+            el.classList.toggle('active');
+            btnNext.disabled = !el.classList.contains('active');
+        }
+
+        function selectDiskOption(el, type) {
+            el.parentNode.querySelectorAll('.radio-option').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            
+            if(type === 'full') {
+                diskFill.style.width = '100%';
+                diskFill.innerText = 'LINGMO';
+                installData.method = 'Erase Disk';
+            } else {
+                diskFill.style.width = '50%';
+                diskFill.innerText = 'Manual';
+                installData.method = 'Manual Partition';
+            }
+        }
+
+        function checkForm() {
+            const name = document.getElementById('inp-name').value;
+            const user = document.getElementById('inp-user').value;
+            const pass = document.getElementById('inp-pass').value;
+            
+            installData.user = user || 'Administrator';
+            
+            if(step === 4) {
+                if(name && user && pass) btnNext.disabled = false;
+                else btnNext.disabled = true;
+            }
+        }
+        
+        function populateSummary() {
+            document.getElementById('sum-lang').innerText = installData.lang;
+            document.getElementById('sum-kb').innerText = installData.kb;
+            document.getElementById('sum-drive').innerText = document.getElementById('drive-select').value;
+            document.getElementById('sum-type').innerText = installData.method;
+            document.getElementById('sum-user').innerText = installData.user;
+        }
+
+        // Theme Toggle
+        let isDark = true;
+        const themeBtn = document.getElementById('theme-btn');
+        themeBtn.addEventListener('click', () => {
+            isDark = !isDark;
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            themeBtn.querySelector('span').innerText = isDark ? 'Light Mode' : 'Dark Mode';
+        });
+
+        // Installation Simulation
+        function startInstall() {
+            const logs = [
+                "Verifying installation integrity...",
+                "Mounting /dev/nvme0n1p1...",
+                "Formatting partition ext4...",
+                "Unpacking filesystem (squashfs)...",
+                "Copying core libraries...",
+                "Configuring kernel 6.5.0-generic...",
+                "Setting up network defaults...",
+                "Generating locales...",
+                "Configuring keyboard layout...",
+                "Creating user directories...",
+                "Installing bootloader GRUB...",
+                "Finalizing setup..."
+            ];
+            
+            let p = 0;
+            let logIndex = 0;
+            
+            function addLog(msg) {
+                const div = document.createElement('div');
+                div.className = 'log-entry';
+                const time = new Date().toLocaleTimeString('en-GB');
+                div.innerHTML = `<span class="log-ts">[${time}]</span><span class="log-txt">${msg}</span>`;
+                termLog.appendChild(div);
+                termLog.scrollTop = termLog.scrollHeight;
+            }
+
+            const interval = setInterval(() => {
+                p += Math.random() * 0.8; // Slower install
+                if(p >= 100) p = 100;
+                
+                progressBar.style.width = `${p}%`;
+                progressPerc.innerText = `${Math.floor(p)}%`;
+                
+                if(p > (logIndex + 1) * 8 && logIndex < logs.length) {
+                    addLog(logs[logIndex]);
+                    progressStatus.innerText = logs[logIndex];
+                    logIndex++;
+                }
+
+                if(p === 100) {
+                    clearInterval(interval);
+                    progressStatus.innerText = "Done.";
+                    setTimeout(() => nav(1), 1000);
+                }
+            }, 50);
+        }
+
+    </script>
+</body>
+</html>
+
+

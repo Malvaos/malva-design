@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Leonux OS - Documents</title>
+
+    <style>
+        /**
+         * LEONUX DESIGN SYSTEM - DOCUMENTS SHOWCASE
+         */
+        :root {
+            --bg-body: #1d101c;
+            --surface-base: rgba(42,25,41,0.84);
+            --surface-panel: rgba(58,38,57,0.55);
+            --surface-hover: rgba(227,213,225,0.08);
+            --surface-active: rgba(227,213,225,0.13);
+            --border-glass: rgba(227,213,225,0.09);
+            --border-mid: rgba(227,213,225,0.17);
+            
+            --text-main: #e3d5e1;
+            --text-muted: #b5a0b2;
+            
+            --accent: #d47abc;
+            --accent-glow: rgba(212,122,188,0.35);
+            --danger: #ff8a94;
+            --success: #7bc74d;
+            --warning: #f2b04a;
+            --purple: #eaa4dc;
+            --orange: #ecbe78;
+            
+            --shadow-win: 0 40px 100px -20px rgba(10,3,9,0.95);
+            --glass-blur: blur(40px) saturate(180%);
+            --radius-xl: clamp(16px, 2vh, 24px);
+            --radius-l: clamp(8px, 1vh, 12px);
+            --radius-pill: 9999px;
+            --ease-leonux: cubic-bezier(0.2, 1, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(248,241,247,0.1); border-radius: 4px; border: 2px solid transparent; background-clip: padding-box; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(248,241,247,0.2); border: 2px solid transparent; background-clip: padding-box; }
+
+        .noise-layer {
+            position: fixed; inset: 0; opacity: 0.03; pointer-events: none; z-index: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        .ambient-glow {
+            position: absolute; width: 80vw; height: 80vh; border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            filter: blur(140px); opacity: 0.4; z-index: 1; pointer-events: none; transition: all 1s ease;
+        }
+
+        /* App Window */
+        .app-frame {
+            position: relative; width: 95vw; max-width: 1280px; height: 85vh; max-height: 850px;
+            background: var(--surface-base); backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-glass); border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-win); display: flex; flex-direction: column;
+            z-index: 10; overflow: hidden; animation: window-open 0.6s var(--ease-leonux) forwards;
+        }
+
+        @keyframes window-open {
+            from { opacity: 0; transform: scale(0.97) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Header Navigation */
+        .header-nav {
+            display: flex; align-items: center; padding: 14px 20px;
+            border-bottom: 1px solid var(--border-glass); background: rgba(15,6,13,0.2);
+            justify-content: space-between; gap: 16px;
+        }
+
+        .window-controls { display: flex; gap: 8px; }
+        .win-btn { width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer; }
+        .win-close { background: #f75e73; }
+        .win-min { background: #e5a648; }
+        .win-max { background: #6ca34d; }
+
+        .app-title { font-size: 13px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; margin-left: 12px; }
+
+        /* Toolbar / Search */
+        .toolbar { display: flex; align-items: center; gap: 16px; flex: 1; justify-content: flex-end; }
+        
+        .search-box { position: relative; width: 280px; }
+        .search-input {
+            width: 100%; background: rgba(15,6,13,0.25); border: 1px solid var(--border-glass);
+            border-radius: var(--radius-pill); padding: 8px 16px 8px 36px; color: var(--text-main);
+            font-size: 13px; outline: none; transition: all 0.2s ease;
+        }
+        .search-input:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(223,118,202,0.15); }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-muted); pointer-events: none; }
+
+        .view-toggles { display: flex; background: rgba(15,6,13,0.2); border-radius: var(--radius-pill); border: 1px solid var(--border-glass); padding: 2px; }
+        .view-btn {
+            background: transparent; border: none; color: var(--text-muted); width: 32px; height: 28px;
+            border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;
+        }
+        .view-btn:hover { color: var(--text-main); }
+        .view-btn.active { background: rgba(248,241,247,0.1); color: var(--text-main); }
+
+        .btn-primary {
+            background: var(--accent); color: var(--bg-body); font-weight: 600; font-size: 13px;
+            padding: 8px 16px; border-radius: var(--radius-pill); border: none; cursor: pointer;
+            box-shadow: 0 4px 12px var(--accent-glow); transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+        }
+        .btn-primary:hover { background: #e387d1; box-shadow: 0 6px 16px var(--accent-glow); transform: translateY(-1px); }
+
+        /* Workspace Layout */
+        .workspace { flex: 1; display: flex; overflow: hidden; position: relative; }
+
+        /* Sidebar Collections */
+        .sidebar {
+            width: 240px; border-right: 1px solid var(--border-glass); display: flex; flex-direction: column;
+            background: rgba(15,6,13,0.15); overflow-y: auto; flex-shrink: 0; padding: 16px 12px; gap: 24px;
+        }
+
+        .nav-group { display: flex; flex-direction: column; gap: 4px; }
+        .nav-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; padding: 0 12px 8px; }
+        
+        .nav-item {
+            display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: var(--radius-l);
+            cursor: pointer; transition: all 0.2s ease; font-size: 13px; color: var(--text-muted); font-weight: 500;
+        }
+        .nav-item:hover { background: var(--surface-hover); color: var(--text-main); }
+        .nav-item.active { background: rgba(223,118,202,0.15); color: var(--accent); }
+        .nav-item svg { width: 16px; height: 16px; opacity: 0.8; }
+        .nav-item.active svg { opacity: 1; }
+        .badge { margin-left: auto; background: rgba(15,6,13,0.3); padding: 2px 8px; border-radius: var(--radius-pill); font-size: 10px; font-weight: 700; border: 1px solid var(--border-glass); }
+
+        /* Main Content Area */
+        .content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: transparent; }
+        
+        .content-header { padding: 24px 32px 0; flex-shrink: 0; display: flex; justify-content: space-between; align-items: flex-end; }
+        .content-title { font-size: 24px; font-weight: 600; color: var(--text-main); }
+        .content-meta { font-size: 13px; color: var(--text-muted); }
+
+        .documents-container {
+            flex: 1; padding: 24px 32px; overflow-y: auto;
+            /* Layout variables updated via JS */
+        }
+
+        /* GRID VIEW (Default) */
+        .documents-container.view-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 24px; align-content: start;
+        }
+
+        .doc-card {
+            display: flex; flex-direction: column; gap: 12px; cursor: pointer; transition: all 0.3s var(--ease-leonux);
+            group: card; position: relative;
+        }
+        .doc-card:hover { transform: translateY(-4px); }
+
+        .doc-cover {
+            aspect-ratio: 1 / 1.414; /* A4 Ratio */
+            border-radius: var(--radius-l); border: 1px solid var(--border-glass);
+            background: var(--surface-panel); position: relative; overflow: hidden;
+            box-shadow: 0 8px 24px rgba(15,6,13,0.4); display: flex; flex-direction: column;
+            transition: all 0.3s ease;
+        }
+        .doc-card:hover .doc-cover {
+            border-color: var(--border-mid); box-shadow: 0 12px 32px rgba(15,6,13,0.5);
+        }
+
+        /* Fake document contents styling based on type */
+        .cover-header { height: 12px; background: rgba(248,241,247,0.05); margin-bottom: 8px; }
+        .cover-body { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+        .line { height: 4px; background: rgba(248,241,247,0.08); border-radius: 2px; }
+        .line.w-full { width: 100%; } .line.w-3-4 { width: 75%; } .line.w-1-2 { width: 50%; }
+        
+        .doc-card[data-type="pdf"] .cover-header { background: rgba(242,130,145,0.4); }
+        .doc-card[data-type="word"] .cover-header { background: rgba(223,118,202,0.4); }
+        .doc-card[data-type="sheet"] .cover-header { background: rgba(146,192,120,0.4); }
+        .doc-card[data-type="slide"] .doc-cover { aspect-ratio: 16 / 9; justify-content: center; align-items: center; }
+        .doc-card[data-type="slide"] .cover-header { display: none; }
+        .doc-card[data-type="slide"] .cover-body { background: radial-gradient(circle, rgba(237,193,128,0.2), transparent); align-items: center; justify-content: center; }
+
+        .doc-type-icon {
+            position: absolute; bottom: 8px; right: 8px; width: 28px; height: 28px;
+            border-radius: 8px; background: rgba(15,6,13,0.6); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-glass);
+            box-shadow: 0 4px 12px rgba(15,6,13,0.3);
+        }
+        .doc-type-icon svg { width: 14px; height: 14px; }
+        
+        .doc-card[data-type="pdf"] .doc-type-icon { color: var(--danger); }
+        .doc-card[data-type="word"] .doc-type-icon { color: var(--accent); }
+        .doc-card[data-type="sheet"] .doc-type-icon { color: var(--success); }
+        .doc-card[data-type="slide"] .doc-type-icon { color: var(--warning); }
+
+        .doc-fav {
+            position: absolute; top: 8px; right: 8px; color: var(--warning);
+            opacity: 0; transition: 0.2s; filter: drop-shadow(0 2px 4px rgba(15,6,13,0.5));
+        }
+        .doc-card.is-fav .doc-fav { opacity: 1; }
+        .doc-card:hover .doc-fav { opacity: 1; }
+
+        .doc-meta { display: flex; flex-direction: column; gap: 4px; padding: 0 4px; }
+        .doc-title { font-size: 13px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .doc-date { font-size: 11px; color: var(--text-muted); }
+
+        /* LIST VIEW */
+        .documents-container.view-list {
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .documents-container.view-list .doc-card {
+            flex-direction: row; align-items: center; padding: 12px 16px; background: rgba(248,241,247,0.02);
+            border: 1px solid var(--border-glass); border-radius: var(--radius-l); gap: 16px;
+        }
+        .documents-container.view-list .doc-card:hover { background: var(--surface-hover); transform: translateY(0); border-color: var(--border-mid); }
+        .documents-container.view-list .doc-cover { width: 36px; height: 36px; aspect-ratio: auto; border-radius: 6px; box-shadow: none; flex-shrink: 0; }
+        .documents-container.view-list .cover-body { display: none; }
+        .documents-container.view-list .cover-header { height: 100%; margin: 0; border-radius: 4px; }
+        .documents-container.view-list .doc-type-icon { bottom: 4px; right: 4px; width: 20px; height: 20px; background: transparent; border: none; box-shadow: none; }
+        .documents-container.view-list .doc-type-icon svg { width: 18px; height: 18px; }
+        .documents-container.view-list .doc-meta { flex: 1; flex-direction: row; justify-content: space-between; align-items: center; padding: 0; }
+        .documents-container.view-list .doc-date { font-family: monospace; }
+        .documents-container.view-list .doc-fav { position: relative; top: 0; right: 0; width: 16px; height: 16px; margin-left: 16px; }
+
+        /* Document Preview Modal */
+        .modal-overlay {
+            position: absolute; inset: 0; background: rgba(15,6,13,0.6); backdrop-filter: blur(10px);
+            z-index: 100; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: all 0.4s var(--ease-leonux);
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+        .preview-card {
+            width: 90%; max-width: 800px; height: 85%; background: var(--bg-body);
+            border: 1px solid var(--border-glass); border-radius: var(--radius-xl);
+            box-shadow: 0 40px 100px rgba(15,6,13,0.8); display: flex; flex-direction: column;
+            transform: scale(0.95) translateY(20px); transition: all 0.4s var(--ease-leonux);
+            overflow: hidden;
+        }
+        .modal-overlay.active .preview-card { transform: scale(1) translateY(0); }
+
+        .preview-header {
+            padding: 16px 24px; border-bottom: 1px solid var(--border-glass); background: rgba(248,241,247,0.02);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .preview-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 12px; }
+        .preview-actions { display: flex; gap: 8px; }
+        .action-btn { background: rgba(248,241,247,0.05); border: 1px solid var(--border-glass); color: var(--text-main); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+        .action-btn:hover { background: var(--surface-hover); border-color: var(--border-mid); }
+        .action-btn.close:hover { background: rgba(242,130,145,0.15); color: var(--danger); border-color: rgba(242,130,145,0.3); }
+
+        .preview-content {
+            flex: 1; background: #eaa4dc; display: flex; justify-content: center; padding: 40px; overflow-y: auto;
+        }
+        .preview-page {
+            width: 100%; max-width: 600px; background: #f8f1f7; box-shadow: 0 10px 30px rgba(15,6,13,0.2);
+            min-height: 800px; border-radius: 4px; padding: 40px; color: #2d0b26;
+        }
+        .preview-page h1 { font-size: 24px; margin-bottom: 16px; border-bottom: 2px solid #eaa4dc; padding-bottom: 8px; }
+        .preview-page p { font-size: 12px; line-height: 1.6; color: #8d2177; margin-bottom: 12px; }
+        .preview-page .skeleton { background: #eaa4dc; height: 12px; margin-bottom: 8px; border-radius: 2px; }
+        .preview-page .skeleton.short { width: 60%; }
+
+        /* Empty State */
+        .empty-state {
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; gap: 16px; color: var(--text-muted); opacity: 0.7;
+        }
+        .empty-state.active { display: flex; }
+        .empty-icon { width: 64px; height: 64px; color: var(--border-mid); }
+
+        @media (max-width: 768px) {
+            .app-frame { height: 100dvh; border-radius: 0; border: none; width: 100vw; }
+            .sidebar { position: absolute; left: 0; top: 60px; bottom: 0; z-index: 20; background: var(--surface-base); transform: translateX(-100%); transition: 0.3s; }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .search-box { width: auto; flex: 1; }
+            .app-title { display: none; }
+        }
+    </style>
+<style id="malva-overrides">.doc-fav{width:18px;height:18px}.doc-card .doc-fav{pointer-events:auto}body{background:#1d101c url(../../brand/wallpapers/malva-dusk-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f6f0f6 url(../../brand/wallpapers/malva-dawn-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
+<body>
+
+    <div class="noise-layer"></div>
+    <div class="ambient-glow" id="ambient-glow"></div>
+
+    <!-- Inline SVG definitions -->
+    <svg style="display:none;" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></symbol>
+        <symbol id="icon-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></symbol>
+        <symbol id="icon-star-filled" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></symbol>
+        <symbol id="icon-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></symbol>
+        <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></symbol>
+        <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></symbol>
+        <symbol id="icon-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></symbol>
+        <symbol id="icon-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></symbol>
+        <symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></symbol>
+        <symbol id="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></symbol>
+        <symbol id="icon-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></symbol>
+        <symbol id="icon-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></symbol>
+        <!-- Document Types -->
+        <symbol id="icon-pdf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M16 13H8"></path><path d="M16 17H8"></path><path d="M10 9H8"></path></symbol>
+        <symbol id="icon-word" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><polyline points="9 13 10.5 17 12 13 13.5 17 15 13"></polyline></symbol>
+        <symbol id="icon-sheet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><rect x="8" y="13" width="8" height="6"></rect><line x1="8" y1="16" x2="16" y2="16"></line><line x1="12" y1="13" x2="12" y2="19"></line></symbol>
+        <symbol id="icon-slide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2" ry="2"></rect><line x1="12" y1="16" x2="12" y2="20"></line><line x1="8" y1="20" x2="16" y2="20"></line><polygon points="10 8 15 10 10 12 10 8"></polygon></symbol>
+    </svg>
+
+    <main class="app-frame">
+        <header class="header-nav">
+            <div class="window-controls">
+                <button class="win-btn win-close" id="btn-close-app"></button>
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+            </div>
+            <div class="app-title">Leonux Documents</div>
+            
+            <div class="toolbar">
+                <div class="search-box">
+                    <svg class="search-icon"><use href="#icon-search"></use></svg>
+                    <input type="text" id="search-input" class="search-input" placeholder="Search files...">
+                </div>
+                
+                <div class="view-toggles">
+                    <button class="view-btn active" id="btn-grid-view" title="Grid View"><svg width="16" height="16"><use href="#icon-grid"></use></svg></button>
+                    <button class="view-btn" id="btn-list-view" title="List View"><svg width="16" height="16"><use href="#icon-list"></use></svg></button>
+                </div>
+
+                <button class="btn-primary" title="Create New Document">
+                    <svg width="16" height="16"><use href="#icon-plus"></use></svg>
+                    <span>New</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="workspace">
+            
+            <!-- Sidebar Collections -->
+            <aside class="sidebar" id="sidebar">
+                <div class="nav-group">
+                    <div class="nav-title">Library</div>
+                    <div class="nav-item active" data-filter="recent">
+                        <svg><use href="#icon-clock"></use></svg><span>Recent</span>
+                    </div>
+                    <div class="nav-item" data-filter="favorites">
+                        <svg><use href="#icon-star"></use></svg><span>Favorites</span>
+                    </div>
+                </div>
+
+                <div class="nav-group">
+                    <div class="nav-title">Collections</div>
+                    <div class="nav-item" data-filter="pdf">
+                        <svg style="color:var(--danger);"><use href="#icon-pdf"></use></svg><span>PDFs</span>
+                        <span class="badge" id="badge-pdf">0</span>
+                    </div>
+                    <div class="nav-item" data-filter="word">
+                        <svg style="color:var(--accent);"><use href="#icon-word"></use></svg><span>Documents</span>
+                        <span class="badge" id="badge-word">0</span>
+                    </div>
+                    <div class="nav-item" data-filter="sheet">
+                        <svg style="color:var(--success);"><use href="#icon-sheet"></use></svg><span>Spreadsheets</span>
+                        <span class="badge" id="badge-sheet">0</span>
+                    </div>
+                    <div class="nav-item" data-filter="slide">
+                        <svg style="color:var(--warning);"><use href="#icon-slide"></use></svg><span>Presentations</span>
+                        <span class="badge" id="badge-slide">0</span>
+                    </div>
+                </div>
+
+                <div class="nav-group" style="margin-top: auto;">
+                    <div class="nav-item" data-filter="trash">
+                        <svg><use href="#icon-trash"></use></svg><span>Trash</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <section class="content-area">
+                <header class="content-header">
+                    <div>
+                        <h1 class="content-title" id="view-title">Recent Documents</h1>
+                        <p class="content-meta" id="view-meta">Showing items accessed this week</p>
+                    </div>
+                </header>
+
+                <div class="documents-container view-grid" id="docs-container">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <div class="empty-state" id="empty-state">
+                    <svg class="empty-icon"><use href="#icon-folder"></use></svg>
+                    <p>No documents found in this collection.</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- Document Preview Modal -->
+        <div class="modal-overlay" id="preview-modal">
+            <div class="preview-card">
+                <header class="preview-header">
+                    <div class="preview-title">
+                        <svg width="20" height="20" id="preview-icon"><use href="#icon-word"></use></svg>
+                        <span id="preview-doc-title">Document Title</span>
+                    </div>
+                    <div class="preview-actions">
+                        <button class="action-btn" title="Download"><svg width="16" height="16"><use href="#icon-download"></use></svg></button>
+                        <button class="action-btn" title="Share"><svg width="16" height="16"><use href="#icon-share"></use></svg></button>
+                        <button class="action-btn close" id="btn-close-modal" title="Close"><svg width="16" height="16"><use href="#icon-x"></use></svg></button>
+                    </div>
+                </header>
+                <div class="preview-content">
+                    <div class="preview-page">
+                        <h1 id="preview-h1">Loading...</h1>
+                        <div class="skeleton"></div>
+                        <div class="skeleton"></div>
+                        <div class="skeleton short"></div>
+                        <br>
+                        <div class="skeleton"></div>
+                        <div class="skeleton short"></div>
+                        <br>
+                        <div class="skeleton"></div>
+                        <div class="skeleton"></div>
+                        <div class="skeleton short"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        (function() {
+            "use strict";
+
+            // --- Mock Document Database ---
+            const mockDocs = [
+                { id: 1, title: "Q3 Financial Report 2026", type: "sheet", date: "2026-06-25", fav: true, size: "1.2 MB" },
+                { id: 2, title: "Project Alpha Architecture", type: "pdf", date: "2026-06-24", fav: false, size: "4.5 MB" },
+                { id: 3, title: "Leonux Brand Guidelines", type: "pdf", date: "2026-06-20", fav: true, size: "12.8 MB" },
+                { id: 4, title: "Team Meeting Notes", type: "word", date: "2026-06-26", fav: false, size: "45 KB" },
+                { id: 5, title: "Investor Pitch Deck", type: "slide", date: "2026-06-18", fav: true, size: "24.0 MB" },
+                { id: 6, title: "System Configuration Specs", type: "word", date: "2026-06-15", fav: false, size: "120 KB" },
+                { id: 7, title: "Employee Handbook v3", type: "pdf", date: "2026-05-30", fav: false, size: "3.1 MB" },
+                { id: 8, title: "Server Topology Diagram", type: "slide", date: "2026-06-10", fav: false, size: "5.6 MB" },
+                { id: 9, title: "Q2 Marketing Budget", type: "sheet", date: "2026-04-12", fav: false, size: "890 KB" },
+                { id: 10, title: "Onboarding Checklist", type: "word", date: "2026-06-21", fav: false, size: "22 KB" },
+            ];
+
+            let currentFilter = 'recent';
+            let searchQuery = '';
+            let isGridView = true;
+
+            // --- DOM Elements ---
+            const docsContainer = document.getElementById('docs-container');
+            const emptyState = document.getElementById('empty-state');
+            const navItems = document.querySelectorAll('.nav-item');
+            const viewTitle = document.getElementById('view-title');
+            const viewMeta = document.getElementById('view-meta');
+            const searchInput = document.getElementById('search-input');
+            const btnGrid = document.getElementById('btn-grid-view');
+            const btnList = document.getElementById('btn-list-view');
+            
+            // Modal Elements
+            const modal = document.getElementById('preview-modal');
+            const btnCloseModal = document.getElementById('btn-close-modal');
+            const previewDocTitle = document.getElementById('preview-doc-title');
+            const previewIcon = document.getElementById('preview-icon');
+            const previewH1 = document.getElementById('preview-h1');
+            const ambientGlow = document.getElementById('ambient-glow');
+
+            // --- Initialize ---
+            updateBadges();
+            renderDocuments();
+
+            // --- Handlers ---
+            
+            // Sidebar Navigation
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    navItems.forEach(n => n.classList.remove('active'));
+                    item.classList.add('active');
+                    currentFilter = item.dataset.filter;
+                    updateHeaderInfo(currentFilter);
+                    renderDocuments();
+                });
+            });
+
+            // View Toggles
+            btnGrid.addEventListener('click', () => {
+                isGridView = true;
+                btnGrid.classList.add('active');
+                btnList.classList.remove('active');
+                docsContainer.classList.add('view-grid');
+                docsContainer.classList.remove('view-list');
+            });
+
+            btnList.addEventListener('click', () => {
+                isGridView = false;
+                btnList.classList.add('active');
+                btnGrid.classList.remove('active');
+                docsContainer.classList.add('view-list');
+                docsContainer.classList.remove('view-grid');
+            });
+
+            // Search
+            searchInput.addEventListener('input', (e) => {
+                searchQuery = e.target.value.toLowerCase();
+                renderDocuments();
+            });
+
+            // Modal Controls
+            btnCloseModal.addEventListener('click', () => {
+                modal.classList.remove('active');
+                ambientGlow.style.background = `radial-gradient(circle, var(--accent-glow) 0%, transparent 70%)`;
+            });
+
+            // Ensure window control closes the app visually
+            document.getElementById('btn-close-app').addEventListener('click', () => {
+                document.querySelector('.app-frame').style.animation = "window-open 0.4s var(--ease-leonux) reverse forwards";
+                setTimeout(() => document.body.innerHTML = "<h2 style='color:var(--text-muted); font-weight:300;'>Documents Session Closed.</h2>", 400);
+            });
+
+            // --- Functions ---
+
+            function updateBadges() {
+                document.getElementById('badge-pdf').textContent = mockDocs.filter(d => d.type === 'pdf').length;
+                document.getElementById('badge-word').textContent = mockDocs.filter(d => d.type === 'word').length;
+                document.getElementById('badge-sheet').textContent = mockDocs.filter(d => d.type === 'sheet').length;
+                document.getElementById('badge-slide').textContent = mockDocs.filter(d => d.type === 'slide').length;
+            }
+
+            function updateHeaderInfo(filter) {
+                const infoMap = {
+                    recent: { t: "Recent Documents", m: "Showing items accessed this week" },
+                    favorites: { t: "Favorites", m: "Your starred and pinned documents" },
+                    pdf: { t: "PDF Documents", m: "Portable Document Format files" },
+                    word: { t: "Text Documents", m: "Reports, notes, and drafts" },
+                    sheet: { t: "Spreadsheets", m: "Financial and tabular data files" },
+                    slide: { t: "Presentations", m: "Slide decks and pitches" },
+                    trash: { t: "Trash", m: "Items will be permanently deleted after 30 days" }
+                };
+                viewTitle.textContent = infoMap[filter].t;
+                viewMeta.textContent = infoMap[filter].m;
+            }
+
+            function renderDocuments() {
+                docsContainer.innerHTML = '';
+                
+                let filtered = mockDocs.filter(doc => {
+                    // Match Search
+                    if (searchQuery && !doc.title.toLowerCase().includes(searchQuery)) return false;
+                    
+                    // Match Filter
+                    if (currentFilter === 'recent') return true; // In a real app, filter by date
+                    if (currentFilter === 'favorites') return doc.fav;
+                    if (currentFilter === 'trash') return false; // Mock data has no trash
+                    return doc.type === currentFilter;
+                });
+
+                // Sort by date descending
+                filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                if (filtered.length === 0) {
+                    docsContainer.style.display = 'none';
+                    emptyState.classList.add('active');
+                } else {
+                    docsContainer.style.display = isGridView ? 'grid' : 'flex';
+                    emptyState.classList.remove('active');
+
+                    filtered.forEach(doc => {
+                        const card = document.createElement('div');
+                        card.className = `doc-card ${doc.fav ? 'is-fav' : ''}`;
+                        card.dataset.type = doc.type;
+                        
+                        // Formatting date nicely
+                        const dateObj = new Date(doc.date);
+                        const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+                        // Icon mapping
+                        let iconHtml = `<svg><use href="#icon-${doc.type}"></use></svg>`;
+                        let favHtml = doc.fav ? `<svg class="doc-fav"><use href="#icon-star-filled"></use></svg>` : `<svg class="doc-fav"><use href="#icon-star"></use></svg>`;
+
+                        card.innerHTML = `
+                            <div class="doc-cover">
+                                ${favHtml}
+                                <div class="cover-header"></div>
+                                <div class="cover-body">
+                                    <div class="line w-full"></div>
+                                    <div class="line w-full"></div>
+                                    <div class="line w-3-4"></div>
+                                    <div class="line w-full" style="margin-top: 8px;"></div>
+                                    <div class="line w-1-2"></div>
+                                </div>
+                                <div class="doc-type-icon">${iconHtml}</div>
+                            </div>
+                            <div class="doc-meta">
+                                <div class="doc-title">${doc.title}</div>
+                                <div class="doc-date">${dateStr} • ${doc.size}</div>
+                            </div>
+                        `;
+
+                        // Favorite toggle (prevents opening modal)
+                        const favIcon = card.querySelector('.doc-fav');
+                        favIcon.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            doc.fav = !doc.fav;
+                            renderDocuments();
+                        });
+
+                        // Open Preview
+                        card.addEventListener('click', () => openPreview(doc));
+
+                        docsContainer.appendChild(card);
+                    });
+                }
+            }
+
+            function openPreview(doc) {
+                previewDocTitle.textContent = doc.title;
+                previewIcon.innerHTML = `<use href="#icon-${doc.type}"></use>`;
+                previewH1.textContent = doc.title;
+
+                // Change ambient glow based on doc type
+                const colorMap = {
+                    pdf: 'rgba(242,130,145,0.4)',
+                    word: 'rgba(223,118,202,0.4)',
+                    sheet: 'rgba(146,192,120,0.4)',
+                    slide: 'rgba(237,193,128,0.4)'
+                };
+                ambientGlow.style.background = `radial-gradient(circle, ${colorMap[doc.type]} 0%, transparent 70%)`;
+
+                modal.classList.add('active');
+            }
+
+        })();
+    </script>
+</body>
+</html>

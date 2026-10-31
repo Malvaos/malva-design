@@ -1,0 +1,29 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Image Viewer</title><style>
+:root{--bg:#1d101c;--sf:#2a1929;--tr:#3a2639;--ink:#e3d5e1;--mu:#b5a0b2;--ac:#d47abc;--on:#1a0817;--ln:rgba(227,213,225,.12);--dn:#ff8a94;--ok:#7bc74d;--wall:url(../../brand/wallpapers/malva-dusk-2560x1440.jpg)}
+[data-theme=light]{--bg:#f6f0f6;--sf:#fbf8fb;--tr:#e8dce9;--ink:#382034;--mu:#6c4e67;--ac:#7e376a;--on:#fff;--ln:rgba(56,32,52,.14);--dn:#c0414e;--ok:#3f7f1b;--wall:url(../../brand/wallpapers/malva-dawn-2560x1440.jpg)}
+*{box-sizing:border-box;margin:0}html,body{height:100%}body{display:grid;place-items:center;background:var(--bg) var(--wall) center/cover fixed;color:var(--ink);font:14px/1.4 Inter,system-ui,sans-serif}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.win{background:color-mix(in srgb,var(--sf) 88%,transparent);backdrop-filter:blur(30px);border:1px solid var(--ln);border-radius:14px;box-shadow:0 40px 90px -20px rgba(10,3,9,.6);overflow:hidden;display:flex;flex-direction:column}
+.tb{height:44px;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid var(--ln);flex:none}
+.dots{display:flex;gap:8px;margin-right:8px}.dots i{width:12px;height:12px;border-radius:50%;background:#d84a5a}.dots i:nth-child(2){background:#e0a838}.dots i:nth-child(3){background:#4a8a30}
+.ttl{font-weight:600;font-size:13px;flex:1;text-align:center;color:var(--mu)}
+.ib{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--mu);transition:.15s}.ib:hover{background:var(--tr);color:var(--ink)}.ib.on{background:var(--ac);color:var(--on)}
+#th{position:fixed;right:16px;bottom:16px;width:36px;height:36px;border:1px solid var(--ln);background:var(--sf);z-index:9}:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+</style><style>
+.bd{flex:1;display:flex;min-height:0}.st{flex:1;display:grid;place-items:center;overflow:hidden;background:color-mix(in srgb,var(--bg) 70%,#000)}#im{max-width:100%;max-height:100%;transition:transform .25s;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+aside{width:250px;border-left:1px solid var(--ln);padding:16px;font-size:13px}aside h3{margin-bottom:12px}aside dl{display:grid;grid-template-columns:auto 1fr;gap:8px 12px}aside dt{color:var(--mu)}aside dd{margin:0;text-align:right}
+.fs{display:flex;gap:10px;justify-content:center;padding:10px;border-top:1px solid var(--ln)}.fs img{height:54px;width:84px;object-fit:cover;border-radius:8px;opacity:.55;cursor:pointer;border:2px solid transparent;transition:.15s}.fs img.on{opacity:1;border-color:var(--ac)}</style></head><body><div class="win" style="width:1100px;height:680px"><div class="tb"><div class="dots"><i></i><i></i><i></i></div>
+<button class="ib" id="pv" title="Previous">‹</button><button class="ib" id="nx" title="Next">›</button><span class="ttl" id="nm"></span>
+<button class="ib" id="zo" title="Zoom out">−</button><span id="zl" style="min-width:44px;text-align:center;color:var(--mu)">100%</span><button class="ib" id="zi" title="Zoom in">+</button>
+<button class="ib" id="ro" title="Rotate">⟳</button><button class="ib" id="fl" title="Flip">⇋</button><button class="ib" id="fi" title="Fit">⤢</button><button class="ib" id="sl" title="Slideshow">▶</button><button class="ib" id="in" title="Info">ⓘ</button></div>
+<div class="bd"><div class="st" id="st"><img id="im" alt=""></div><aside id="inf" hidden></aside></div><div class="fs" id="fs"></div></div><button class="ib" id="th" aria-label="Toggle theme" title="Theme">◐</button><script>document.getElementById("th").onclick=()=>{const r=document.documentElement;r.dataset.theme=r.dataset.theme==="light"?"":"light"}</script><script>
+const I=[["malva-dusk-2560x1440.jpg", "Malva Dusk", "2560 \u00d7 1440", "1.0 MB"], ["malva-dawn-2560x1440.jpg", "Malva Dawn", "2560 \u00d7 1440", "0.7 MB"], ["malva-dusk-1170x2532.jpg", "Malva Dusk Mobile", "1170 \u00d7 2532", "0.7 MB"], ["malva-dawn-1170x2532.jpg", "Malva Dawn Mobile", "1170 \u00d7 2532", "0.5 MB"]];let i=0,z=1,r=0,f=1,tm;const $=s=>document.querySelector(s);
+$('#fs').innerHTML=I.map((x,k)=>`<img src="../../brand/wallpapers/${x[0]}" data-k="${k}" alt="${x[1]}">`).join('');
+function show(){const x=I[i];$('#im').src='../../brand/wallpapers/'+x[0];$('#nm').textContent=x[1]+'  ·  '+(i+1)+' / '+I.length;$('#inf').innerHTML=`<h3>${x[1]}</h3><dl><dt>Size</dt><dd>${x[3]}</dd><dt>Dimensions</dt><dd>${x[2]}</dd><dt>Type</dt><dd>JPEG</dd><dt>Modified</dt><dd>Oct 27, 2026</dd><dt>Color</dt><dd>sRGB</dd></dl>`;
+document.querySelectorAll('.fs img').forEach((e,k)=>e.classList.toggle('on',k===i));tf()}
+function tf(){$('#im').style.transform=`scale(${z}) rotate(${r}deg) scaleX(${f})`;$('#zl').textContent=Math.round(z*100)+'%'}
+const go=d=>{i=(i+d+I.length)%I.length;z=1;r=0;f=1;show()};
+$('#pv').onclick=()=>go(-1);$('#nx').onclick=()=>go(1);$('#zi').onclick=()=>{z=Math.min(4,z*1.25);tf()};$('#zo').onclick=()=>{z=Math.max(.25,z/1.25);tf()};$('#fi').onclick=()=>{z=1;tf()};
+$('#ro').onclick=()=>{r+=90;tf()};$('#fl').onclick=()=>{f*=-1;tf()};$('#in').onclick=()=>{$('#inf').hidden=!$('#inf').hidden;$('#in').classList.toggle('on')};
+$('#sl').onclick=()=>{if(tm){clearInterval(tm);tm=0}else tm=setInterval(()=>go(1),2500);$('#sl').classList.toggle('on',!!tm)};
+$('#fs').onclick=e=>{if(e.target.dataset.k){i=+e.target.dataset.k;z=1;r=0;f=1;show()}};addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1)});show();</script></body></html>

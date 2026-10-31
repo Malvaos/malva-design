@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LionOS General Settings</title>
+    <style>
+        /* --- 1. LIONOS DESIGN SYSTEM --- */
+        :root {
+            /* Palette - Obsidian Glass */
+            --bg-body: #0f060d;
+            --bg-glass-panel: rgba(28,18,26,0.6);
+            --bg-glass-card: rgba(var(--ov),0.03);
+            --bg-glass-hover: rgba(var(--ov),0.08);
+            --bg-glass-active: rgba(var(--ov),0.12);
+            
+            /* Text */
+            --text-primary: rgba(var(--ov),0.95);
+            --text-secondary: rgba(var(--ov),0.55);
+            --text-tertiary: rgba(var(--ov),0.3);
+            
+            /* Accents */
+            --accent-primary: #d859bf; /* Lion Blue */
+            --accent-danger: #ef445b;
+            --accent-success: #5b8940;
+            
+            /* Borders & Depth */
+            --border-subtle: 1px solid rgba(var(--ov),0.08);
+            --border-separator: 1px solid rgba(var(--ov),0.04);
+            
+            /* Dimensions */
+            --radius-window: 24px;
+            --radius-item: 16px;
+            --padding-page: 32px;
+            
+            /* Animation */
+            --ease-fluid: cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        /* --- 2. BASE & RESET --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            /* LionOS Signature Noise Texture */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E"),
+                              radial-gradient(circle at 50% 0%, #20141d 0%, #0f060d 100%);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* --- 3. WINDOW LAYOUT --- */
+        .window-frame {
+            width: 100%;
+            max-width: 720px; /* Wider desktop feel */
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            /* In a real OS, this would be inside a window container */
+            padding: var(--padding-page);
+            overflow-y: auto;
+            scrollbar-width: none;
+            animation: fadeIn 0.6s var(--ease-fluid);
+        }
+        .window-frame::-webkit-scrollbar { display: none; }
+
+        /* --- 4. HEADER --- */
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 32px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            /* Frosted Header */
+            background: rgba(15,6,13,0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding-bottom: 16px;
+            border-bottom: var(--border-separator);
+        }
+
+        .btn-back {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: var(--bg-glass-card);
+            border: var(--border-subtle);
+            color: var(--text-primary);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-right: 16px;
+        }
+        .btn-back:hover { background: var(--bg-glass-hover); transform: translateX(-2px); }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        /* --- 5. SETTINGS GROUPS (GLASS CARDS) --- */
+        .settings-group {
+            background: var(--bg-glass-card);
+            border: var(--border-subtle);
+            border-radius: var(--radius-window);
+            overflow: hidden;
+            margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .settings-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            background: transparent;
+            border: none;
+            width: 100%;
+            color: var(--text-primary);
+            font-size: 16px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-decoration: none;
+            position: relative;
+        }
+
+        /* Separator Line Logic */
+        .settings-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 24px;
+            right: 0;
+            height: 1px;
+            background: var(--border-separator);
+        }
+
+        .settings-item:hover {
+            background: var(--bg-glass-hover);
+        }
+        .settings-item:active {
+            background: var(--bg-glass-active);
+        }
+
+        /* --- 6. CONTENT ELEMENTS --- */
+        .item-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .label-main { font-weight: 500; }
+        .label-sub { font-size: 13px; color: var(--text-secondary); }
+
+        .item-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+        }
+
+        .chevron {
+            opacity: 0.4;
+            transition: transform 0.2s;
+        }
+        .settings-item:hover .chevron { transform: translateX(2px); opacity: 0.8; }
+
+        /* Badge */
+        .update-badge {
+            background: var(--accent-danger);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 99px;
+            box-shadow: 0 0 10px rgba(239,68,91,0.4);
+        }
+
+        /* --- 7. SPECIAL MODULES --- */
+        
+        /* Storage Visualizer */
+        .storage-module {
+            padding: 24px;
+            width: 100%;
+        }
+        .storage-header {
+            display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px;
+        }
+        .storage-bar-track {
+            height: 6px;
+            width: 100%;
+            background: rgba(var(--ov),0.1);
+            border-radius: 99px;
+            overflow: hidden;
+            display: flex;
+        }
+        .bar-seg { height: 100%; transition: width 1s var(--ease-fluid); }
+        /* LionOS Colors */
+        .bg-blue { background: #d859bf; box-shadow: 0 0 10px rgba(216,89,191,0.3); }
+        .bg-green { background: #5b8940; box-shadow: 0 0 10px rgba(91,137,64,0.3); }
+        .bg-white { background: rgba(var(--ov),0.4); }
+
+        /* Custom Toggle Switch (LionOS Pill Style) */
+        .toggle-switch {
+            width: 48px;
+            height: 28px;
+            background: rgba(var(--ov),0.1);
+            border-radius: 99px;
+            position: relative;
+            transition: all 0.3s;
+            border: 1px solid rgba(var(--ov),0.1);
+        }
+        .toggle-knob {
+            position: absolute;
+            top: 2px; left: 2px;
+            width: 22px; height: 22px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 2px 5px rgba(15,6,13,0.2);
+        }
+        .toggle-real { display: none; }
+        .toggle-real:checked + .toggle-switch {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px rgba(216,89,191,0.3);
+        }
+        .toggle-real:checked + .toggle-switch .toggle-knob {
+            transform: translateX(20px);
+        }
+
+        /* --- 8. ANIMATIONS --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+<style id="malva-tokens">
+:root{--ov:227,213,225;--bg-body:#1d101c;--bg-glass-card:rgba(227,213,225,.05);--bg-glass-hover:rgba(227,213,225,.09);--bg-glass-active:rgba(227,213,225,.14);--bg-glass-panel:rgba(42,25,41,.72);--bg-header:rgba(29,16,28,.82);
+--text-primary:#e3d5e1;--text-secondary:#b5a0b2;--text-tertiary:#8f7a8c;--accent-primary:#d47abc;--accent-glow:rgba(212,122,188,.45);--accent-success:#7bc74d;--accent-warn:#f2b04a;--accent-danger:#ff8a94;--accent-purple:#b99cf0;--accent-cyan:#72c9d8;--accent-rose:#ff8a94;--accent-amber:#f2b04a;--accent-violet:#a592f2;--accent-eco:#7bc74d;--accent-perf:#d47abc;--accent-pink:#e999d2;
+--border-subtle:1px solid rgba(227,213,225,.12);--border-separator:1px solid rgba(227,213,225,.06)}
+[data-theme="light"]{--ov:56,32,52;--bg-body:#f6f0f6;--bg-glass-card:rgba(255,255,255,.72);--bg-glass-hover:rgba(255,255,255,.9);--bg-glass-active:#ffffff;--bg-glass-panel:rgba(251,248,251,.85);--bg-header:rgba(246,240,246,.85);
+--text-primary:#382034;--text-secondary:#6c4e67;--text-tertiary:#8a6f85;--accent-primary:#7e376a;--accent-glow:rgba(126,55,106,.35);--accent-success:#3f7f1b;--accent-warn:#9a5b00;--accent-danger:#c0414e;--accent-purple:#6a4bb5;--accent-cyan:#1f7f95;--accent-rose:#c0414e;--accent-amber:#9a5b00;--accent-violet:#5b4bb5;--accent-eco:#3f7f1b;--accent-perf:#7e376a;--accent-pink:#a14c8c;
+--border-subtle:1px solid rgba(56,32,52,.14);--border-separator:1px solid rgba(56,32,52,.07)}
+html,body{color:var(--text-primary)}.window-frame>*{flex-shrink:0}html.embedded,html.embedded body{background:transparent!important;background-image:none!important}
+html.embedded .window-frame{max-width:none;padding:26px 34px}
+html.embedded .btn-back{display:none!important}html.embedded .header{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border-bottom:0!important;position:static!important}
+</style></head>
+<body>
+
+    <div class="window-frame">
+        
+        <!-- Header -->
+        <header class="header">
+            <button class="btn-back" aria-label="Back">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <h1 class="page-title">General</h1>
+        </header>
+
+        <!-- Group 1: Device & Update -->
+        <div class="settings-group">
+            <button class="settings-item">
+                <div class="item-left">
+                    <span class="label-main">About Device</span>
+                    <span class="label-sub">LionBook Pro • LionOS 2.0</span>
+                </div>
+                <div class="item-right">
+                    <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
+            </button>
+            
+            <button class="settings-item">
+                <div class="item-left">
+                    <span class="label-main">System Update</span>
+                    <span class="label-sub">Version 2.1 is available</span>
+                </div>
+                <div class="item-right">
+                    <span class="update-badge">1</span>
+                    <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
+            </button>
+        </div>
+
+        <!-- Group 2: Storage (Visual) -->
+        <div class="settings-group">
+            <div class="storage-module">
+                <div class="storage-header">
+                    <span class="label-main">Storage</span>
+                    <span style="color: var(--text-secondary);">450 GB / 1 TB</span>
+                </div>
+                <div class="storage-bar-track">
+                    <div class="bar-seg bg-blue" style="width: 45%;"></div>
+                    <div class="bar-seg bg-green" style="width: 15%;"></div>
+                    <div class="bar-seg bg-white" style="width: 10%;"></div>
+                </div>
+                <div style="margin-top: 12px; display: flex; gap: 16px; font-size: 12px; color: var(--text-secondary);">
+                    <div style="display:flex; align-items:center; gap:6px;"><div style="width:8px; height:8px; border-radius:50%; background:#d859bf;"></div>System</div>
+                    <div style="display:flex; align-items:center; gap:6px;"><div style="width:8px; height:8px; border-radius:50%; background:#5b8940;"></div>Apps</div>
+                    <div style="display:flex; align-items:center; gap:6px;"><div style="width:8px; height:8px; border-radius:50%; background:rgba(var(--ov),0.4);"></div>Files</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Group 3: System Prefs -->
+        <div class="settings-group">
+            <button class="settings-item">
+                <div class="item-left">
+                    <span class="label-main">Date & Time</span>
+                </div>
+                <div class="item-right">
+                    <span id="time-display">Loading...</span>
+                    <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
+            </button>
+            
+            <button class="settings-item">
+                <div class="item-left">
+                    <span class="label-main">Language & Input</span>
+                </div>
+                <div class="item-right">
+                    <span>English (US)</span>
+                    <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
+            </button>
+
+            <!-- Toggle Item -->
+            <label class="settings-item" style="cursor: pointer;">
+                <div class="item-left">
+                    <span class="label-main">Game Mode</span>
+                    <span class="label-sub">Optimize performance for gaming</span>
+                </div>
+                <div class="item-right">
+                    <input type="checkbox" class="toggle-real">
+                    <div class="toggle-switch">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+            </label>
+        </div>
+
+        <!-- Group 4: Danger Zone -->
+        <div class="settings-group" style="border: 1px solid rgba(239,68,91,0.2);">
+            <button class="settings-item" style="color: var(--accent-danger);">
+                <div class="item-left">
+                    <span class="label-main">Reset Options</span>
+                </div>
+                <div class="item-right" style="color: var(--accent-danger);">
+                    <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- LIONOS LOGIC ---
+
+        // 1. Live Time Update
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('time-display').textContent = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // 2. Interaction Feedback (Console Simulation)
+        const items = document.querySelectorAll('.settings-item');
+        items.forEach(item => {
+            item.addEventListener('click', (e) => {
+                // Prevent toggle from triggering navigation logic
+                if(e.target.closest('label')) return;
+                
+                const label = item.querySelector('.label-main')?.innerText;
+                if(label) console.log(`LionOS Navigation: Opening ${label}...`);
+            });
+        });
+
+        // 3. Storage Animation on Load
+        setTimeout(() => {
+            // Re-trigger widths for animation effect
+            const bars = document.querySelectorAll('.bar-seg');
+            const widths = ['45%', '15%', '10%'];
+            bars.forEach((bar, index) => {
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = widths[index];
+                }, 100);
+            });
+        }, 300);
+
+    </script>
+<script>(function(){if(self!==top)document.documentElement.classList.add('embedded');addEventListener('message',function(e){var t=e.data&&e.data.malvaTheme;if(t)document.documentElement.setAttribute('data-theme',t)})})();</script></body>
+</html>
+

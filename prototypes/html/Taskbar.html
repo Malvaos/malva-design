@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LionOS Taskbar (GNOME Style)</title>
+    <style>
+        /* --- LION OS DESIGN TOKENS --- */
+        :root {
+            /* Taskbar specific backgrounds for deep glass effect */
+            --bg-panel: rgba(42,25,41,0.85);
+            --bg-panel-border: rgba(227,213,225,0.09);
+            
+            --bg-card: rgba(227,213,225,0.08);
+            --bg-card-hover: rgba(227,213,225,0.12);
+            --bg-card-active: rgba(227,213,225,0.25);
+            
+            --text-primary: #e3d5e1;
+            --text-secondary: rgba(227,213,225,0.62);
+            --text-tertiary: rgba(227,213,225,0.32);
+            
+            --accent-blue: #d47abc;
+            --accent-active: var(--accent-blue);
+
+            --radius-menu: 16px; /* Pill radius for GNOME-like clusters */
+            --ease-smooth: cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            --bg-panel: rgba(255,255,255,0.8);
+            --bg-panel-border: rgba(126,55,106,0.14);
+            
+            --bg-card: rgba(126,55,106,0.07);
+            --bg-card-hover: rgba(126,55,106,0.12);
+            --bg-card-active: rgba(126,55,106,0.2);
+            
+            --text-primary: #382034;
+            --text-secondary: rgba(56,32,52,0.62);
+            --text-tertiary: rgba(56,32,52,0.38);
+        }
+
+        /* --- RESET & DESKTOP ENVIRONMENT --- */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            height: 100vh; width: 100vw;
+            overflow: hidden;
+            /* Animated Mesh Gradient Desktop Wallpaper */
+            background: 
+                radial-gradient(circle at 15% 50%, rgba(216,89,191,0.4), transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(91,137,64,0.4), transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(239,68,91,0.4), transparent 50%),
+                #0c080b;
+            background-size: 200% 200%;
+            animation: wallpaperShift 20s ease-in-out infinite;
+            transition: background-color 0.5s ease;
+        }
+
+        [data-theme="light"] body {
+            background: 
+                radial-gradient(circle at 15% 50%, rgba(216,89,191,0.3), transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(91,137,64,0.2), transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(239,68,91,0.2), transparent 50%),
+                #eaa4dc;
+            background-size: 200% 200%;
+        }
+
+        @keyframes wallpaperShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- TASKBAR (MENU BAR) --- */
+        .taskbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 38px;
+            background: var(--bg-panel);
+            backdrop-filter: blur(40px) saturate(150%);
+            -webkit-backdrop-filter: blur(40px) saturate(150%);
+            border-bottom: 1px solid var(--bg-panel-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            z-index: 9999;
+            box-shadow: 0 1px 15px rgba(15,6,13,0.1);
+            transition: background 0.4s, border-color 0.4s;
+        }
+
+        .taskbar-group {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            gap: 6px;
+        }
+
+        /* Absolutely center the GNOME-style clock */
+        .taskbar-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+
+        /* --- MENU ITEMS --- */
+        .menu-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 28px;
+            padding: 0 12px;
+            border-radius: var(--radius-menu);
+            color: var(--text-primary);
+            font-size: 13.5px;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            cursor: pointer;
+            transition: background 0.15s var(--ease-smooth), transform 0.15s var(--ease-smooth);
+        }
+
+        .menu-item:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .menu-item:active {
+            background: var(--bg-card-active);
+            transform: scale(0.96);
+        }
+
+        /* Left Logo Group */
+        .logo-group {
+            gap: 8px;
+            padding: 0 12px 0 10px;
+        }
+        .logo-group svg {
+            width: 16px; height: 16px;
+        }
+        .app-name {
+            font-weight: 700;
+        }
+
+        /* GNOME Style Center Clock */
+        .date-time {
+            font-weight: 600;
+            font-size: 13.5px;
+            padding: 0 16px;
+        }
+
+        /* Right Unified Status Pill (GNOME Style) */
+        .unified-status {
+            gap: 10px; /* Space between icons inside the single button */
+            padding: 0 14px;
+        }
+        .unified-status svg {
+            width: 15px; height: 15px;
+            stroke-width: 2.2;
+            color: var(--text-primary);
+        }
+
+        /* Toast Notification for demo */
+        .toast {
+            position: fixed;
+            top: 50px; left: 50%;
+            transform: translate(-50%, -20px);
+            opacity: 0;
+            background: var(--bg-panel);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--bg-panel-border);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.4s var(--ease-smooth);
+            pointer-events: none;
+            box-shadow: 0 10px 30px rgba(15,6,13,0.2);
+            z-index: 10000;
+        }
+        .toast.show {
+            transform: translate(-50%, 0);
+            opacity: 1;
+        }
+
+    </style>
+<style id="malva-overrides">body{background:#1d101c url(../../brand/wallpapers/malva-dusk-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f6f0f6 url(../../brand/wallpapers/malva-dawn-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
+<body>
+
+    <!-- Notification Demo -->
+    <div class="toast" id="toast">System Menu Triggered</div>
+
+    <div class="taskbar">
+        
+        <!-- Left: Activities / Workspace / OS Menu -->
+        <div class="taskbar-group">
+            <div class="menu-item logo-group" onclick="toggleTheme()" title="Click to toggle Theme">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                <span class="app-name">LionOS</span>
+            </div>
+        </div>
+
+        <!-- Center: Date & Time (GNOME style) -->
+        <div class="taskbar-center">
+            <div class="menu-item date-time" id="gnome-clock">
+                -- --- --:--
+            </div>
+        </div>
+
+        <!-- Right: Unified System Status Pill -->
+        <div class="taskbar-group">
+            <!-- This is a SINGLE clickable container for all status icons -->
+            <div class="menu-item unified-status" onclick="openSystemMenu()" title="System Settings">
+                
+                <!-- Wi-Fi -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                    <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                    <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                </svg>
+
+                <!-- Battery -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="6" width="18" height="12" rx="2" ry="2"></rect>
+                    <line x1="23" y1="13" x2="23" y2="11"></line>
+                    <rect x="3" y="8" width="12" height="8" rx="1" ry="1" fill="currentColor" stroke="none"></rect>
+                </svg>
+
+                <!-- Control Center / Quick Settings Indicator -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        // --- GNOME Style Clock Update ---
+        function updateClock() {
+            const now = new Date();
+            
+            // Format: "Sat 27 Jun"
+            const dateOptions = { weekday: 'short', day: 'numeric', month: 'short' };
+            const dateStr = now.toLocaleDateString('en-US', dateOptions);
+            
+            // Format: "07:06"
+            const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: false };
+            let timeStr = now.toLocaleTimeString('en-US', timeOptions);
+            
+            // Combine GNOME style
+            document.getElementById('gnome-clock').textContent = `${dateStr} \u00A0 ${timeStr}`;
+        }
+        
+        setInterval(updateClock, 1000);
+        updateClock(); // Init
+
+        // --- Demo System Menu Trigger (GNOME Unified Button) ---
+        let toastTimeout;
+        function openSystemMenu() {
+            const toast = document.getElementById('toast');
+            toast.textContent = "Control Center Triggered!";
+            toast.classList.add('show');
+            
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // --- Theme Toggler (Mapped to the LionOS Logo) ---
+        let isDark = true;
+        function toggleTheme() {
+            isDark = !isDark;
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            
+            const toast = document.getElementById('toast');
+            toast.textContent = isDark ? "Dark Theme Active" : "Light Theme Active";
+            toast.classList.add('show');
+            
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

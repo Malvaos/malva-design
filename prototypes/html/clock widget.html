@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red & Gray Time Widget</title>
+    <style>
+        /* Base page styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            /* Black background as seen in the image */
+            background-color: #0f060d;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Clean, bold sans-serif font matching the design */
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Widget container styling */
+        .widget {
+            background-color: #5a3a54; /* Dark gray */
+            border-radius: 35px;
+            padding: 40px 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* Prevents numbers from shifting the layout width when changing */
+            font-variant-numeric: tabular-nums; 
+        }
+
+        /* Top row containing time and AM/PM */
+        .time-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        /* Main HH:MM styling */
+        .main-time {
+            font-size: 130px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            letter-spacing: -2px;
+            line-height: 1;
+        }
+
+        .red-text {
+            color: #d40b26; /* Vibrant red */
+        }
+
+        .white-text {
+            color: #f8f1f7; 
+        }        
+        
+        .colon {
+            color: #f8f1f7; /* White colon */
+            margin: 0 5px;
+            position: relative;
+            top: -8px; /* Optically centers the colon with the numbers */
+        }
+
+        /* Right column for AM/PM and Seconds */
+        .meta-time {
+            display: flex;
+            flex-direction: column;
+            color: #f8f1f7;
+            margin-left: 15px;
+            justify-content: center;
+            line-height: 0.95; /* Keeps AM/PM and seconds tightly stacked */
+        }
+
+        .ampm {
+            font-size: 45px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .seconds {
+            font-size: 55px;
+            font-weight: 700;
+        }
+
+        /* Bottom row for the date */
+        .date-row {
+            color: #f8f1f7;
+            font-size: 32px;
+            font-weight: 700;
+            margin-top: 5px;
+            letter-spacing: 0.5px;
+            display: flex;
+            gap: 20px; /* Creates the distinct space between day and date */
+        }
+    </style>
+<style id="malva-overrides">body{background:#1d101c url(../../brand/wallpapers/malva-dusk-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f6f0f6 url(../../brand/wallpapers/malva-dawn-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
+<body>
+
+    <div class="widget">
+        <div class="time-row">
+            <div class="main-time">
+                <span class="red-text" id="hours">01</span>
+                <span class="colon">:</span>
+                <span class="white-text" id="minutes">30</span>
+            </div>
+            <div class="meta-time">
+                <div class="ampm" id="ampm">PM</div>
+                <div class="seconds" id="seconds">28</div>
+            </div>
+        </div>
+        <div class="date-row" id="date">
+            <span>Wednesday</span>
+            <span>25-mar-2026</span>
+        </div>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+
+            // --- Time Formatting ---
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            let seconds = now.getSeconds();
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+
+            // Convert 24hr to 12hr format
+            hours = hours % 12;
+            hours = hours ? hours : 12; // '0' becomes '12'
+
+            // Pad single digits with a leading zero
+            const padZero = (num) => num < 10 ? '0' + num : num;
+
+            // --- Date Formatting ---
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            // Months mapped to exact lowercase format from the image
+            const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+            
+            const dayName = days[now.getDay()];
+            const dayNum = padZero(now.getDate());
+            const monthName = months[now.getMonth()];
+            const year = now.getFullYear();
+
+            // --- DOM Updates ---
+            document.getElementById('hours').textContent = padZero(hours);
+            document.getElementById('minutes').textContent = padZero(minutes);
+            document.getElementById('seconds').textContent = padZero(seconds);
+            document.getElementById('ampm').textContent = ampm;
+            
+            // Replicates the specific date format: "Wednesday   25-mar-2026"
+            document.getElementById('date').innerHTML = `<span>${dayName}</span><span>${dayNum}-${monthName}-${year}</span>`;
+        }
+
+        // Initialize immediately to prevent layout flashing
+        updateClock();
+
+        // Update the clock every 1000 milliseconds (1 second)
+        setInterval(updateClock, 1000);
+    </script>
+
+</body>
+</html>

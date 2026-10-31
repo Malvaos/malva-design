@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LDisk — Leonux OS Disk Utility</title>
+
+    <style>
+        /**
+         * LEONUX DESIGN SYSTEM - LDISK EDITION
+         */
+        :root {
+            --bg-body: #1d101c;
+            --surface-base: rgba(42,25,41,0.84);
+            --surface-panel: rgba(58,38,57,0.55);
+            --surface-hover: rgba(227,213,225,0.08);
+            --surface-active: rgba(227,213,225,0.13);
+            --border-glass: rgba(227,213,225,0.09);
+            --border-mid: rgba(227,213,225,0.17);
+            
+            --text-main: #e3d5e1;
+            --text-muted: #b5a0b2;
+            
+            --accent: #d47abc;
+            --accent-glow: rgba(212,122,188,0.35);
+            --danger: #ff8a94;
+            --success: #7bc74d;
+            --warning: #f2b04a;
+            --purple: #eaa4dc;
+            
+            --shadow-win: 0 40px 100px -20px rgba(10,3,9,0.95);
+            --glass-blur: blur(40px) saturate(180%);
+            --radius-xl: clamp(16px, 2vh, 24px);
+            --radius-l: clamp(8px, 1vh, 12px);
+            --radius-pill: 9999px;
+            --ease-leonux: cubic-bezier(0.2, 1, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .noise-layer {
+            position: fixed; inset: 0; opacity: 0.03; pointer-events: none; z-index: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* Ambient Dynamic Color Glow behind the active window */
+        .ambient-glow {
+            position: absolute;
+            width: 80vw;
+            height: 80vh;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            filter: blur(140px);
+            opacity: 0.4;
+            z-index: 1;
+            pointer-events: none;
+            transition: all 1s ease;
+        }
+
+        /* Main Window Stage */
+        .ldisk-frame {
+            position: relative;
+            width: 95vw;
+            max-width: 1100px;
+            height: 85vh;
+            max-height: 780px;
+            background: var(--surface-base);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-win);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            overflow: hidden;
+            animation: window-open 0.6s var(--ease-leonux) forwards;
+        }
+
+        @keyframes window-open {
+            from { opacity: 0; transform: scale(0.97) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Header / App Navigation Bar */
+        .header-nav {
+            display: flex;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-glass);
+            background: rgba(15,6,13,0.2);
+            justify-content: space-between;
+            z-index: 20;
+        }
+
+        .window-controls { display: flex; gap: 8px; }
+        .win-btn { width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer; }
+        .win-close { background: #f75e73; }
+        .win-min { background: #e5a648; }
+        .win-max { background: #6ca34d; }
+
+        .app-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Partition/Workspace Layout Split */
+        .workspace {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- Panel A: Left Side Sidebar (Storage Device Tree) --- */
+        .storage-sidebar {
+            width: 280px;
+            border-right: 1px solid var(--border-glass);
+            display: flex;
+            flex-direction: column;
+            background: rgba(15,6,13,0.15);
+            overflow-y: auto;
+            flex-shrink: 0;
+            padding: 16px 8px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 0 16px 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-icon {
+            width: 14px; height: 14px;
+            opacity: 0.6;
+        }
+
+        .device-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        /* Tree node items (Disks, Containers, Volumes) */
+        .tree-node {
+            padding: 8px 16px;
+            border-radius: var(--radius-l);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            border: 1px solid transparent;
+        }
+        .tree-node:hover {
+            background: var(--surface-hover);
+        }
+        .tree-node.active {
+            background: rgba(248,241,247,0.04);
+            border-color: var(--border-glass);
+        }
+        .tree-node.active .node-name {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+        .tree-node.unmounted {
+            opacity: 0.45;
+        }
+
+        .node-icon {
+            width: 20px; height: 20px;
+            color: var(--accent);
+            flex-shrink: 0;
+            transition: transform 0.3s var(--ease-leonux);
+        }
+        .tree-node.active .node-icon {
+            transform: scale(1.05);
+            color: var(--accent);
+            filter: drop-shadow(0 0 4px var(--accent-glow));
+        }
+
+        .node-meta {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .node-name {
+            color: var(--text-main);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .node-size {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-family: monospace;
+            margin-top: 1px;
+        }
+
+        /* --- Panel B: Main Diagnostic Workspace (Right side) --- */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Diagnostics & Command Control Bar */
+        .toolbar {
+            height: 64px;
+            border-bottom: 1px solid var(--border-glass);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            background: rgba(15,6,13,0.1);
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .tool-btn {
+            background: rgba(248,241,247,0.03);
+            border: 1px solid var(--border-glass);
+            color: var(--text-muted);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s var(--ease-leonux);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tool-btn:hover:not(:disabled) {
+            color: var(--text-main);
+            background: var(--surface-hover);
+            border-color: var(--border-mid);
+            transform: translateY(-1px);
+        }
+        .tool-btn:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+        .tool-btn:disabled {
+            opacity: 0.25;
+            cursor: not-allowed;
+        }
+        .tool-btn svg {
+            width: 16px; height: 16px;
+            fill: none; stroke: currentColor; stroke-width: 2;
+        }
+
+        /* Main Device Profile Section */
+        .device-view {
+            flex: 1;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .profile-summary {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .big-device-icon {
+            width: 72px; height: 72px;
+            background: rgba(248,241,247,0.02);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--accent);
+            box-shadow: 0 12px 24px rgba(15,6,13,0.3);
+            position: relative;
+        }
+
+        .profile-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .profile-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .profile-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .profile-badge {
+            align-self: flex-start;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: rgba(223,118,202,0.15);
+            color: var(--accent);
+            margin-top: 4px;
+        }
+
+        /* Segmented Storage Space Bar */
+        .allocation-panel {
+            background: var(--surface-panel);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-l);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .allocation-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .storage-track {
+            height: 16px;
+            background: rgba(248,241,247,0.03);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            border: 1px solid var(--border-glass);
+        }
+
+        .storage-seg {
+            height: 100%;
+            transition: width 0.8s var(--ease-leonux);
+            position: relative;
+        }
+        .storage-seg.seg-system { background: var(--accent); box-shadow: 0 0 10px rgba(223,118,202,0.2); }
+        .storage-seg.seg-apps { background: var(--purple); }
+        .storage-seg.seg-user { background: var(--warning); }
+        .storage-seg.seg-cache { background: var(--danger); }
+        .storage-seg.seg-free { background: rgba(248,241,247,0.06); }
+
+        .legend-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px 24px;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+        }
+
+        /* Device Technical Properties Grid */
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .spec-box {
+            background: rgba(15,6,13,0.15);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .spec-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .spec-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            font-family: monospace;
+        }
+
+        /* SMART Healthy indicator */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--success);
+        }
+        .status-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success);
+        }
+
+        /* --- MODAL POPUPS STAGE (First Aid, Erase, Benchmarks) --- */
+        .modal-overlay {
+            position: absolute; inset: 0;
+            background: rgba(15,6,13,0.6);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0; pointer-events: none;
+            transition: all 0.4s var(--ease-leonux);
+        }
+        .modal-overlay.active {
+            opacity: 1; pointer-events: auto;
+        }
+
+        .modal-card {
+            width: 90%;
+            max-width: 540px;
+            background: rgba(28,18,26,0.95);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-xl);
+            box-shadow: 0 24px 60px rgba(15,6,13,0.8);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: scale(0.95) translateY(10px);
+            transition: all 0.4s var(--ease-leonux);
+        }
+        .modal-overlay.active .modal-card {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-glass);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .modal-title-area { display: flex; flex-direction: column; }
+        .modal-title { font-size: 16px; font-weight: 700; color: var(--text-main); }
+        .modal-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 1px;}
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            max-height: 380px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-glass);
+            background: rgba(15,6,13,0.15);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* --- Interactive Wizard Screens --- */
+        /* A: First Aid Diagnostics Scan UI */
+        .diagnostic-grid {
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            gap: 4px;
+            margin-bottom: 20px;
+            max-height: 110px;
+            overflow: hidden;
+        }
+        .scan-sector {
+            aspect-ratio: 1;
+            background: rgba(248,241,247,0.03);
+            border: 1px solid rgba(248,241,247,0.05);
+            border-radius: 2px;
+            transition: background 0.1s ease;
+        }
+        .scan-sector.scanned { background: rgba(223,118,202,0.4); border-color: var(--accent); }
+        .scan-sector.corrupted { background: var(--danger); border-color: var(--danger); animation: pulse-error 0.5s ease infinite alternate; }
+        .scan-sector.repaired { background: var(--success); border-color: var(--success); }
+
+        @keyframes pulse-error { from { opacity: 0.6; } to { opacity: 1; } }
+
+        .wizard-progress-bar {
+            height: 6px;
+            background: rgba(248,241,247,0.05);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 16px;
+            margin-bottom: 8px;
+        }
+        .wizard-progress-fill {
+            width: 0%; height: 100%;
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+            transition: width 0.1s linear;
+        }
+
+        .wizard-status-txt {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        /* Sandbox Terminal Window */
+        .wizard-term {
+            height: 120px;
+            background: #0b070a;
+            border: 1px solid var(--border-glass);
+            border-radius: 6px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 11px;
+            color: var(--success);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            line-height: 1.4;
+        }
+        .term-cmd { color: var(--accent); }
+        .term-warn { color: var(--warning); }
+        .term-err { color: var(--danger); }
+
+        /* B: Erase / Format Form Setup UI */
+        .format-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .form-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-input, .form-select {
+            background: rgba(15,6,13,0.3);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text-main);
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .form-input:focus, .form-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(223,118,202,0.15);
+        }
+
+        /* C: Live Benchmark Speed Gauges */
+        .benchmark-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .speed-gauges {
+            display: flex;
+            gap: 40px;
+            width: 100%;
+            justify-content: center;
+        }
+        .gauge-card {
+            flex: 1;
+            background: rgba(15,6,13,0.25);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .gauge-svg {
+            width: 140px; height: 140px;
+            transform: rotate(-90deg);
+        }
+        .gauge-track {
+            fill: none; stroke: rgba(248,241,247,0.05); stroke-width: 8;
+        }
+        .gauge-fill {
+            fill: none; stroke: var(--accent); stroke-width: 8;
+            stroke-dasharray: 377;
+            stroke-dashoffset: 377; /* Decreases to fill */
+            transition: stroke-dashoffset 0.15s ease;
+            stroke-linecap: round;
+        }
+        .gauge-card.write-card .gauge-fill { stroke: var(--warning); }
+        .gauge-value {
+            position: absolute;
+            top: 70px;
+            transform: translateY(-50%);
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .speed-num { font-size: 24px; font-weight: 700; font-family: monospace; color: var(--text-main); }
+        .speed-unit { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-top: 2px; }
+
+        /* Unified Buttons System */
+        .btn {
+            padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s var(--ease-leonux); border: 1px solid transparent;
+            user-select: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-secondary { background: rgba(248,241,247,0.03); border-color: var(--border-glass); color: var(--text-main); }
+        .btn-secondary:hover:not(:disabled) { background: var(--surface-hover); border-color: var(--border-mid); }
+        .btn-primary { background: var(--accent); color: var(--bg-body); font-weight: 700; box-shadow: 0 8px 24px var(--accent-glow); }
+        .btn-primary:hover:not(:disabled) { background: #e387d1; box-shadow: 0 12px 32px var(--accent-glow); transform: translateY(-1px); }
+        .btn-danger { background: rgba(242,130,145,0.1); border-color: rgba(242,130,145,0.3); color: var(--danger); }
+        .btn-danger:hover:not(:disabled) { background: rgba(242,130,145,0.2); }
+        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        @media (max-width: 768px) {
+            .ldisk-frame { height: 100dvh; max-height: none; width: 100dvw; border-radius: 0; border: none; }
+            .workspace { flex-direction: column; }
+            .storage-sidebar { width: 100%; height: 200px; border-right: none; border-bottom: 1px solid var(--border-glass); }
+        }
+    </style>
+<style id="malva-overrides">body{background:#1d101c url(../../brand/wallpapers/malva-dusk-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f6f0f6 url(../../brand/wallpapers/malva-dawn-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
+<body>
+
+    <div class="noise-layer"></div>
+    <div class="ambient-glow" id="ambient-glow"></div>
+
+    <!-- Reusable System Icons Map (Offline Support) -->
+    <svg style="display:none;" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="icon-disk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="2" ry="2"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="12" x2="12" y2="22"/>
+        </symbol>
+        <symbol id="icon-ssd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/><circle cx="15" cy="15" r="1.5" fill="currentColor"/>
+        </symbol>
+        <symbol id="icon-partition" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>
+        </symbol>
+    </svg>
+
+    <main class="ldisk-frame">
+        <header class="header-nav">
+            <div class="window-controls">
+                <button class="win-btn win-close" id="btn-close-app"></button>
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+            </div>
+            <div class="app-title">LDisk — Device Manager</div>
+            <div style="width: 52px;"></div> <!-- Spacer matching controls for balance -->
+        </header>
+
+        <div class="workspace">
+            
+            <!-- PANEL A: SIDEBAR DIRECTORY TREE -->
+            <aside class="storage-sidebar">
+                
+                <!-- Internal Drives Group -->
+                <div class="sidebar-section">
+                    <div class="section-title">
+                        <span>Internal physical</span>
+                        <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M21 9H3m6 12V9"/></svg>
+                    </div>
+                    <div class="device-group" id="tree-internal">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- External Devices Group -->
+                <div class="sidebar-section">
+                    <div class="section-title">
+                        <span>External USB</span>
+                        <svg class="section-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 12h20M5 12V8h4v4M10 12V6h4v6M15 12V9h4v3"/></svg>
+                    </div>
+                    <div class="device-group" id="tree-external">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Virtual Images Group -->
+                <div class="sidebar-section">
+                    <div class="section-title">
+                        <span>Disk Images</span>
+                        <svg class="section-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    </div>
+                    <div class="device-group" id="tree-virtual">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+            </aside>
+
+            <!-- PANEL B: DIAGNOSTICS & TELEMETRY WORKSHEET -->
+            <section class="canvas-area">
+                
+                <header class="toolbar">
+                    <button class="tool-btn" id="tool-first-aid" title="Run diagnostics scan">
+                        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M8 11h8M12 7v8"/></svg>
+                        <span>First Aid</span>
+                    </button>
+                    <button class="tool-btn" id="tool-erase" title="Format volume">
+                        <svg viewBox="0 0 24 24"><path d="M12 22c5.523 0 9-4.477 9-10S17.523 2 12 2 3 6.477 3 12s3.477 10 9 10z"/><path d="M8 12h8M12 8v8" transform="rotate(45 12 12)"/></svg>
+                        <span>Erase</span>
+                    </button>
+                    <button class="tool-btn" id="tool-mount" title="Unmount / Mount toggle">
+                        <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        <span id="tool-mount-lbl">Unmount</span>
+                    </button>
+                    <button class="tool-btn" id="tool-benchmark" title="Run hardware read/write benchmark">
+                        <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        <span>Benchmark</span>
+                    </button>
+                </header>
+
+                <div class="device-view" id="device-view-container">
+                    
+                    <div class="profile-summary">
+                        <div class="big-device-icon" id="primary-icon">
+                            <svg width="40" height="40"><use href="#icon-ssd"></use></svg>
+                        </div>
+                        <div class="profile-meta">
+                            <h1 class="profile-title" id="primary-title">Samsung SSD 990 PRO</h1>
+                            <p class="profile-subtitle" id="primary-subtitle">Internal Physical NVMe M.2 Drive</p>
+                            <span class="profile-badge" id="primary-type">Solid State Drive</span>
+                        </div>
+                    </div>
+
+                    <!-- Segments storage allocator card -->
+                    <div class="allocation-panel" id="primary-alloc-panel">
+                        <div class="allocation-header">
+                            <span>Storage Allocation breakdown</span>
+                            <span id="primary-capacity-calc">0 GB of 0 GB Used</span>
+                        </div>
+                        
+                        <div class="storage-track">
+                            <div class="storage-seg seg-system" id="seg-system" style="width: 0%"></div>
+                            <div class="storage-seg seg-apps" id="seg-apps" style="width: 0%"></div>
+                            <div class="storage-seg seg-user" id="seg-user" style="width: 0%"></div>
+                            <div class="storage-seg seg-cache" id="seg-cache" style="width: 0%"></div>
+                            <div class="storage-seg seg-free" id="seg-free" style="width: 100%"></div>
+                        </div>
+
+                        <div class="legend-row">
+                            <div class="legend-item"><div class="legend-dot" style="background:var(--accent);"></div><span>System Files</span></div>
+                            <div class="legend-item"><div class="legend-dot" style="background:var(--purple);"></div><span>Applications</span></div>
+                            <div class="legend-item"><div class="legend-dot" style="background:var(--warning);"></div><span>User Documents</span></div>
+                            <div class="legend-item"><div class="legend-dot" style="background:var(--danger);"></div><span>Temporary Log Cache</span></div>
+                            <div class="legend-item"><div class="legend-dot" style="background:rgba(248,241,247,0.06); border:1px solid var(--border-glass);"></div><span>Available Free Space</span></div>
+                        </div>
+                    </div>
+
+                    <!-- System Specifications Grid -->
+                    <div class="specs-grid">
+                        <div class="spec-box">
+                            <span class="spec-label">Mount Directory</span>
+                            <span class="spec-value" id="spec-mount">/</span>
+                        </div>
+                        <div class="spec-box">
+                            <span class="spec-label">File-System Structure</span>
+                            <span class="spec-value" id="spec-fs">EXT4 (Journaled)</span>
+                        </div>
+                        <div class="spec-box">
+                            <span class="spec-label">Device System Node</span>
+                            <span class="spec-value" id="spec-node">/dev/nvme0n1p1</span>
+                        </div>
+                        <div class="spec-box">
+                            <span class="spec-label">Hardware Connection</span>
+                            <span class="spec-value" id="spec-conn">PCIe Gen 4 x4</span>
+                        </div>
+                        <div class="spec-box">
+                            <span class="spec-label">Partition Scheme</span>
+                            <span class="spec-value" id="spec-scheme">GUID Partition Table (GPT)</span>
+                        </div>
+                        <div class="spec-box">
+                            <span class="spec-label">S.M.A.R.T. Health</span>
+                            <div class="spec-value">
+                                <div class="status-pill">
+                                    <div class="status-dot"></div>
+                                    <span id="spec-smart">Verified Healthy</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+        <!-- Popups overlay panel -->
+        <div class="modal-overlay" id="modal-stage">
+            
+            <!-- POPUP: FIRST AID SCANNER -->
+            <div class="modal-card" id="modal-firstaid" style="display: none;">
+                <header class="modal-header">
+                    <svg width="24" height="24" style="color:var(--accent); fill:none; stroke:currentColor; stroke-width:2;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <div class="modal-title-area">
+                        <div class="modal-title">First Aid Diagnostics</div>
+                        <div class="modal-subtitle" id="fa-target-lbl">Scanning /dev/nvme0n1</div>
+                    </div>
+                </header>
+                <div class="modal-body">
+                    <!-- Physical Blocks Scanner representation grid -->
+                    <div class="diagnostic-grid" id="fa-scan-grid"></div>
+
+                    <div class="wizard-progress-bar">
+                        <div class="wizard-progress-fill" id="fa-progress-fill"></div>
+                    </div>
+                    <div class="wizard-status-txt" id="fa-status-txt">Waiting to verify disk blocks...</div>
+
+                    <div class="wizard-term" id="fa-term"></div>
+                </div>
+                <footer class="modal-footer">
+                    <button class="btn btn-secondary" id="btn-fa-cancel">Cancel</button>
+                    <button class="btn btn-primary" id="btn-fa-action">Verify & Repair</button>
+                </footer>
+            </div>
+
+            <!-- POPUP: ERASE / FORMAT WIZARD -->
+            <div class="modal-card" id="modal-erase" style="display: none;">
+                <header class="modal-header">
+                    <svg width="24" height="24" style="color:var(--danger); fill:none; stroke:currentColor; stroke-width:2;"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    <div class="modal-title-area">
+                        <div class="modal-title">Erase Volume Partition</div>
+                        <div class="modal-subtitle">Permanently clear and format device parameters</div>
+                    </div>
+                </header>
+                <div class="modal-body">
+                    <form class="format-form" id="erase-form">
+                        <div class="form-group">
+                            <label class="form-label">Volume Identity Name</label>
+                            <input type="text" class="form-input" id="er-input-name" value="VOLUME-STORE" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">File-System Structure Format</label>
+                            <select class="form-select" id="er-input-fs">
+                                <option value="Leonux LFS">Leonux Custom LFS (System optimized)</option>
+                                <option value="BTRFS">BTRFS (Subvolume & Checksum supported)</option>
+                                <option value="EXT4">Linux Standard EXT4 (Journaled)</option>
+                                <option value="exFAT">Cross-platform exFAT (Universal compatibility)</option>
+                            </select>
+                        </div>
+                    </form>
+
+                    <!-- Animated execution steps screen -->
+                    <div class="erase-execution" id="erase-exec-screen" style="display: none;">
+                        <div class="wizard-progress-bar">
+                            <div class="wizard-progress-fill" id="er-progress-fill"></div>
+                        </div>
+                        <div class="wizard-status-txt" id="er-status-txt">Formulating cluster schemas...</div>
+                        <div class="wizard-term" id="er-term"></div>
+                    </div>
+                </div>
+                <footer class="modal-footer">
+                    <button class="btn btn-secondary" id="btn-er-cancel">Cancel</button>
+                    <button class="btn btn-danger" id="btn-er-action">Erase Volume</button>
+                </footer>
+            </div>
+
+            <!-- POPUP: PERFORMANCE BENCHMARK -->
+            <div class="modal-card" id="modal-benchmark" style="display: none;">
+                <header class="modal-header">
+                    <svg width="24" height="24" style="color:var(--accent); fill:none; stroke:currentColor; stroke-width:2;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    <div class="modal-title-area">
+                        <div class="modal-title">Performance Benchmark</div>
+                        <div class="modal-subtitle">Active read/write execution diagnostic speed-test</div>
+                    </div>
+                </header>
+                <div class="modal-body">
+                    <div class="benchmark-wrapper">
+                        <div class="speed-gauges">
+                            
+                            <!-- Read Performance Dial -->
+                            <div class="gauge-card">
+                                <svg class="gauge-svg">
+                                    <circle class="gauge-track" cx="70" cy="70" r="60"/>
+                                    <circle class="gauge-fill" id="gauge-read" cx="70" cy="70" r="60"/>
+                                </svg>
+                                <div class="gauge-value">
+                                    <span class="speed-num" id="bm-read-num">0</span>
+                                    <span class="speed-unit">Read MB/s</span>
+                                </div>
+                            </div>
+
+                            <!-- Write Performance Dial -->
+                            <div class="gauge-card write-card">
+                                <svg class="gauge-svg">
+                                    <circle class="gauge-track" cx="70" cy="70" r="60"/>
+                                    <circle class="gauge-fill" id="gauge-write" cx="70" cy="70" r="60"/>
+                                </svg>
+                                <div class="gauge-value">
+                                    <span class="speed-num" id="bm-write-num">0</span>
+                                    <span class="speed-unit">Write MB/s</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="wizard-status-txt" id="bm-status-txt">Ready to execute I/O tests...</div>
+                    </div>
+                </div>
+                <footer class="modal-footer">
+                    <button class="btn btn-secondary" id="btn-bm-cancel">Close</button>
+                    <button class="btn btn-primary" id="btn-bm-action">Run speed test</button>
+                </footer>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        (function() {
+            "use strict";
+
+            // --- Database Core State Directory ---
+            let devices = [
+                {
+                    id: "dev-nvme0",
+                    name: "Samsung SSD 990 PRO",
+                    subtitle: "Internal Physical NVMe M.2 Drive",
+                    type: "Solid State Drive",
+                    icon: "icon-ssd",
+                    category: "internal",
+                    path: "/dev/nvme0n1",
+                    fs: "Partition Container Base",
+                    mount: "None (Parent Container)",
+                    conn: "PCIe Gen 4 x4 Interface",
+                    scheme: "GUID Partition Table (GPT)",
+                    smart: "Verified Healthy",
+                    temp: "32°C",
+                    capacity: 2000, // GB
+                    allocated: { system: 0, apps: 0, user: 0, cache: 0 }, // Parent container holds no direct volumes
+                    isVolume: false,
+                    isMounted: true,
+                    maxRead: 7450,
+                    maxWrite: 6900
+                },
+                {
+                    id: "dev-nvme0-p1",
+                    name: "Leonux-System (/) ",
+                    subtitle: "Leonux OS Core Root Volume Partition",
+                    type: "System Partition",
+                    icon: "icon-partition",
+                    category: "internal",
+                    path: "/dev/nvme0n1p1",
+                    fs: "EXT4 (Journaled)",
+                    mount: "/",
+                    conn: "PCIe Gen 4 x4 Inline",
+                    scheme: "GPT Part Root Section",
+                    smart: "Healthy status verified",
+                    temp: "32°C",
+                    capacity: 512, // GB
+                    allocated: { system: 180, apps: 120, user: 90, cache: 24 },
+                    isVolume: true,
+                    isMounted: true,
+                    maxRead: 7200,
+                    maxWrite: 6500
+                },
+                {
+                    id: "dev-nvme0-p2",
+                    name: "Leonux-Home (/home)",
+                    subtitle: "Leonux System Home Files Partition",
+                    type: "User Mount Volume",
+                    icon: "icon-partition",
+                    category: "internal",
+                    path: "/dev/nvme0n1p2",
+                    fs: "BTRFS",
+                    mount: "/home",
+                    conn: "PCIe Gen 4 x4 Inline",
+                    scheme: "GPT Part Extent Section",
+                    smart: "Healthy status verified",
+                    temp: "32°C",
+                    capacity: 1488, // GB
+                    allocated: { system: 0, apps: 240, user: 890, cache: 8 },
+                    isVolume: true,
+                    isMounted: true,
+                    maxRead: 7100,
+                    maxWrite: 6300
+                },
+                {
+                    id: "dev-sdb1",
+                    name: "SanDisk Backup Vault",
+                    subtitle: "External Portable High-Speed SSD",
+                    type: "External Volume",
+                    icon: "icon-ssd",
+                    category: "external",
+                    path: "/dev/sdb1",
+                    fs: "exFAT (Universal Partition)",
+                    mount: "/media/backup",
+                    conn: "USB-C 3.2 Gen 2",
+                    scheme: "Master Boot Record (MBR)",
+                    smart: "Verified Healthy",
+                    temp: "28°C",
+                    capacity: 1000,
+                    allocated: { system: 12, apps: 0, user: 740, cache: 0 },
+                    isVolume: true,
+                    isMounted: true,
+                    maxRead: 1050,
+                    maxWrite: 980
+                },
+                {
+                    id: "dev-loop0",
+                    name: "LeonuxOS-Installer.iso",
+                    subtitle: "Virtual System Installation CD Drive Image",
+                    type: "Loop/Virtual CDROM Device",
+                    icon: "icon-disk",
+                    category: "virtual",
+                    path: "/dev/loop0",
+                    fs: "ISO9660 (Read-Only Cluster)",
+                    mount: "/media/installer",
+                    conn: "Virtual Loop Device Interface",
+                    scheme: "None (Raw Image Block)",
+                    smart: "Write-Protected Physical Image Checksum Clear",
+                    temp: "N/A",
+                    capacity: 4.7,
+                    allocated: { system: 4.5, apps: 0, user: 0, cache: 0 },
+                    isVolume: true,
+                    isMounted: true,
+                    maxRead: 3200,
+                    maxWrite: 0
+                }
+            ];
+
+            let activeSelectionIndex = 1; // Default selector matches System Root volume
+
+            // --- Elements References ---
+            const treeInternal = document.getElementById('tree-internal');
+            const treeExternal = document.getElementById('tree-external');
+            const treeVirtual = document.getElementById('tree-virtual');
+
+            const viewTitle = document.getElementById('primary-title');
+            const viewSubtitle = document.getElementById('primary-subtitle');
+            const viewType = document.getElementById('primary-type');
+            const viewIcon = document.getElementById('primary-icon');
+            const viewCapCalc = document.getElementById('primary-capacity-calc');
+            const viewAllocPanel = document.getElementById('primary-alloc-panel');
+
+            const specMount = document.getElementById('spec-mount');
+            const specFS = document.getElementById('spec-fs');
+            const specNode = document.getElementById('spec-node');
+            const specConn = document.getElementById('spec-conn');
+            const specScheme = document.getElementById('spec-scheme');
+            const specSmart = document.getElementById('spec-smart');
+
+            // Bottom control buttons
+            const toolFirstAid = document.getElementById('tool-first-aid');
+            const toolErase = document.getElementById('tool-erase');
+            const toolMount = document.getElementById('tool-mount');
+            const toolMountLbl = document.getElementById('tool-mount-lbl');
+            const toolBenchmark = document.getElementById('tool-benchmark');
+
+            // Interactive Modal wrappers
+            const modalStage = document.getElementById('modal-stage');
+            const modalFirstAid = document.getElementById('modal-firstaid');
+            const modalErase = document.getElementById('modal-erase');
+            const modalBenchmark = document.getElementById('modal-benchmark');
+
+            // --- Render Left Navigation Tree ---
+            function rebuildDeviceDirectoryTree() {
+                treeInternal.innerHTML = '';
+                treeExternal.innerHTML = '';
+                treeVirtual.innerHTML = '';
+
+                devices.forEach((dev, index) => {
+                    const node = document.createElement('div');
+                    node.className = `tree-node ${index === activeSelectionIndex ? 'active' : ''} ${!dev.isMounted ? 'unmounted' : ''}`;
+                    
+                    const groupIndentStyle = dev.isVolume && dev.category === 'internal' ? 'margin-left: 16px;' : '';
+                    
+                    node.style = groupIndentStyle;
+                    node.innerHTML = `
+                        <svg class="node-icon"><use href="#${dev.icon}"></use></svg>
+                        <div class="node-meta">
+                            <span class="node-name">${dev.name}</span>
+                            <span class="node-size">${dev.capacity >= 1000 ? (dev.capacity/1000).toFixed(1)+' TB' : dev.capacity+' GB'}</span>
+                        </div>
+                    `;
+
+                    node.addEventListener('click', () => {
+                        activeSelectionIndex = index;
+                        rebuildDeviceDirectoryTree();
+                        renderDiagnosticProfile();
+                    });
+
+                    if (dev.category === 'internal') treeInternal.appendChild(node);
+                    else if (dev.category === 'external') treeExternal.appendChild(node);
+                    else if (dev.category === 'virtual') treeVirtual.appendChild(node);
+                });
+            }
+
+            // --- Render active selected Device profiles ---
+            function renderDiagnosticProfile() {
+                const dev = devices[activeSelectionIndex];
+
+                viewTitle.textContent = dev.name;
+                viewSubtitle.textContent = dev.subtitle;
+                viewType.textContent = dev.type;
+                viewIcon.innerHTML = `<svg width="40" height="40"><use href="#${dev.icon}"></use></svg>`;
+
+                // Verify mounted state
+                if (!dev.isMounted) {
+                    toolMountLbl.textContent = "Mount";
+                    toolFirstAid.disabled = true;
+                    toolErase.disabled = true;
+                    toolBenchmark.disabled = true;
+
+                    viewAllocPanel.style.opacity = '0.15';
+                    viewCapCalc.textContent = "Storage offline / Partition unmounted";
+                    
+                    document.getElementById('seg-system').style.width = '0%';
+                    document.getElementById('seg-apps').style.width = '0%';
+                    document.getElementById('seg-user').style.width = '0%';
+                    document.getElementById('seg-cache').style.width = '0%';
+                    document.getElementById('seg-free').style.width = '100%';
+
+                    specMount.textContent = "Offline Unmounted";
+                    specFS.textContent = dev.fs;
+                    specNode.textContent = dev.path;
+                    specConn.textContent = dev.conn;
+                    specScheme.textContent = dev.scheme;
+                    specSmart.textContent = "Unknown (Device offline)";
+                    return;
+                }
+
+                // Mounted states
+                toolMountLbl.textContent = "Unmount";
+                toolFirstAid.disabled = false;
+                toolErase.disabled = !dev.isVolume; // Disable erase on parent hardware base controllers
+                toolBenchmark.disabled = dev.maxRead === 0;
+
+                viewAllocPanel.style.opacity = '1';
+
+                // Display Storage allocation distributions smoothly
+                if (dev.isVolume) {
+                    const totalUsed = dev.allocated.system + dev.allocated.apps + dev.allocated.user + dev.allocated.cache;
+                    const freeSpace = dev.capacity - totalUsed;
+                    viewCapCalc.textContent = `${totalUsed.toFixed(1)} GB of ${dev.capacity} GB Used`;
+
+                    document.getElementById('seg-system').style.width = `${(dev.allocated.system / dev.capacity) * 100}%`;
+                    document.getElementById('seg-apps').style.width = `${(dev.allocated.apps / dev.capacity) * 100}%`;
+                    document.getElementById('seg-user').style.width = `${(dev.allocated.user / dev.capacity) * 100}%`;
+                    document.getElementById('seg-cache').style.width = `${(dev.allocated.cache / dev.capacity) * 100}%`;
+                    document.getElementById('seg-free').style.width = `${(freeSpace / dev.capacity) * 100}%`;
+                } else {
+                    // Physical Drive Controller has no partitions of its own direct values
+                    viewCapCalc.textContent = `Parent Container Core holding multiple partitions`;
+                    document.getElementById('seg-system').style.width = '0%';
+                    document.getElementById('seg-apps').style.width = '0%';
+                    document.getElementById('seg-user').style.width = '0%';
+                    document.getElementById('seg-cache').style.width = '0%';
+                    document.getElementById('seg-free').style.width = '100%';
+                }
+
+                specMount.textContent = dev.mount;
+                specFS.textContent = dev.fs;
+                specNode.textContent = dev.path;
+                specConn.textContent = dev.conn;
+                specScheme.textContent = dev.scheme;
+                specSmart.textContent = dev.smart;
+                
+                // Adjust glowing light to status context
+                document.getElementById('ambient-glow').style.background = `radial-gradient(circle, var(--accent-glow) 0%, transparent 70%)`;
+            }
+
+            // --- Mount / Unmount State Controllers ---
+            toolMount.addEventListener('click', () => {
+                const dev = devices[activeSelectionIndex];
+                dev.isMounted = !dev.isMounted;
+                rebuildDeviceDirectoryTree();
+                renderDiagnosticProfile();
+            });
+
+            // --- Modal Open / Close routines ---
+            function openPopupModal(modalElement) {
+                modalStage.classList.add('active');
+                modalFirstAid.style.display = 'none';
+                modalErase.style.display = 'none';
+                modalBenchmark.style.display = 'none';
+                
+                modalElement.style.display = 'flex';
+            }
+
+            function closePopupModal() {
+                modalStage.classList.remove('active');
+            }
+
+            // --- A: Diagnostics First Aid Execution simulator ---
+            const btnFirstAid = document.getElementById('tool-first-aid');
+            const btnFaAction = document.getElementById('btn-fa-action');
+            const btnFaCancel = document.getElementById('btn-fa-cancel');
+            const faTargetLbl = document.getElementById('fa-target-lbl');
+            const faScanGrid = document.getElementById('fa-scan-grid');
+            const faProgressFill = document.getElementById('fa-progress-fill');
+            const faStatusTxt = document.getElementById('fa-status-txt');
+            const faTerm = document.getElementById('fa-term');
+
+            btnFirstAid.addEventListener('click', () => {
+                const dev = devices[activeSelectionIndex];
+                faTargetLbl.textContent = `Scanning node: ${dev.path}`;
+                
+                // Formulate empty sector blocks
+                faScanGrid.innerHTML = '';
+                for (let i = 0; i < 90; i++) {
+                    const block = document.createElement('div');
+                    block.className = 'scan-sector';
+                    block.id = `sector-${i}`;
+                    faScanGrid.appendChild(block);
+                }
+
+                faProgressFill.style.width = '0%';
+                faStatusTxt.textContent = "Ready to verify cluster blocks...";
+                faTerm.innerHTML = `<div class="terminal-line line-info">LDisk verification engine initialized. Node targets: ${dev.path}</div>`;
+                
+                btnFaAction.style.display = 'inline-flex';
+                btnFaCancel.textContent = "Cancel";
+
+                openPopupModal(modalFirstAid);
+            });
+
+            btnFaAction.addEventListener('click', () => {
+                btnFaAction.style.display = 'none';
+                btnFaCancel.textContent = "Abort";
+                faStatusTxt.textContent = "Diagnostics execution initialized...";
+                
+                let sectorIndex = 0;
+                const totalSectors = 90;
+                const corruptedIndexPotential = [14, 43, 76]; // Simulated corrupted block points
+                
+                function runBlocksCheckCycle() {
+                    if (sectorIndex >= totalSectors) {
+                        finalizeFirstAidSuccess();
+                        return;
+                    }
+
+                    const isCorrupted = corruptedIndexPotential.includes(sectorIndex);
+                    const sectorNode = document.getElementById(`sector-${sectorIndex}`);
+                    
+                    if (isCorrupted) {
+                        sectorNode.className = 'scan-sector corrupted';
+                        faTerm.innerHTML += `<div class="terminal-line term-err">[ERR] Bad sector block signature encountered at address index #${sectorIndex * 128}</div>`;
+                        faTerm.scrollTop = faTerm.scrollHeight;
+                    } else {
+                        sectorNode.className = 'scan-sector scanned';
+                    }
+
+                    const progressPercentage = (sectorIndex / totalSectors) * 100;
+                    faProgressFill.style.width = `${progressPercentage}%`;
+                    faStatusTxt.textContent = `Scanning sector blocks... (${progressPercentage.toFixed(0)}%)`;
+
+                    sectorIndex++;
+                    setTimeout(runBlocksCheckCycle, 30); // Scanning execution velocity
+                }
+
+                setTimeout(runBlocksCheckCycle, 600);
+            });
+
+            function finalizeFirstAidSuccess() {
+                faProgressFill.style.width = '100%';
+                faStatusTxt.textContent = "Verifying structures completed successfully!";
+                
+                faTerm.innerHTML += `<div class="terminal-line term-warn">[INFO] Repairing bad sector block mappings ...</div>`;
+                faTerm.scrollTop = faTerm.scrollHeight;
+
+                setTimeout(() => {
+                    // Turn corrupted blocks into green repaired markers
+                    [14, 43, 76].forEach(idx => {
+                        const block = document.getElementById(`sector-${idx}`);
+                        if (block) block.className = 'scan-sector repaired';
+                    });
+                    
+                    faTerm.innerHTML += `<div class="terminal-line line-info">[OK] Core filesystem table fixed. Zero bad sectors remaining.</div>`;
+                    faTerm.innerHTML += `<div class="terminal-line line-info">Verification Finished: SUCCESS.</div>`;
+                    faTerm.scrollTop = faTerm.scrollHeight;
+                    
+                    btnFaCancel.textContent = "Done";
+                    faStatusTxt.textContent = "Diagnostics Completed: All sectors verified and repaired.";
+                    
+                    // Adjust ambient backlight color
+                    document.getElementById('ambient-glow').style.background = `radial-gradient(circle, rgba(146,192,120,0.4) 0%, transparent 70%)`;
+                }, 1200);
+            }
+
+            btnFaCancel.addEventListener('click', () => {
+                closePopupModal();
+                renderDiagnosticProfile();
+            });
+
+            // --- B: Erase / Format Partition Wizard ---
+            const btnErase = document.getElementById('tool-erase');
+            const btnErAction = document.getElementById('btn-er-action');
+            const btnErCancel = document.getElementById('btn-er-cancel');
+            const eraseForm = document.getElementById('erase-form');
+            const eraseExecScreen = document.getElementById('erase-exec-screen');
+            
+            const erProgressFill = document.getElementById('er-progress-fill');
+            const erStatusTxt = document.getElementById('er-status-txt');
+            const erTerm = document.getElementById('er-term');
+
+            btnErase.addEventListener('click', () => {
+                const dev = devices[activeSelectionIndex];
+                document.getElementById('er-input-name').value = dev.name.replace(/\s\([^)]+\)/, '').toUpperCase();
+                
+                eraseForm.style.display = 'flex';
+                eraseExecScreen.style.display = 'none';
+                
+                btnErAction.style.display = 'inline-flex';
+                btnErCancel.textContent = "Cancel";
+
+                openPopupModal(modalErase);
+            });
+
+            btnErAction.addEventListener('click', (e) => {
+                e.preventDefault();
+                const inputName = document.getElementById('er-input-name').value.trim();
+                const inputFS = document.getElementById('er-input-fs').value;
+
+                if (!inputName) return;
+
+                eraseForm.style.display = 'none';
+                eraseExecScreen.style.display = 'block';
+                btnErAction.style.display = 'none';
+                btnErCancel.textContent = "Abort";
+
+                erProgressFill.style.width = '0%';
+                erStatusTxt.textContent = "Constructing directories templates...";
+                erTerm.innerHTML = `<div class="terminal-line">Format instruction: mkfs.${inputFS.toLowerCase().replace(' ', '')} -V ${inputName}</div>`;
+
+                const eraseSteps = [
+                    { percent: 15, text: "Unmounting partition node pointers safely ...", delay: 700 },
+                    { percent: 35, text: "Clearing existing cluster index pointers ...", delay: 800 },
+                    { percent: 55, text: `Creating primary directory format structures (${inputFS}) ...`, delay: 900 },
+                    { percent: 75, text: "Writing new block header tables ...", delay: 1000 },
+                    { percent: 90, text: "Allocating journal filesystems logs ...", delay: 700 },
+                    { percent: 100, text: "Mounting target directories ...", delay: 600 }
+                ];
+
+                let currentStep = 0;
+                function runEraseProcess() {
+                    if (currentStep >= eraseSteps.length) {
+                        finalizeEraseSuccess(inputName, inputFS);
+                        return;
+                    }
+
+                    const step = eraseSteps[currentStep];
+                    setTimeout(() => {
+                        erProgressFill.style.width = `${step.percent}%`;
+                        erStatusTxt.textContent = step.text;
+                        erTerm.innerHTML += `<div class="terminal-line">[OK] ${step.text}</div>`;
+                        erTerm.scrollTop = erTerm.scrollHeight;
+                        
+                        currentStep++;
+                        runEraseProcess();
+                    }, step.delay);
+                }
+
+                runEraseProcess();
+            });
+
+            function finalizeEraseSuccess(newName, newFS) {
+                // Update properties in main memory datastores
+                const dev = devices[activeSelectionIndex];
+                dev.name = newName;
+                dev.fs = newFS;
+                dev.allocated = { system: 1, apps: 0, user: 0, cache: 0 }; // Wiped partition reset
+
+                erProgressFill.style.width = '100%';
+                erStatusTxt.textContent = "Format finished successfully!";
+                erTerm.innerHTML += `<div class="terminal-line line-info">Volume structure created. Size capacity: ${dev.capacity} GB.</div>`;
+                erTerm.scrollTop = erTerm.scrollHeight;
+
+                btnErCancel.textContent = "Done";
+                rebuildDeviceDirectoryTree();
+                
+                // Highlight ambient backlight orange/glowing formats successfully completed
+                document.getElementById('ambient-glow').style.background = `radial-gradient(circle, rgba(237,193,128,0.4) 0%, transparent 70%)`;
+            }
+
+            btnErCancel.addEventListener('click', () => {
+                closePopupModal();
+                renderDiagnosticProfile();
+            });
+
+            // --- C: Performance Speed Benchmark Simulator ---
+            const btnBenchmark = document.getElementById('tool-benchmark');
+            const btnBmAction = document.getElementById('btn-bm-action');
+            const btnBmCancel = document.getElementById('btn-bm-cancel');
+            
+            const gaugeRead = document.getElementById('gauge-read');
+            const gaugeWrite = document.getElementById('gauge-write');
+            const bmReadNum = document.getElementById('bm-read-num');
+            const bmWriteNum = document.getElementById('bm-write-num');
+            const bmStatusTxt = document.getElementById('bm-status-txt');
+
+            btnBenchmark.addEventListener('click', () => {
+                // Reset Gauges
+                updateGaugePercentage(gaugeRead, 0);
+                updateGaugePercentage(gaugeWrite, 0);
+                bmReadNum.textContent = "0";
+                bmWriteNum.textContent = "0";
+                
+                bmStatusTxt.textContent = "Ready to analyze hardware throughput speeds.";
+                btnBmAction.style.display = 'inline-flex';
+                btnBmCancel.textContent = "Cancel";
+
+                openPopupModal(modalBenchmark);
+            });
+
+            // Standard gauge formula stroke-dashoffset transition values
+            function updateGaugePercentage(gaugeElement, value, maxVal = 7500) {
+                const maxOffsetValue = 377; // Total stroke circumference
+                const valClamped = Math.min(maxVal, Math.max(0, value));
+                const offsetPercentage = ((maxVal - valClamped) / maxVal) * maxOffsetValue;
+                gaugeElement.style.strokeDashoffset = offsetPercentage;
+            }
+
+            btnBmAction.addEventListener('click', () => {
+                btnBmAction.style.display = 'none';
+                btnBmCancel.textContent = "Abort";
+                bmStatusTxt.textContent = "Running diagnostic read speed tests...";
+
+                const dev = devices[activeSelectionIndex];
+                const targetRead = dev.maxRead;
+                const targetWrite = dev.maxWrite;
+
+                let currentRead = 0;
+                let currentWrite = 0;
+
+                // Test Action Step 1: Read evaluation
+                function runReadTest() {
+                    if (currentRead >= targetRead) {
+                        currentRead = targetRead;
+                        bmReadNum.textContent = currentRead;
+                        updateGaugePercentage(gaugeRead, currentRead);
+                        
+                        // Switch to write evaluations
+                        setTimeout(() => {
+                            bmStatusTxt.textContent = "Running diagnostic write speed tests...";
+                            runWriteTest();
+                        }, 500);
+                        return;
+                    }
+
+                    // Dynamic sweep increment values
+                    currentRead += Math.floor(Math.random() * 300) + 150;
+                    if (currentRead > targetRead) currentRead = targetRead;
+                    
+                    bmReadNum.textContent = currentRead;
+                    updateGaugePercentage(gaugeRead, currentRead);
+                    
+                    setTimeout(runReadTest, 30);
+                }
+
+                // Test Action Step 2: Write evaluation
+                function runWriteTest() {
+                    if (currentWrite >= targetWrite) {
+                        currentWrite = targetWrite;
+                        bmWriteNum.textContent = currentWrite;
+                        updateGaugePercentage(gaugeWrite, currentWrite);
+                        
+                        finalizeBenchmarkSuccess();
+                        return;
+                    }
+
+                    currentWrite += Math.floor(Math.random() * 300) + 150;
+                    if (currentWrite > targetWrite) currentWrite = targetWrite;
+                    
+                    bmWriteNum.textContent = currentWrite;
+                    updateGaugePercentage(gaugeWrite, currentWrite);
+                    
+                    setTimeout(runWriteTest, 30);
+                }
+
+                runReadTest();
+            });
+
+            function finalizeBenchmarkSuccess() {
+                bmStatusTxt.textContent = "Performance speed-test finished successfully.";
+                btnBmCancel.textContent = "Done";
+                
+                // Adjust ambient backdrop glow to match diagnostic status success
+                document.getElementById('ambient-glow').style.background = `radial-gradient(circle, rgba(223,118,202,0.4) 0%, transparent 70%)`;
+            }
+
+            btnBmCancel.addEventListener('click', () => {
+                closePopupModal();
+                renderDiagnosticProfile();
+            });
+
+            // Close application simulation
+            document.getElementById('btn-close-app').addEventListener('click', () => {
+                document.querySelector('.ldisk-frame').style.animation = "window-open 0.4s var(--ease-leonux) reverse forwards";
+                setTimeout(() => document.body.innerHTML = "<h2 style='color:var(--text-muted); font-weight:300;'>Disk Utility Session Closed.</h2>", 400);
+            });
+
+            // --- Initial Boots ---
+            rebuildDeviceDirectoryTree();
+            renderDiagnosticProfile();
+
+        })();
+    </script>
+</body>
+</html>
