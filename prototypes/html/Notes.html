@@ -9,24 +9,24 @@
          * LEONUX DESIGN SYSTEM - NOTES MANAGER SCALES
          */
         :root {
-            --bg-body: #1d101c;
-            --surface-base: rgba(42,25,41,0.84);
-            --surface-panel: rgba(58,38,57,0.55);
-            --surface-hover: rgba(227,213,225,0.08);
-            --surface-active: rgba(227,213,225,0.13);
-            --border-glass: rgba(227,213,225,0.09);
-            --border-mid: rgba(227,213,225,0.17);
+            --bg-body: #161617;
+            --surface-base: rgba(30,30,31,0.84);
+            --surface-panel: rgba(58,58,60,0.55);
+            --surface-hover: rgba(245,245,247,0.08);
+            --surface-active: rgba(245,245,247,0.13);
+            --border-glass: rgba(245,245,247,0.09);
+            --border-mid: rgba(245,245,247,0.17);
             
-            --text-main: #e3d5e1;
-            --text-muted: #b5a0b2;
+            --text-main: #f5f5f7;
+            --text-muted: #8e8e93;
             
-            --accent: #d47abc;
-            --accent-glow: rgba(212,122,188,0.35);
-            --danger: #ff8a94;
-            --success: #7bc74d;
-            --warning: #f2b04a;
+            --accent: #dc73c2;
+            --accent-glow: rgba(220,115,194,0.35);
+            --danger: #ff7a85;
+            --success: #7fd35a;
+            --warning: #ffb85c;
             
-            --shadow-win: 0 40px 100px -20px rgba(10,3,9,0.95);
+            --shadow-win: 0 40px 100px -20px rgba(6,6,6,0.95);
             --glass-blur: blur(40px) saturate(180%);
             --radius-xl: clamp(16px, 2vh, 24px);
             --radius-l: clamp(8px, 1vh, 12px);
@@ -76,7 +76,7 @@
             align-items: center;
             padding: 16px 24px;
             border-bottom: 1px solid var(--border-glass);
-            background: rgba(15,6,13,0.2);
+            background: rgba(10,10,10,0.2);
             justify-content: space-between;
         }
         .window-controls { display: flex; gap: 8px; }
@@ -104,7 +104,7 @@
             border-right: 1px solid var(--border-glass);
             display: flex;
             flex-direction: column;
-            background: rgba(15,6,13,0.15);
+            background: rgba(10,10,10,0.15);
             transition: transform 0.3s var(--ease-leonux), width 0.3s var(--ease-leonux);
             overflow: hidden;
             flex-shrink: 0;
@@ -129,7 +129,7 @@
         }
         .search-input {
             width: 100%;
-            background: rgba(15,6,13,0.25);
+            background: rgba(10,10,10,0.25);
             border: 1px solid var(--border-glass);
             border-radius: 8px;
             padding: 8px 12px 8px 36px;
@@ -140,7 +140,7 @@
         }
         .search-input:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 10px rgba(223,118,202,0.15);
+            box-shadow: 0 0 10px rgba(220,115,194,0.15);
         }
         .search-icon {
             position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
@@ -159,7 +159,7 @@
             flex-shrink: 0;
         }
         .btn-new-note:hover {
-            background: #e387d1;
+            background: #f093d7;
             box-shadow: 0 0 15px var(--accent-glow);
             transform: scale(1.03);
         }
@@ -175,7 +175,7 @@
         .tag-pill {
             padding: 4px 10px;
             border-radius: var(--radius-pill);
-            background: rgba(248,241,247,0.03);
+            background: rgba(245,245,247,0.03);
             border: 1px solid var(--border-glass);
             color: var(--text-muted);
             font-size: 11px;
@@ -186,7 +186,7 @@
         }
         .tag-pill:hover { color: var(--text-main); background: var(--surface-hover); }
         .tag-pill.active {
-            background: rgba(223,118,202,0.15);
+            background: rgba(220,115,194,0.15);
             border-color: var(--accent);
             color: var(--accent);
         }
@@ -215,7 +215,7 @@
             background: var(--surface-hover);
         }
         .note-card.active {
-            background: rgba(248,241,247,0.04);
+            background: rgba(245,245,247,0.04);
             border-color: var(--border-glass);
         }
         .note-card.active::before {
@@ -250,7 +250,7 @@
         .note-card-tags { display: flex; gap: 4px; }
         .card-tag-badge {
             font-size: 9px; padding: 2px 6px; border-radius: 4px;
-            background: rgba(248,241,247,0.05); color: var(--text-muted);
+            background: rgba(245,245,247,0.05); color: var(--text-muted);
         }
         /* --- Panel B: Main Workspace Canvas --- */
         .canvas-area {
@@ -268,11 +268,11 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(15,6,13,0.1);
+            background: rgba(10,10,10,0.1);
         }
         /* Mode Selector Toggle Switches */
         .workspace-toggles {
-            display: flex; gap: 4px; background: rgba(15,6,13,0.15);
+            display: flex; gap: 4px; background: rgba(10,10,10,0.15);
             padding: 4px; border-radius: 8px; border: 1px solid var(--border-glass);
         }
         .toggle-btn {
@@ -282,7 +282,7 @@
         }
         .toggle-btn svg { width: 14px; height: 14px; }
         .toggle-btn:hover { color: var(--text-main); }
-        .toggle-btn.active { color: var(--text-main); background: rgba(248,241,247,0.08); }
+        .toggle-btn.active { color: var(--text-main); background: rgba(245,245,247,0.08); }
         /* Formatting Helpers Toolbar inside content editing view */
         .format-bar {
             display: flex; gap: 6px; align-items: center;
@@ -370,7 +370,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            background: rgba(15,6,13,0.1);
+            background: rgba(10,10,10,0.1);
             transition: all 0.3s var(--ease-leonux);
         }
         .preview-output {
@@ -379,7 +379,7 @@
             overflow-y: auto;
             font-size: 15px;
             line-height: 1.7;
-            color: rgba(248,241,247,0.9);
+            color: rgba(245,245,247,0.9);
         }
         /* --- Dynamic Pane Sizer Classes --- */
         .pane-editor.collapsed { display: none; }
@@ -394,7 +394,7 @@
             justify-content: space-between;
             font-size: 11px;
             color: var(--text-muted);
-            background: rgba(15,6,13,0.15);
+            background: rgba(10,10,10,0.15);
         }
         .footer-telemetry { display: flex; gap: 16px; font-family: monospace; }
         .save-indicator { display: flex; align-items: center; gap: 6px; }
@@ -412,42 +412,42 @@
         .preview-output h4 { font-size: 15px; font-weight: 600; color: var(--text-main); margin: 16px 0 8px 0; }
         .preview-output p { margin-bottom: 14px; }
         .preview-output strong { color: var(--text-main); }
-        .preview-output em { color: rgba(248,241,247,0.8); }
+        .preview-output em { color: rgba(245,245,247,0.8); }
         .preview-output del { opacity: 0.5; }
         .preview-output blockquote {
             border-left: 4px solid var(--accent);
             padding: 8px 16px; margin: 16px 0;
-            background: rgba(223,118,202,0.05);
+            background: rgba(220,115,194,0.05);
             border-radius: 0 8px 8px 0;
             color: var(--text-muted);
         }
         
         /* Code displays */
         .preview-output pre {
-            background: #0d090c; border: 1px solid var(--border-glass); border-radius: 8px;
+            background: #0b0b0b; border: 1px solid var(--border-glass); border-radius: 8px;
             padding: 16px; margin: 16px 0; overflow-x: auto;
             font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px;
         }
         .preview-output code {
             font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px;
-            background: rgba(248,241,247,0.06); padding: 2px 6px; border-radius: 4px;
+            background: rgba(245,245,247,0.06); padding: 2px 6px; border-radius: 4px;
             color: var(--danger);
         }
-        .preview-output pre code { background: transparent; padding: 0; color: #e798d7; }
+        .preview-output pre code { background: transparent; padding: 0; color: #f093d7; }
         /* Tables */
         .preview-output table {
             width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 13px;
         }
-        .preview-output th { background: rgba(38,24,35,0.9); padding: 10px 12px; border: 1px solid var(--border-glass); text-align: left; }
+        .preview-output th { background: rgba(31,31,31,0.9); padding: 10px 12px; border: 1px solid var(--border-glass); text-align: left; }
         .preview-output td { padding: 8px 12px; border: 1px solid var(--border-glass); }
-        .preview-output tr:nth-child(even) { background: rgba(248,241,247,0.02); }
+        .preview-output tr:nth-child(even) { background: rgba(245,245,247,0.02); }
         /* Checklists */
         .preview-output .chk-item {
             display: flex; align-items: center; gap: 8px; list-style-type: none; margin-bottom: 4px;
         }
         .preview-output .chk-box {
             width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border-mid);
-            background: rgba(15,6,13,0.3); display: flex; align-items: center; justify-content: center;
+            background: rgba(10,10,10,0.3); display: flex; align-items: center; justify-content: center;
             color: var(--accent); flex-shrink: 0;
         }
         .preview-output .chk-box.checked {
@@ -468,8 +468,8 @@
             padding: 12px 16px; border-radius: 8px; margin: 16px 0;
             border-left: 4px solid var(--border-glass); font-size: 13px;
         }
-        .preview-output .markdown-alert-info { background: rgba(223,118,202,0.08); border-left-color: var(--accent); color: rgba(248,241,247,0.9); }
-        .preview-output .markdown-alert-warning { background: rgba(237,193,128,0.08); border-left-color: var(--warning); color: rgba(248,241,247,0.9); }
+        .preview-output .markdown-alert-info { background: rgba(220,115,194,0.08); border-left-color: var(--accent); color: rgba(245,245,247,0.9); }
+        .preview-output .markdown-alert-warning { background: rgba(237,193,128,0.08); border-left-color: var(--warning); color: rgba(245,245,247,0.9); }
         .preview-output .markdown-alert-title { font-weight: 700; margin-bottom: 4px; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
         /* Media adjustments */
         @media (max-width: 768px) {
@@ -478,7 +478,7 @@
             .notes-shelf.mobile-open { transform: translateX(0); }
         }
     </style>
-<style id="malva-overrides">body{background:#1d101c url(../../brand/wallpapers/malva-dusk-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f6f0f6 url(../../brand/wallpapers/malva-dawn-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
+<style id="malva-overrides">body{background:#161617 url(../../brand/wallpapers/malva-graphite-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f5f5f7 url(../../brand/wallpapers/malva-silver-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
 <body>
 
     <div class="noise-layer"></div>

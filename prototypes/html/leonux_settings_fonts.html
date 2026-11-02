@@ -10,26 +10,26 @@
          * LEONUX DESIGN SYSTEM - SETTINGS / FONTS MANAGER EDITION
          */
         :root {
-            --bg-body: #1d101c;
-            --surface-base: rgba(42,25,41,0.84);
-            --surface-panel: rgba(58,38,57,0.55);
-            --surface-hover: rgba(227,213,225,0.08);
-            --surface-active: rgba(227,213,225,0.13);
-            --surface-selected: rgba(223,118,202,0.15);
-            --border-glass: rgba(227,213,225,0.09);
-            --border-mid: rgba(227,213,225,0.17);
+            --bg-body: #161617;
+            --surface-base: rgba(30,30,31,0.84);
+            --surface-panel: rgba(58,58,60,0.55);
+            --surface-hover: rgba(245,245,247,0.08);
+            --surface-active: rgba(245,245,247,0.13);
+            --surface-selected: rgba(220,115,194,0.15);
+            --border-glass: rgba(245,245,247,0.09);
+            --border-mid: rgba(245,245,247,0.17);
             
-            --text-main: #e3d5e1;
-            --text-muted: #b5a0b2;
+            --text-main: #f5f5f7;
+            --text-muted: #8e8e93;
             
-            --accent: #d47abc;
-            --accent-glow: rgba(212,122,188,0.35);
-            --danger: #ff8a94;
-            --success: #7bc74d;
-            --warning: #f2b04a;
-            --purple: #eaa4dc;
+            --accent: #dc73c2;
+            --accent-glow: rgba(220,115,194,0.35);
+            --danger: #ff7a85;
+            --success: #7fd35a;
+            --warning: #ffb85c;
+            --purple: #f093d7;
             
-            --shadow-win: 0 40px 100px -20px rgba(10,3,9,0.95);
+            --shadow-win: 0 40px 100px -20px rgba(6,6,6,0.95);
             --glass-blur: blur(40px) saturate(180%);
             --radius-xl: clamp(16px, 2vh, 24px);
             --radius-l: clamp(8px, 1vh, 12px);
@@ -52,8 +52,8 @@
 
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(248,241,247,0.1); border-radius: 4px; border: 2px solid transparent; background-clip: padding-box; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(248,241,247,0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(245,245,247,0.1); border-radius: 4px; border: 2px solid transparent; background-clip: padding-box; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(245,245,247,0.2); }
 
         .noise-layer {
             position: fixed; inset: 0; opacity: 0.03; pointer-events: none; z-index: 0;
@@ -83,7 +83,7 @@
         /* Header Navigation Toolbar */
         .header-toolbar {
             display: flex; align-items: center; padding: 14px 20px;
-            border-bottom: 1px solid var(--border-glass); background: rgba(15,6,13,0.3);
+            border-bottom: 1px solid var(--border-glass); background: rgba(10,10,10,0.3);
             gap: 16px; justify-content: space-between;
         }
 
@@ -104,7 +104,7 @@
         /* --- Sidebar Categories --- */
         .sidebar {
             width: 240px; border-right: 1px solid var(--border-glass); display: flex; flex-direction: column;
-            background: rgba(15,6,13,0.15); overflow-y: auto; flex-shrink: 0; padding: 16px 12px; gap: 24px;
+            background: rgba(10,10,10,0.15); overflow-y: auto; flex-shrink: 0; padding: 16px 12px; gap: 24px;
         }
         
         .nav-item {
@@ -112,7 +112,7 @@
             cursor: pointer; transition: all 0.2s ease; font-size: 13px; color: var(--text-muted); font-weight: 500;
         }
         .nav-item:hover { background: var(--surface-hover); color: var(--text-main); }
-        .nav-item.active { background: rgba(223,118,202,0.15); color: var(--accent); font-weight: 600; }
+        .nav-item.active { background: rgba(220,115,194,0.15); color: var(--accent); font-weight: 600; }
         .nav-item svg { width: 18px; height: 18px; opacity: 0.8; }
         .nav-item.active svg { opacity: 1; }
 
@@ -146,23 +146,23 @@
 
         /* Inputs & Controls */
         select.glass-select {
-            appearance: none; background: rgba(15,6,13,0.3); border: 1px solid var(--border-glass);
+            appearance: none; background: rgba(10,10,10,0.3); border: 1px solid var(--border-glass);
             color: var(--text-main); padding: 8px 32px 8px 12px; border-radius: 8px; font-size: 13px;
             outline: none; cursor: pointer; transition: 0.2s; width: 200px;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239DA3AE' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
             background-repeat: no-repeat; background-position: right 10px center;
         }
-        select.glass-select:focus, select.glass-select:hover { border-color: var(--accent); background-color: rgba(15,6,13,0.5); }
-        select.glass-select option { background: #21151f; color: #f8f1f7; }
+        select.glass-select:focus, select.glass-select:hover { border-color: var(--accent); background-color: rgba(10,10,10,0.5); }
+        select.glass-select option { background: #1b1b1b; color: #f5f5f7; }
 
         input[type="range"].glass-slider {
-            -webkit-appearance: none; width: 150px; height: 6px; background: rgba(248,241,247,0.1);
+            -webkit-appearance: none; width: 150px; height: 6px; background: rgba(245,245,247,0.1);
             border-radius: 4px; outline: none; transition: 0.2s;
         }
         input[type="range"].glass-slider::-webkit-slider-thumb {
             -webkit-appearance: none; appearance: none; width: 16px; height: 16px;
             border-radius: 50%; background: var(--text-main); cursor: pointer;
-            box-shadow: 0 0 10px rgba(15,6,13,0.5); border: 2px solid var(--accent); transition: 0.2s;
+            box-shadow: 0 0 10px rgba(10,10,10,0.5); border: 2px solid var(--accent); transition: 0.2s;
         }
         input[type="range"].glass-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
         
@@ -173,7 +173,7 @@
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
         .toggle-slider {
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(248,241,247,0.1); transition: .3s; border-radius: 24px;
+            background-color: rgba(245,245,247,0.1); transition: .3s; border-radius: 24px;
             border: 1px solid var(--border-glass);
         }
         .toggle-slider:before {
@@ -181,16 +181,16 @@
             background-color: var(--text-muted); transition: .3s; border-radius: 50%;
         }
         .toggle-switch input:checked + .toggle-slider { background-color: var(--accent); border-color: var(--accent); }
-        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); background-color: #f8f1f7; }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); background-color: #f5f5f7; }
 
         /* Live Preview Box */
         .live-preview-box {
-            background: rgba(15,6,13,0.3); border: 1px solid var(--border-mid);
+            background: rgba(10,10,10,0.3); border: 1px solid var(--border-mid);
             border-radius: var(--radius-l); padding: 24px; margin-top: 16px;
             text-align: center; min-height: 120px; display: flex; align-items: center; justify-content: center;
             transition: font-size 0.2s ease, font-family 0.2s ease;
         }
-        .live-preview-box[contenteditable]:focus { outline: 1px solid var(--accent); background: rgba(15,6,13,0.5); }
+        .live-preview-box[contenteditable]:focus { outline: 1px solid var(--accent); background: rgba(10,10,10,0.5); }
 
         /* Font Library Toolbar */
         .library-toolbar {
@@ -198,7 +198,7 @@
         }
         .search-wrapper { position: relative; }
         .search-input {
-            background: rgba(15,6,13,0.3); border: 1px solid var(--border-glass);
+            background: rgba(10,10,10,0.3); border: 1px solid var(--border-glass);
             border-radius: var(--radius-pill); padding: 8px 16px 8px 36px; color: var(--text-main);
             font-size: 13px; width: 240px; outline: none; transition: 0.2s;
         }
@@ -206,7 +206,7 @@
         .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-muted); pointer-events: none; }
         
         .btn-install {
-            background: rgba(248,241,247,0.05); border: 1px solid var(--border-glass); color: var(--text-main);
+            background: rgba(245,245,247,0.05); border: 1px solid var(--border-glass); color: var(--text-main);
             padding: 8px 16px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 500;
             cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;
         }
@@ -225,17 +225,17 @@
         }
         .font-card:hover {
             transform: translateY(-2px); border-color: var(--border-mid);
-            box-shadow: 0 10px 30px rgba(15,6,13,0.2); background: rgba(38,24,35,0.8);
+            box-shadow: 0 10px 30px rgba(10,10,10,0.2); background: rgba(31,31,31,0.8);
         }
         .font-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
         .font-card-title { font-size: 15px; font-weight: 600; color: var(--text-main); }
-        .font-card-meta { font-size: 11px; color: var(--text-muted); background: rgba(15,6,13,0.3); padding: 2px 8px; border-radius: 12px; }
+        .font-card-meta { font-size: 11px; color: var(--text-muted); background: rgba(10,10,10,0.3); padding: 2px 8px; border-radius: 12px; }
         .font-card-preview {
             font-size: 20px; color: var(--text-main); margin-top: 8px; white-space: nowrap;
             overflow: hidden; text-overflow: ellipsis; opacity: 0.9;
         }
         .font-card-actions {
-            display: flex; gap: 8px; margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(248,241,247,0.05); opacity: 0; transition: 0.2s;
+            display: flex; gap: 8px; margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(245,245,247,0.05); opacity: 0; transition: 0.2s;
         }
         .font-card:hover .font-card-actions { opacity: 1; }
         .font-action-btn { background: transparent; border: none; color: var(--accent); font-size: 12px; font-weight: 600; cursor: pointer; }
@@ -249,7 +249,7 @@
             .setting-control { width: 100%; justify-content: flex-start; }
         }
     </style>
-<style id="malva-overrides">body{background:#1d101c url(../../brand/wallpapers/malva-dusk-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f6f0f6 url(../../brand/wallpapers/malva-dawn-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
+<style id="malva-overrides">body{background:#161617 url(../../brand/wallpapers/malva-graphite-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f5f5f7 url(../../brand/wallpapers/malva-silver-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
 <body>
 
     <div class="noise-layer"></div>

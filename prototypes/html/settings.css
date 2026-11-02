@@ -1,15 +1,15 @@
 /* LionOS Settings - Malva tokens (replaces missing style.css) */
-:root{--bg-body:#1d101c;--surface:rgba(42,25,41,.86);--side:rgba(29,16,28,.55);--card:rgba(227,213,225,.06);--card-h:rgba(227,213,225,.1);--ov:227,213,225;
---text-primary:#e3d5e1;--text-secondary:#b5a0b2;--text-tertiary:#8f7a8c;--accent:#d47abc;--on-accent:#1a0817;--line:rgba(227,213,225,.1);--track:#3a2639;
---color-success:#7bc74d;--color-danger:#ff8a94;--color-warning:#f2b04a;--color-purple:#a592f2;}
-[data-theme="light"]{--bg-body:#f6f0f6;--surface:rgba(251,248,251,.9);--side:rgba(255,255,255,.5);--card:rgba(255,255,255,.75);--card-h:#fff;--ov:56,32,52;
---text-primary:#382034;--text-secondary:#6c4e67;--text-tertiary:#8a6f85;--accent:#7e376a;--on-accent:#fff;--line:rgba(56,32,52,.12);--track:#e8dce9;
---color-success:#3f7f1b;--color-danger:#c0414e;--color-warning:#9a5b00;--color-purple:#6a4bb5}
+:root{--bg-body:#161617;--surface:rgba(30,30,31,.86);--side:rgba(22,22,23,.55);--card:rgba(245,245,247,.06);--card-h:rgba(245,245,247,.1);--ov:245,245,247;
+--text-primary:#f5f5f7;--text-secondary:#8e8e93;--text-tertiary:#848484;--accent:#dc73c2;--on-accent:#1d1d1f;--line:rgba(245,245,247,.1);--track:#3a3a3c;
+--color-success:#7fd35a;--color-danger:#ff7a85;--color-warning:#ffb85c;--color-purple:#a592f2;}
+[data-theme="light"]{--bg-body:#f5f5f7;--surface:rgba(255,255,255,.9);--side:rgba(255,255,255,.5);--card:rgba(255,255,255,.75);--card-h:#fff;--ov:29,29,31;
+--text-primary:#1d1d1f;--text-secondary:#86868b;--text-tertiary:#7c7c7c;--accent:#8c3274;--on-accent:#fff;--line:rgba(29,29,31,.12);--track:#d1d1d6;
+--color-success:#3f8a1e;--color-danger:#d6414f;--color-warning:#8a5300;--color-purple:#6a4bb5}
 *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}
-body{display:grid;place-items:center;background:var(--bg-body) url(../../brand/wallpapers/malva-dusk-2560x1440.jpg) center/cover fixed;color:var(--text-primary);font:14px/1.45 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
-[data-theme="light"] body{background-image:url(../../brand/wallpapers/malva-dawn-2560x1440.jpg)}
+body{display:grid;place-items:center;background:var(--bg-body) url(../../brand/wallpapers/malva-graphite-2560x1440.jpg) center/cover fixed;color:var(--text-primary);font:14px/1.45 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
+[data-theme="light"] body{background-image:url(../../brand/wallpapers/malva-silver-2560x1440.jpg)}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.app-window{width:min(1180px,96vw);height:min(760px,92vh);display:flex;background:var(--surface);backdrop-filter:blur(34px) saturate(140%);border:1px solid var(--line);border-radius:16px;box-shadow:0 40px 90px -20px rgba(10,3,9,.6);overflow:hidden}
+.app-window{width:min(1180px,96vw);height:min(760px,92vh);display:flex;background:var(--surface);backdrop-filter:blur(34px) saturate(140%);border:1px solid var(--line);border-radius:16px;box-shadow:0 40px 90px -20px rgba(6,6,6,.6);overflow:hidden}
 .sidebar{width:276px;flex:none;background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:16px 12px;min-height:0}
 .search-bar{position:relative;margin-bottom:12px}.search-icon{position:absolute;left:11px;top:50%;width:15px;height:15px;transform:translateY(-50%);color:var(--text-tertiary)}
 .search-input{width:100%;height:34px;border:0;border-radius:9px;background:var(--track);color:var(--text-primary);padding:0 12px 0 34px;font:inherit;outline:none}.search-input:focus{box-shadow:0 0 0 2px var(--accent)}

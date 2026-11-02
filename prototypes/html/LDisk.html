@@ -10,25 +10,25 @@
          * LEONUX DESIGN SYSTEM - LDISK EDITION
          */
         :root {
-            --bg-body: #1d101c;
-            --surface-base: rgba(42,25,41,0.84);
-            --surface-panel: rgba(58,38,57,0.55);
-            --surface-hover: rgba(227,213,225,0.08);
-            --surface-active: rgba(227,213,225,0.13);
-            --border-glass: rgba(227,213,225,0.09);
-            --border-mid: rgba(227,213,225,0.17);
+            --bg-body: #161617;
+            --surface-base: rgba(30,30,31,0.84);
+            --surface-panel: rgba(58,58,60,0.55);
+            --surface-hover: rgba(245,245,247,0.08);
+            --surface-active: rgba(245,245,247,0.13);
+            --border-glass: rgba(245,245,247,0.09);
+            --border-mid: rgba(245,245,247,0.17);
             
-            --text-main: #e3d5e1;
-            --text-muted: #b5a0b2;
+            --text-main: #f5f5f7;
+            --text-muted: #8e8e93;
             
-            --accent: #d47abc;
-            --accent-glow: rgba(212,122,188,0.35);
-            --danger: #ff8a94;
-            --success: #7bc74d;
-            --warning: #f2b04a;
-            --purple: #eaa4dc;
+            --accent: #dc73c2;
+            --accent-glow: rgba(220,115,194,0.35);
+            --danger: #ff7a85;
+            --success: #7fd35a;
+            --warning: #ffb85c;
+            --purple: #f093d7;
             
-            --shadow-win: 0 40px 100px -20px rgba(10,3,9,0.95);
+            --shadow-win: 0 40px 100px -20px rgba(6,6,6,0.95);
             --glass-blur: blur(40px) saturate(180%);
             --radius-xl: clamp(16px, 2vh, 24px);
             --radius-l: clamp(8px, 1vh, 12px);
@@ -98,7 +98,7 @@
             align-items: center;
             padding: 16px 24px;
             border-bottom: 1px solid var(--border-glass);
-            background: rgba(15,6,13,0.2);
+            background: rgba(10,10,10,0.2);
             justify-content: space-between;
             z-index: 20;
         }
@@ -131,7 +131,7 @@
             border-right: 1px solid var(--border-glass);
             display: flex;
             flex-direction: column;
-            background: rgba(15,6,13,0.15);
+            background: rgba(10,10,10,0.15);
             overflow-y: auto;
             flex-shrink: 0;
             padding: 16px 8px;
@@ -180,7 +180,7 @@
             background: var(--surface-hover);
         }
         .tree-node.active {
-            background: rgba(248,241,247,0.04);
+            background: rgba(245,245,247,0.04);
             border-color: var(--border-glass);
         }
         .tree-node.active .node-name {
@@ -241,13 +241,13 @@
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            background: rgba(15,6,13,0.1);
+            background: rgba(10,10,10,0.1);
             gap: 12px;
             flex-shrink: 0;
         }
 
         .tool-btn {
-            background: rgba(248,241,247,0.03);
+            background: rgba(245,245,247,0.03);
             border: 1px solid var(--border-glass);
             color: var(--text-muted);
             border-radius: 8px;
@@ -295,12 +295,12 @@
 
         .big-device-icon {
             width: 72px; height: 72px;
-            background: rgba(248,241,247,0.02);
+            background: rgba(245,245,247,0.02);
             border: 1px solid var(--border-glass);
             border-radius: 16px;
             display: flex; align-items: center; justify-content: center;
             color: var(--accent);
-            box-shadow: 0 12px 24px rgba(15,6,13,0.3);
+            box-shadow: 0 12px 24px rgba(10,10,10,0.3);
             position: relative;
         }
 
@@ -329,7 +329,7 @@
             border-radius: 4px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            background: rgba(223,118,202,0.15);
+            background: rgba(220,115,194,0.15);
             color: var(--accent);
             margin-top: 4px;
         }
@@ -354,7 +354,7 @@
 
         .storage-track {
             height: 16px;
-            background: rgba(248,241,247,0.03);
+            background: rgba(245,245,247,0.03);
             border-radius: 8px;
             overflow: hidden;
             display: flex;
@@ -366,11 +366,11 @@
             transition: width 0.8s var(--ease-leonux);
             position: relative;
         }
-        .storage-seg.seg-system { background: var(--accent); box-shadow: 0 0 10px rgba(223,118,202,0.2); }
+        .storage-seg.seg-system { background: var(--accent); box-shadow: 0 0 10px rgba(220,115,194,0.2); }
         .storage-seg.seg-apps { background: var(--purple); }
         .storage-seg.seg-user { background: var(--warning); }
         .storage-seg.seg-cache { background: var(--danger); }
-        .storage-seg.seg-free { background: rgba(248,241,247,0.06); }
+        .storage-seg.seg-free { background: rgba(245,245,247,0.06); }
 
         .legend-row {
             display: flex;
@@ -400,7 +400,7 @@
         }
 
         .spec-box {
-            background: rgba(15,6,13,0.15);
+            background: rgba(10,10,10,0.15);
             border: 1px solid var(--border-glass);
             border-radius: 8px;
             padding: 16px;
@@ -441,7 +441,7 @@
         /* --- MODAL POPUPS STAGE (First Aid, Erase, Benchmarks) --- */
         .modal-overlay {
             position: absolute; inset: 0;
-            background: rgba(15,6,13,0.6);
+            background: rgba(10,10,10,0.6);
             backdrop-filter: blur(10px);
             z-index: 100;
             display: flex;
@@ -457,10 +457,10 @@
         .modal-card {
             width: 90%;
             max-width: 540px;
-            background: rgba(28,18,26,0.95);
+            background: rgba(23,23,23,0.95);
             border: 1px solid var(--border-glass);
             border-radius: var(--radius-xl);
-            box-shadow: 0 24px 60px rgba(15,6,13,0.8);
+            box-shadow: 0 24px 60px rgba(10,10,10,0.8);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -491,7 +491,7 @@
         .modal-footer {
             padding: 16px 24px;
             border-top: 1px solid var(--border-glass);
-            background: rgba(15,6,13,0.15);
+            background: rgba(10,10,10,0.15);
             display: flex;
             justify-content: flex-end;
             gap: 12px;
@@ -509,12 +509,12 @@
         }
         .scan-sector {
             aspect-ratio: 1;
-            background: rgba(248,241,247,0.03);
-            border: 1px solid rgba(248,241,247,0.05);
+            background: rgba(245,245,247,0.03);
+            border: 1px solid rgba(245,245,247,0.05);
             border-radius: 2px;
             transition: background 0.1s ease;
         }
-        .scan-sector.scanned { background: rgba(223,118,202,0.4); border-color: var(--accent); }
+        .scan-sector.scanned { background: rgba(220,115,194,0.4); border-color: var(--accent); }
         .scan-sector.corrupted { background: var(--danger); border-color: var(--danger); animation: pulse-error 0.5s ease infinite alternate; }
         .scan-sector.repaired { background: var(--success); border-color: var(--success); }
 
@@ -522,7 +522,7 @@
 
         .wizard-progress-bar {
             height: 6px;
-            background: rgba(248,241,247,0.05);
+            background: rgba(245,245,247,0.05);
             border-radius: 3px;
             overflow: hidden;
             margin-top: 16px;
@@ -545,7 +545,7 @@
         /* Sandbox Terminal Window */
         .wizard-term {
             height: 120px;
-            background: #0b070a;
+            background: #090909;
             border: 1px solid var(--border-glass);
             border-radius: 6px;
             padding: 10px;
@@ -581,7 +581,7 @@
             letter-spacing: 0.5px;
         }
         .form-input, .form-select {
-            background: rgba(15,6,13,0.3);
+            background: rgba(10,10,10,0.3);
             border: 1px solid var(--border-glass);
             border-radius: 8px;
             padding: 10px 14px;
@@ -592,7 +592,7 @@
         }
         .form-input:focus, .form-select:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 10px rgba(223,118,202,0.15);
+            box-shadow: 0 0 10px rgba(220,115,194,0.15);
         }
 
         /* C: Live Benchmark Speed Gauges */
@@ -610,7 +610,7 @@
         }
         .gauge-card {
             flex: 1;
-            background: rgba(15,6,13,0.25);
+            background: rgba(10,10,10,0.25);
             border: 1px solid var(--border-glass);
             border-radius: 12px;
             padding: 20px;
@@ -624,7 +624,7 @@
             transform: rotate(-90deg);
         }
         .gauge-track {
-            fill: none; stroke: rgba(248,241,247,0.05); stroke-width: 8;
+            fill: none; stroke: rgba(245,245,247,0.05); stroke-width: 8;
         }
         .gauge-fill {
             fill: none; stroke: var(--accent); stroke-width: 8;
@@ -649,10 +649,10 @@
             cursor: pointer; transition: all 0.2s var(--ease-leonux); border: 1px solid transparent;
             user-select: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .btn-secondary { background: rgba(248,241,247,0.03); border-color: var(--border-glass); color: var(--text-main); }
+        .btn-secondary { background: rgba(245,245,247,0.03); border-color: var(--border-glass); color: var(--text-main); }
         .btn-secondary:hover:not(:disabled) { background: var(--surface-hover); border-color: var(--border-mid); }
         .btn-primary { background: var(--accent); color: var(--bg-body); font-weight: 700; box-shadow: 0 8px 24px var(--accent-glow); }
-        .btn-primary:hover:not(:disabled) { background: #e387d1; box-shadow: 0 12px 32px var(--accent-glow); transform: translateY(-1px); }
+        .btn-primary:hover:not(:disabled) { background: #f093d7; box-shadow: 0 12px 32px var(--accent-glow); transform: translateY(-1px); }
         .btn-danger { background: rgba(242,130,145,0.1); border-color: rgba(242,130,145,0.3); color: var(--danger); }
         .btn-danger:hover:not(:disabled) { background: rgba(242,130,145,0.2); }
         .btn:disabled { opacity: 0.3; cursor: not-allowed; }
@@ -663,7 +663,7 @@
             .storage-sidebar { width: 100%; height: 200px; border-right: none; border-bottom: 1px solid var(--border-glass); }
         }
     </style>
-<style id="malva-overrides">body{background:#1d101c url(../../brand/wallpapers/malva-dusk-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f6f0f6 url(../../brand/wallpapers/malva-dawn-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
+<style id="malva-overrides">body{background:#161617 url(../../brand/wallpapers/malva-graphite-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f5f5f7 url(../../brand/wallpapers/malva-silver-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
 <body>
 
     <div class="noise-layer"></div>
@@ -788,7 +788,7 @@
                             <div class="legend-item"><div class="legend-dot" style="background:var(--purple);"></div><span>Applications</span></div>
                             <div class="legend-item"><div class="legend-dot" style="background:var(--warning);"></div><span>User Documents</span></div>
                             <div class="legend-item"><div class="legend-dot" style="background:var(--danger);"></div><span>Temporary Log Cache</span></div>
-                            <div class="legend-item"><div class="legend-dot" style="background:rgba(248,241,247,0.06); border:1px solid var(--border-glass);"></div><span>Available Free Space</span></div>
+                            <div class="legend-item"><div class="legend-dot" style="background:rgba(245,245,247,0.06); border:1px solid var(--border-glass);"></div><span>Available Free Space</span></div>
                         </div>
                     </div>
 
@@ -1522,7 +1522,7 @@
                 btnBmCancel.textContent = "Done";
                 
                 // Adjust ambient backdrop glow to match diagnostic status success
-                document.getElementById('ambient-glow').style.background = `radial-gradient(circle, rgba(223,118,202,0.4) 0%, transparent 70%)`;
+                document.getElementById('ambient-glow').style.background = `radial-gradient(circle, rgba(220,115,194,0.4) 0%, transparent 70%)`;
             }
 
             btnBmCancel.addEventListener('click', () => {

@@ -1,20 +1,20 @@
-# Malva OS GUI kit (`docs/gui/index.html`)
-Open the file in any modern browser. It is a living reference for how the Rust widgets should look and behave.
+# Malva OS GUI rules
 
-## Balance dial and wallpaper
-Settings > Appearance has a Soft / Balanced / Crisp dial (snaps to the middle) and a wallpaper picker (Mallow, Gradient, Plain). See `docs/BALANCE.md` for the reasoning and measurements.
+How the widgets behave. How they look is in `DESIGN_LANGUAGE.md`; the working reference is the Malva UI kit
+(github.com/Malvaos/Malva-ui-toolkit), and the interactive prototypes of every app are in `prototypes/html`.
 
 ## Shell
-Top bar with Spotlight and quick settings, a draggable glass Settings window (close / minimise / zoom), a dock with magnification, a context menu, toasts and modal dialogs.
+
+A top bar with quick settings, a dock with magnification, a context menu, toasts and modal dialogs. Open any file in
+`prototypes/html` in a browser; `Taskbar.html`, `Control_center.html` and `clock widget.html` show the shell parts.
 
 ## Interaction rules
-- **State layers:** hover 8 %, pressed 14 % overlay of the label colour on every button; pressed also scales to 0.96.
-- **Focus:** 2 px accent ring with a 2 px surface halo so it reads on any background; shown for keyboard focus only.
-- **Motion:** 120 ms for state feedback, 240 ms for open / close, spring easing `cubic-bezier(.34,1.35,.64,1)`. Reduce motion sets both to 0.
-- **Glass:** 20 px blur, 1.3 saturation, about 80 % opaque so text stays legible over any wallpaper, 1 px inner highlight. High contrast turns glass opaque and borders solid.
-- **Forms:** validation appears after the user leaves a field, never while typing. Touch targets are at least 44 px.
-- **Keyboard:** Ctrl K or `/` Spotlight, arrow keys in tabs / menus / Spotlight, Esc closes any overlay.
 
-## Tests
-`python3 tools/gui_test.py` runs 38 browser checks (contrast for 4 variants at 3 balance settings, middle-band check, dial, wallpaper picker, keyboard, overlays, dock, drag, phone layout). `python3 tools/wallpaper_test.py` runs 18 pixel checks on the wallpaper. The Tokens tab runs the same WCAG pairs live.
-Screenshots from a passing run are in `docs/visuals/gui/`.
+* **States.** Every interactive control has five: rest, hover, pressed, focus, disabled. Hover and pressed shift the fill one step (`accent-hover`, `accent-press`; the secondary and ghost equivalents); pressed also scales to 0.98 in 90 ms.
+* **Focus.** A 2 px ring in `focus`, 2 px outside the control, so it reads on any background. It shows for keyboard focus only.
+* **Disabled.** Fill drops to `accent-disabled` or the text to `disabled-text`; a disabled control is never hidden.
+* **Motion.** 160 ms for hover, 240 ms for open, 160 ms for close; the spring `cubic-bezier(0.34, 1.35, 0.64, 1)` only where something arrives.
+* **Glass.** A translucent plate of the surface colour (the `glass` token, 72 to 76 % opaque) with a 1 px sheen along its top edge and a hairline outside. The compositor supplies the blur behind it.
+* **Forms.** Validation appears after the person leaves a field, never while typing. Destructive actions use `danger-fill` and are never the default button. Colour always comes with text or an icon.
+* **Size.** Controls are never shorter than 32 px; on touch layouts use the large size (48 px).
+* **Keyboard.** Ctrl K or `/` opens search, arrow keys move in tabs and menus, Esc closes any overlay.

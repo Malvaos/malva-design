@@ -8,11 +8,11 @@
         /* --- 1. LIONOS DESIGN SYSTEM --- */
         :root {
             /* Palette - Obsidian (Dark) */
-            --bg-body: #0f060d;
+            --bg-body: #0a0a0a;
             --bg-glass-card: rgba(var(--ov),0.04);
             --bg-glass-hover: rgba(var(--ov),0.08);
             --bg-glass-active: rgba(var(--ov),0.12);
-            --bg-header: rgba(15,6,13,0.85);
+            --bg-header: rgba(10,10,10,0.85);
             
             /* Text */
             --text-primary: rgba(var(--ov),0.95);
@@ -24,8 +24,8 @@
             --accent-cyan: #d345b7;
             --accent-rose: #f43f57;
             --accent-amber: #df9321;
-            --accent-violet: #de74c9;
-            --accent-face: #de74c9; /* Face ID color */
+            --accent-violet: #dc73c2;
+            --accent-face: #dc73c2; /* Face ID color */
             
             /* Borders */
             --border-subtle: 1px solid rgba(var(--ov),0.08);
@@ -49,7 +49,7 @@
             background-color: var(--bg-body);
             background-image: 
                 url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E"),
-                radial-gradient(circle at 20% 0%, rgba(222,116,201,0.05) 0%, transparent 50%),
+                radial-gradient(circle at 20% 0%, rgba(220,115,194,0.05) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, rgba(216,89,191,0.05) 0%, transparent 50%);
             color: var(--text-primary);
             height: 100vh;
@@ -99,7 +99,7 @@
             border-radius: var(--radius-window); padding: 32px;
             margin-bottom: 40px; position: relative; overflow: hidden;
             display: flex; flex-direction: column; align-items: center; text-align: center;
-            box-shadow: inset 0 0 60px rgba(15,6,13,0.3);
+            box-shadow: inset 0 0 60px rgba(10,10,10,0.3);
         }
         @media (min-width: 600px) {
             .profile-hero { flex-direction: row; text-align: left; align-items: center; gap: 32px; }
@@ -120,7 +120,7 @@
         }
         .avatar-img {
             width: 100%; height: 100%; border-radius: 50%;
-            background: #291b26; border: 4px solid #0f060d;
+            background: #222222; border: 4px solid #0a0a0a;
             display: flex; align-items: center; justify-content: center;
             font-size: 40px; color: var(--text-secondary);
             position: relative; z-index: 2; overflow: hidden;
@@ -131,8 +131,8 @@
             position: absolute; bottom: 0; right: 0; z-index: 3;
             width: 36px; height: 36px; background: var(--accent-primary);
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            border: 4px solid #0f060d; color: white; cursor: pointer;
-            transition: transform 0.2s; box-shadow: 0 4px 10px rgba(15,6,13,0.3);
+            border: 4px solid #0a0a0a; color: white; cursor: pointer;
+            transition: transform 0.2s; box-shadow: 0 4px 10px rgba(10,10,10,0.3);
         }
         .avatar-badge:hover { transform: scale(1.1); }
 
@@ -204,7 +204,7 @@
             transition: 0.5s;
         }
         .face-icon { width: 40px; height: 40px; color: var(--text-tertiary); transition: 0.5s; }
-        .bio-active .face-frame { border-color: var(--accent-face); box-shadow: 0 0 15px rgba(222,116,201,0.3); }
+        .bio-active .face-frame { border-color: var(--accent-face); box-shadow: 0 0 15px rgba(220,115,194,0.3); }
         .bio-active .face-icon { color: var(--accent-face); }
         
         /* Scanning Beams */
@@ -256,8 +256,8 @@
         .u-avatar {
             width: 48px; height: 48px; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: 700; color: #f8f1f7; flex-shrink: 0;
-            box-shadow: 0 4px 8px rgba(15,6,13,0.2);
+            font-size: 18px; font-weight: 700; color: #f5f5f7; flex-shrink: 0;
+            box-shadow: 0 4px 8px rgba(10,10,10,0.2);
         }
         
         .btn-icon {
@@ -278,7 +278,7 @@
             position: absolute; top: 2px; left: 2px;
             width: 22px; height: 22px; background: white; border-radius: 50%;
             transition: transform 0.3s var(--ease-bounce);
-            box-shadow: 0 2px 4px rgba(15,6,13,0.2);
+            box-shadow: 0 2px 4px rgba(10,10,10,0.2);
         }
         .chk:checked + .switch { background: var(--accent-primary); border-color: var(--accent-primary); }
         .chk:checked + .switch .knob { transform: translateX(20px); }
@@ -291,12 +291,12 @@
 
     </style>
 <style id="malva-tokens">
-:root{--ov:227,213,225;--bg-body:#1d101c;--bg-glass-card:rgba(227,213,225,.05);--bg-glass-hover:rgba(227,213,225,.09);--bg-glass-active:rgba(227,213,225,.14);--bg-glass-panel:rgba(42,25,41,.72);--bg-header:rgba(29,16,28,.82);
---text-primary:#e3d5e1;--text-secondary:#b5a0b2;--text-tertiary:#8f7a8c;--accent-primary:#d47abc;--accent-glow:rgba(212,122,188,.45);--accent-success:#7bc74d;--accent-warn:#f2b04a;--accent-danger:#ff8a94;--accent-purple:#b99cf0;--accent-cyan:#72c9d8;--accent-rose:#ff8a94;--accent-amber:#f2b04a;--accent-violet:#a592f2;--accent-eco:#7bc74d;--accent-perf:#d47abc;--accent-pink:#e999d2;
---border-subtle:1px solid rgba(227,213,225,.12);--border-separator:1px solid rgba(227,213,225,.06)}
-[data-theme="light"]{--ov:56,32,52;--bg-body:#f6f0f6;--bg-glass-card:rgba(255,255,255,.72);--bg-glass-hover:rgba(255,255,255,.9);--bg-glass-active:#ffffff;--bg-glass-panel:rgba(251,248,251,.85);--bg-header:rgba(246,240,246,.85);
---text-primary:#382034;--text-secondary:#6c4e67;--text-tertiary:#8a6f85;--accent-primary:#7e376a;--accent-glow:rgba(126,55,106,.35);--accent-success:#3f7f1b;--accent-warn:#9a5b00;--accent-danger:#c0414e;--accent-purple:#6a4bb5;--accent-cyan:#1f7f95;--accent-rose:#c0414e;--accent-amber:#9a5b00;--accent-violet:#5b4bb5;--accent-eco:#3f7f1b;--accent-perf:#7e376a;--accent-pink:#a14c8c;
---border-subtle:1px solid rgba(56,32,52,.14);--border-separator:1px solid rgba(56,32,52,.07)}
+:root{--ov:245,245,247;--bg-body:#161617;--bg-glass-card:rgba(245,245,247,.05);--bg-glass-hover:rgba(245,245,247,.09);--bg-glass-active:rgba(245,245,247,.14);--bg-glass-panel:rgba(30,30,31,.72);--bg-header:rgba(22,22,23,.82);
+--text-primary:#f5f5f7;--text-secondary:#8e8e93;--text-tertiary:#848484;--accent-primary:#dc73c2;--accent-glow:rgba(220,115,194,.45);--accent-success:#7fd35a;--accent-warn:#ffb85c;--accent-danger:#ff7a85;--accent-purple:#b99cf0;--accent-cyan:#72c9d8;--accent-rose:#ff7a85;--accent-amber:#ffb85c;--accent-violet:#a592f2;--accent-eco:#7fd35a;--accent-perf:#dc73c2;--accent-pink:#f093d7;
+--border-subtle:1px solid rgba(245,245,247,.12);--border-separator:1px solid rgba(245,245,247,.06)}
+[data-theme="light"]{--ov:29,29,31;--bg-body:#f5f5f7;--bg-glass-card:rgba(255,255,255,.72);--bg-glass-hover:rgba(255,255,255,.9);--bg-glass-active:#ffffff;--bg-glass-panel:rgba(255,255,255,.85);--bg-header:rgba(245,245,247,.85);
+--text-primary:#1d1d1f;--text-secondary:#86868b;--text-tertiary:#7c7c7c;--accent-primary:#8c3274;--accent-glow:rgba(140,50,116,.35);--accent-success:#3f8a1e;--accent-warn:#8a5300;--accent-danger:#d6414f;--accent-purple:#6a4bb5;--accent-cyan:#1f7f95;--accent-rose:#d6414f;--accent-amber:#8a5300;--accent-violet:#5b4bb5;--accent-eco:#3f8a1e;--accent-perf:#8c3274;--accent-pink:#a14c8c;
+--border-subtle:1px solid rgba(29,29,31,.14);--border-separator:1px solid rgba(29,29,31,.07)}
 html,body{color:var(--text-primary)}.window-frame>*{flex-shrink:0}html.embedded,html.embedded body{background:transparent!important;background-image:none!important}
 html.embedded .window-frame{max-width:none;padding:26px 34px}
 html.embedded .btn-back{display:none!important}html.embedded .header{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border-bottom:0!important;position:static!important}

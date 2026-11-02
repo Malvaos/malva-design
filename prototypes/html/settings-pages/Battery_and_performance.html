@@ -8,11 +8,11 @@
         /* --- 1. LIONOS DESIGN SYSTEM --- */
         :root {
             /* Palette - Obsidian (Dark) */
-            --bg-body: #0f060d;
+            --bg-body: #0a0a0a;
             --bg-glass-card: rgba(var(--ov),0.04);
             --bg-glass-hover: rgba(var(--ov),0.08);
             --bg-glass-active: rgba(var(--ov),0.12);
-            --bg-header: rgba(15,6,13,0.85);
+            --bg-header: rgba(10,10,10,0.85);
             
             /* Text */
             --text-primary: rgba(var(--ov),0.95);
@@ -24,8 +24,8 @@
             --accent-eco: #5b8940;
             --accent-warn: #df9321;
             --accent-danger: #ef445b;
-            --accent-perf: #de74c9;
-            --accent-purple: #e799d7;
+            --accent-perf: #dc73c2;
+            --accent-purple: #f093d7;
             --accent-pink: #f472b6;
             
             /* Borders */
@@ -45,14 +45,14 @@
 
         /* Light Mode Override */
         [data-theme="light"] {
-            --bg-body: #eaa4dc;
+            --bg-body: #f093d7;
             --bg-glass-card: rgba(var(--ov),0.75);
             --bg-glass-hover: rgba(var(--ov),0.9);
-            --bg-glass-active: #f8f1f7;
-            --bg-header: rgba(234,164,220,0.85);
-            --text-primary: #0f060d;
-            --text-secondary: rgba(15,6,13,0.6);
-            --border-subtle: 1px solid rgba(15,6,13,0.06);
+            --bg-glass-active: #f5f5f7;
+            --bg-header: rgba(240,147,215,0.85);
+            --text-primary: #0a0a0a;
+            --text-secondary: rgba(10,10,10,0.6);
+            --border-subtle: 1px solid rgba(10,10,10,0.06);
         }
 
         /* --- 2. BASE --- */
@@ -124,7 +124,7 @@
             padding: 32px;
             display: flex; align-items: center; justify-content: space-between;
             position: relative; overflow: hidden;
-            box-shadow: inset 0 0 40px rgba(15,6,13,0.2);
+            box-shadow: inset 0 0 40px rgba(10,10,10,0.2);
             min-height: 200px;
         }
 
@@ -156,7 +156,7 @@
         .battery-data { flex: 1; margin-left: 32px; z-index: 2; }
         .data-perc { 
             font-size: 56px; font-weight: 800; line-height: 1; 
-            background: linear-gradient(135deg, #f8f1f7, #b4a0b0);
+            background: linear-gradient(135deg, #f5f5f7, #aaaaaa);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             margin-bottom: 8px;
         }
@@ -218,7 +218,7 @@
         }
 
         .mode-card:hover { transform: translateY(-2px); background: var(--bg-glass-hover); }
-        .mode-card.active { border-color: var(--active-color); background: rgba(var(--ov),0.06); box-shadow: 0 8px 30px rgba(15,6,13,0.2); }
+        .mode-card.active { border-color: var(--active-color); background: rgba(var(--ov),0.06); box-shadow: 0 8px 30px rgba(10,10,10,0.2); }
         
         .mode-icon { 
             width: 44px; height: 44px; border-radius: 12px;
@@ -298,7 +298,7 @@
             width: 48px; height: 48px; border-radius: 12px;
             background: var(--app-color);
             display: flex; align-items: center; justify-content: center;
-            color: #f8f1f7; box-shadow: 0 4px 12px rgba(15,6,13,0.2);
+            color: #f5f5f7; box-shadow: 0 4px 12px rgba(10,10,10,0.2);
             flex-shrink: 0;
         }
         
@@ -334,7 +334,7 @@
             position: absolute; top: 2px; left: 2px;
             width: 22px; height: 22px; background: white; border-radius: 50%;
             transition: transform 0.3s var(--ease-bounce);
-            box-shadow: 0 2px 4px rgba(15,6,13,0.2);
+            box-shadow: 0 2px 4px rgba(10,10,10,0.2);
         }
         .chk:checked + .switch { background: var(--accent-primary); border-color: var(--accent-primary); }
         .chk:checked + .switch .knob { transform: translateX(20px); }
@@ -346,12 +346,12 @@
 
     </style>
 <style id="malva-tokens">
-:root{--ov:227,213,225;--bg-body:#1d101c;--bg-glass-card:rgba(227,213,225,.05);--bg-glass-hover:rgba(227,213,225,.09);--bg-glass-active:rgba(227,213,225,.14);--bg-glass-panel:rgba(42,25,41,.72);--bg-header:rgba(29,16,28,.82);
---text-primary:#e3d5e1;--text-secondary:#b5a0b2;--text-tertiary:#8f7a8c;--accent-primary:#d47abc;--accent-glow:rgba(212,122,188,.45);--accent-success:#7bc74d;--accent-warn:#f2b04a;--accent-danger:#ff8a94;--accent-purple:#b99cf0;--accent-cyan:#72c9d8;--accent-rose:#ff8a94;--accent-amber:#f2b04a;--accent-violet:#a592f2;--accent-eco:#7bc74d;--accent-perf:#d47abc;--accent-pink:#e999d2;
---border-subtle:1px solid rgba(227,213,225,.12);--border-separator:1px solid rgba(227,213,225,.06)}
-[data-theme="light"]{--ov:56,32,52;--bg-body:#f6f0f6;--bg-glass-card:rgba(255,255,255,.72);--bg-glass-hover:rgba(255,255,255,.9);--bg-glass-active:#ffffff;--bg-glass-panel:rgba(251,248,251,.85);--bg-header:rgba(246,240,246,.85);
---text-primary:#382034;--text-secondary:#6c4e67;--text-tertiary:#8a6f85;--accent-primary:#7e376a;--accent-glow:rgba(126,55,106,.35);--accent-success:#3f7f1b;--accent-warn:#9a5b00;--accent-danger:#c0414e;--accent-purple:#6a4bb5;--accent-cyan:#1f7f95;--accent-rose:#c0414e;--accent-amber:#9a5b00;--accent-violet:#5b4bb5;--accent-eco:#3f7f1b;--accent-perf:#7e376a;--accent-pink:#a14c8c;
---border-subtle:1px solid rgba(56,32,52,.14);--border-separator:1px solid rgba(56,32,52,.07)}
+:root{--ov:245,245,247;--bg-body:#161617;--bg-glass-card:rgba(245,245,247,.05);--bg-glass-hover:rgba(245,245,247,.09);--bg-glass-active:rgba(245,245,247,.14);--bg-glass-panel:rgba(30,30,31,.72);--bg-header:rgba(22,22,23,.82);
+--text-primary:#f5f5f7;--text-secondary:#8e8e93;--text-tertiary:#848484;--accent-primary:#dc73c2;--accent-glow:rgba(220,115,194,.45);--accent-success:#7fd35a;--accent-warn:#ffb85c;--accent-danger:#ff7a85;--accent-purple:#b99cf0;--accent-cyan:#72c9d8;--accent-rose:#ff7a85;--accent-amber:#ffb85c;--accent-violet:#a592f2;--accent-eco:#7fd35a;--accent-perf:#dc73c2;--accent-pink:#f093d7;
+--border-subtle:1px solid rgba(245,245,247,.12);--border-separator:1px solid rgba(245,245,247,.06)}
+[data-theme="light"]{--ov:29,29,31;--bg-body:#f5f5f7;--bg-glass-card:rgba(255,255,255,.72);--bg-glass-hover:rgba(255,255,255,.9);--bg-glass-active:#ffffff;--bg-glass-panel:rgba(255,255,255,.85);--bg-header:rgba(245,245,247,.85);
+--text-primary:#1d1d1f;--text-secondary:#86868b;--text-tertiary:#7c7c7c;--accent-primary:#8c3274;--accent-glow:rgba(140,50,116,.35);--accent-success:#3f8a1e;--accent-warn:#8a5300;--accent-danger:#d6414f;--accent-purple:#6a4bb5;--accent-cyan:#1f7f95;--accent-rose:#d6414f;--accent-amber:#8a5300;--accent-violet:#5b4bb5;--accent-eco:#3f8a1e;--accent-perf:#8c3274;--accent-pink:#a14c8c;
+--border-subtle:1px solid rgba(29,29,31,.14);--border-separator:1px solid rgba(29,29,31,.07)}
 html,body{color:var(--text-primary)}.window-frame>*{flex-shrink:0}html.embedded,html.embedded body{background:transparent!important;background-image:none!important}
 html.embedded .window-frame{max-width:none;padding:26px 34px}
 html.embedded .btn-back{display:none!important}html.embedded .header{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border-bottom:0!important;position:static!important}
@@ -516,7 +516,7 @@ html.embedded .btn-back{display:none!important}html.embedded .header{background:
                     </div>
 
                     <div class="app-item">
-                        <div class="app-icon-box" style="--app-color: #de74c9;">
+                        <div class="app-icon-box" style="--app-color: #dc73c2;">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
                         </div>
                         <div class="app-info">
@@ -524,7 +524,7 @@ html.embedded .btn-back{display:none!important}html.embedded .header{background:
                                 <div class="app-name">System</div>
                                 <div class="app-perc">8%</div>
                             </div>
-                            <div class="progress-track"><div class="progress-fill" style="width: 8%; background-color: #de74c9;"></div></div>
+                            <div class="progress-track"><div class="progress-fill" style="width: 8%; background-color: #dc73c2;"></div></div>
                         </div>
                     </div>
 

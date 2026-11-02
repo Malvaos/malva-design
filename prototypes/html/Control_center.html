@@ -7,20 +7,20 @@
     <style>
         /* --- DESIGN TOKENS --- */
         :root {
-            --bg-body: #1d101c;
-            --bg-panel: rgba(42,25,41,0.85);
-            --bg-card: rgba(227,213,225,0.08);
-            --bg-card-hover: rgba(227,213,225,0.12);
-            --bg-card-active: rgba(227,213,225,0.25);
+            --bg-body: #161617;
+            --bg-panel: rgba(30,30,31,0.85);
+            --bg-card: rgba(245,245,247,0.08);
+            --bg-card-hover: rgba(245,245,247,0.12);
+            --bg-card-active: rgba(245,245,247,0.25);
             
-            --text-primary: #e3d5e1;
-            --text-secondary: rgba(227,213,225,0.62);
-            --text-tertiary: rgba(227,213,225,0.32);
+            --text-primary: #f5f5f7;
+            --text-secondary: rgba(245,245,247,0.62);
+            --text-tertiary: rgba(245,245,247,0.32);
             
-            --accent-blue: #d47abc;
-            --accent-green: #7bc74d;
-            --accent-red: #ff8a94;
-            --accent-orange: #f2b04a;
+            --accent-blue: #dc73c2;
+            --accent-green: #7fd35a;
+            --accent-red: #ff7a85;
+            --accent-orange: #ffb85c;
             --accent-active: var(--accent-blue);
 
             --radius-panel: 36px;
@@ -33,14 +33,14 @@
         }
 
         [data-theme="light"] {
-            --bg-body: #f6f0f6;
+            --bg-body: #f5f5f7;
             --bg-panel: rgba(255,255,255,0.8);
-            --bg-card: rgba(126,55,106,0.07);
-            --bg-card-hover: rgba(126,55,106,0.12);
-            --bg-card-active: rgba(126,55,106,0.2);
-            --text-primary: #382034;
-            --text-secondary: rgba(56,32,52,0.62);
-            --text-tertiary: rgba(56,32,52,0.38);
+            --bg-card: rgba(140,50,116,0.07);
+            --bg-card-hover: rgba(140,50,116,0.12);
+            --bg-card-active: rgba(140,50,116,0.2);
+            --text-primary: #1d1d1f;
+            --text-secondary: rgba(29,29,31,0.62);
+            --text-tertiary: rgba(29,29,31,0.38);
         }
 
         /* --- RESET & BASE --- */
@@ -69,8 +69,8 @@
             backdrop-filter: blur(50px) saturate(140%);
             -webkit-backdrop-filter: blur(50px) saturate(140%);
             border-radius: var(--radius-panel);
-            border: 1px solid rgba(248,241,247,0.1);
-            box-shadow: 0 40px 100px -20px rgba(15,6,13,0.5);
+            border: 1px solid rgba(245,245,247,0.1);
+            box-shadow: 0 40px 100px -20px rgba(10,10,10,0.5);
             padding: 24px;
             display: flex; flex-direction: column; gap: 20px;
             overflow-y: auto;
@@ -83,8 +83,8 @@
         .user-profile { display: flex; align-items: center; gap: 14px; }
         .avatar {
             width: 48px; height: 48px;
-            background: linear-gradient(135deg, #53354d, #291b26);
-            border: 2px solid rgba(248,241,247,0.1);
+            background: linear-gradient(135deg, #444444, #222222);
+            border: 2px solid rgba(245,245,247,0.1);
         }
         .sys-time { display: flex; flex-direction: column; }
         .time-text { font-size: 18px; font-weight: 700; color: var(--text-primary); line-height: 1.1; }
@@ -112,9 +112,9 @@
         }
         .card:hover { background: var(--bg-card-hover); }
         .card:active { transform: scale(0.98); }
-        .card.active { background: var(--accent-active); box-shadow: 0 8px 25px -5px rgba(15,6,13,0.3); }
-        .card.active .label, .card.active .status, .card.active .card-icon { color: #f8f1f7; }
-        .card.active .card-icon { background: rgba(248,241,247,0.25); }
+        .card.active { background: var(--accent-active); box-shadow: 0 8px 25px -5px rgba(10,10,10,0.3); }
+        .card.active .label, .card.active .status, .card.active .card-icon { color: #f5f5f7; }
+        .card.active .card-icon { background: rgba(245,245,247,0.25); }
         .card-icon {
             width: 38px; height: 38px; background: rgba(155,99,144,0.15);
             display: flex; align-items: center; justify-content: center;
@@ -133,11 +133,11 @@
         }
         .slider-track {
             position: absolute; left: 0; top: 0; bottom: 0; width: 0%;
-            background: #f8f1f7; opacity: 0.15; pointer-events: none;
+            background: #f5f5f7; opacity: 0.15; pointer-events: none;
             transition: width 0.05s linear, opacity 0.2s;
         }
-        .slider.active .slider-track { opacity: 1; background: #f8f1f7; }
-        .slider.active .sl-icon, .slider.active .sl-val { color: #0f060d; z-index: 5; }
+        .slider.active .slider-track { opacity: 1; background: #f5f5f7; }
+        .slider.active .sl-icon, .slider.active .sl-val { color: #0a0a0a; z-index: 5; }
         .sl-icon { color: var(--text-secondary); display: flex; z-index: 2; }
         .sl-val { margin-left: auto; font-weight: 700; font-size: 14px; color: var(--text-primary); z-index: 2; }
 
@@ -161,7 +161,7 @@
         }
         .toggle-item:hover { background: var(--bg-card-hover); }
         .toggle-item:active { transform: scale(0.9); }
-        .toggle-item.active { background: var(--accent-active); color: #f8f1f7; box-shadow: 0 0 20px var(--accent-active); }
+        .toggle-item.active { background: var(--accent-active); color: #f5f5f7; box-shadow: 0 0 20px var(--accent-active); }
         
         /* Custom Colors */
         .toggle-item[data-tool="hotspot"].active { background: var(--accent-green); box-shadow: 0 0 20px var(--accent-green); }
@@ -183,7 +183,7 @@
             font-size: 12px; font-weight: 700; color: var(--text-secondary);
             z-index: 2; cursor: pointer; transition: color 0.2s;
         }
-        .perf-opt.selected { color: #f8f1f7; }
+        .perf-opt.selected { color: #f5f5f7; }
 
         /* --- CLIPBOARD HISTORY (NEW MODULE) --- */
         .clipboard-module {
@@ -209,10 +209,10 @@
         }
         
         .clip-list::-webkit-scrollbar { width: 4px; }
-        .clip-list::-webkit-scrollbar-thumb { background: rgba(248,241,247,0.1); border-radius: 4px; }
+        .clip-list::-webkit-scrollbar-thumb { background: rgba(245,245,247,0.1); border-radius: 4px; }
 
         .clip-item {
-            background: rgba(15,6,13,0.2);
+            background: rgba(10,10,10,0.2);
             padding: 10px 12px;
             border-radius: 12px;
             display: flex; align-items: center; justify-content: space-between;
@@ -221,7 +221,7 @@
             font-size: 13px;
             color: var(--text-primary);
         }
-        .clip-item:hover { background: rgba(248,241,247,0.05); }
+        .clip-item:hover { background: rgba(245,245,247,0.05); }
         .clip-item:active { transform: scale(0.98); }
 
         .clip-text {
@@ -234,23 +234,23 @@
         /* --- TOAST & OVERLAYS --- */
         .toast {
             position: fixed; bottom: 30px; left: 50%; transform: translate(-50%, 50px); opacity: 0;
-            background: rgba(15,6,13,0.8); backdrop-filter: blur(20px); color: #f8f1f7;
+            background: rgba(10,10,10,0.8); backdrop-filter: blur(20px); color: #f5f5f7;
             padding: 12px 24px; border-radius: 99px; font-size: 13px; font-weight: 600;
             display: flex; align-items: center; gap: 8px; transition: all 0.4s var(--ease-elastic);
             z-index: 9999; pointer-events: none; white-space: nowrap;
         }
         .toast.show { transform: translate(-50%, 0); opacity: 1; }
         .overlay { position: fixed; inset: 0; pointer-events: none; transition: opacity 0.3s; z-index: 9000; opacity: 0; }
-        #dim-layer { background: #0f060d; }
+        #dim-layer { background: #0a0a0a; }
         #warm-layer { background: #df9320; mix-blend-mode: multiply; }
-        #flash-layer { background: #f8f1f7; transition: opacity 0.1s; }
+        #flash-layer { background: #f5f5f7; transition: opacity 0.1s; }
 
         @keyframes popIn { 0% { opacity: 0; transform: scale(0.94) translateY(15px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
         .spinning { animation: spin 0.8s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
     </style>
-<style id="malva-overrides">.perf-bg{transform:translateX(100%)}:root:not([data-theme="light"]) .card.active .label,:root:not([data-theme="light"]) .card.active .status,:root:not([data-theme="light"]) .card.active .card-icon,:root:not([data-theme="light"]) .toggle-item.active,:root:not([data-theme="light"]) .perf-opt.selected{color:#1a0817}[data-theme="light"] .clip-item{background:rgba(126,55,106,.08)}[data-theme="light"] .slider.active .slider-track{background:#7e376a}body{background:#1d101c url(../../brand/wallpapers/malva-dusk-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f6f0f6 url(../../brand/wallpapers/malva-dawn-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
+<style id="malva-overrides">.perf-bg{transform:translateX(100%)}:root:not([data-theme="light"]) .card.active .label,:root:not([data-theme="light"]) .card.active .status,:root:not([data-theme="light"]) .card.active .card-icon,:root:not([data-theme="light"]) .toggle-item.active,:root:not([data-theme="light"]) .perf-opt.selected{color:#1d1d1f}[data-theme="light"] .clip-item{background:rgba(140,50,116,.08)}[data-theme="light"] .slider.active .slider-track{background:#8c3274}body{background:#161617 url(../../brand/wallpapers/malva-graphite-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f5f5f7 url(../../brand/wallpapers/malva-silver-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
 <body>
 
     <!-- Overlays -->

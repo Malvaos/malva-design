@@ -14,24 +14,24 @@
          */
         :root {
             /* Dark Mode Defaults */
-            --bg-body: #1d101c;
-            --surface-base: #2a1929;
-            --surface-panel: #33202f;
-            --surface-hover: #3a2936;
-            --surface-active: #493544;
+            --bg-body: #161617;
+            --surface-base: #1e1e1f;
+            --surface-panel: #29292b;
+            --surface-hover: #323232;
+            --surface-active: #3f3f3f;
             
-            --border-dim: rgba(227,213,225,0.10);
-            --border-mid: rgba(227,213,225,0.20);
+            --border-dim: rgba(245,245,247,0.10);
+            --border-mid: rgba(245,245,247,0.20);
             --border-bright: rgba(240,147,215,0.85);
             
-            --text-main: #e3d5e1;
-            --text-muted: #b5a0b2;
-            --text-faint: #6e5a6b;
+            --text-main: #f5f5f7;
+            --text-muted: #8e8e93;
+            --text-faint: #646464;
             
-            --accent: #d47abc;
-            --accent-inv: #1a0817;
+            --accent: #dc73c2;
+            --accent-inv: #1d1d1f;
             
-            --shadow-win: 0 40px 100px rgba(10,3,9,0.8);
+            --shadow-win: 0 40px 100px rgba(6,6,6,0.8);
             --glass-blur: blur(20px);
             
             --ease-standard: cubic-bezier(0.2, 0.0, 0.2, 1);
@@ -39,21 +39,21 @@
         }
 
         [data-theme="light"] {
-            --bg-body: #f6f0f6;
-            --surface-base: #fbf8fb;
-            --surface-panel: #e8dce9;
-            --surface-hover: #eee9ef;
-            --surface-active: #e4e0e5;
+            --bg-body: #f5f5f7;
+            --surface-base: #ffffff;
+            --surface-panel: #d1d1d6;
+            --surface-hover: #ececec;
+            --surface-active: #e2e2e2;
             
-            --border-dim: rgba(56,32,52,0.08);
-            --border-mid: rgba(56,32,52,0.2);
+            --border-dim: rgba(29,29,31,0.08);
+            --border-mid: rgba(29,29,31,0.2);
             --border-bright: rgba(94,36,78,0.9);
             
-            --text-main: #382034;
-            --text-muted: #6c4e67;
-            --text-faint: #c0b0be;
+            --text-main: #1d1d1f;
+            --text-muted: #86868b;
+            --text-faint: #b8b8b8;
             
-            --accent: #7e376a;
+            --accent: #8c3274;
             --accent-inv: #ffffff;
             
             --shadow-win: 0 40px 80px rgba(94,36,78,0.18);
@@ -219,7 +219,7 @@
         .card-select.selected {
             border-color: var(--text-main);
             background: var(--surface-active);
-            box-shadow: 0 4px 20px rgba(15,6,13,0.1);
+            box-shadow: 0 4px 20px rgba(10,10,10,0.1);
         }
         
         .flag-icon { font-size: 24px; filter: grayscale(100%); transition: filter 0.2s; }
@@ -366,8 +366,8 @@
 
         /* Terminal Logs */
         .terminal-box {
-            background: #0f060d;
-            color: #b4a0b0;
+            background: #0a0a0a;
+            color: #aaaaaa;
             font-family: 'JetBrains Mono', monospace;
             font-size: 12px;
             padding: 24px;
@@ -377,8 +377,8 @@
             margin-bottom: 24px;
         }
         .log-entry { margin-bottom: 4px; display: flex; gap: 12px; }
-        .log-ts { color: #684260; }
-        .log-txt { color: #e1d9df; }
+        .log-ts { color: #555555; }
+        .log-txt { color: #dddddd; }
 
         .progress-rail {
             height: 2px; background: var(--surface-active); width: 100%;
@@ -390,7 +390,7 @@
         }
 
     </style>
-<style id="malva-overrides">body{background:#1d101c url(../../brand/wallpapers/malva-dusk-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f6f0f6 url(../../brand/wallpapers/malva-dawn-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
+<style id="malva-overrides">body{background:#161617 url(../../brand/wallpapers/malva-graphite-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f5f5f7 url(../../brand/wallpapers/malva-silver-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
 <body>
 
     <div class="noise-layer"></div>

@@ -10,24 +10,24 @@
          * LEONUX DESIGN SYSTEM - LDM DISPLAY MANAGER EDITION
          */
         :root {
-            --bg-body: #1d101c;
-            --surface-base: rgba(42,25,41,0.84);
-            --surface-panel: rgba(58,38,57,0.55);
-            --surface-hover: rgba(227,213,225,0.08);
-            --surface-active: rgba(227,213,225,0.13);
-            --border-glass: rgba(227,213,225,0.09);
-            --border-mid: rgba(227,213,225,0.17);
+            --bg-body: #161617;
+            --surface-base: rgba(30,30,31,0.84);
+            --surface-panel: rgba(58,58,60,0.55);
+            --surface-hover: rgba(245,245,247,0.08);
+            --surface-active: rgba(245,245,247,0.13);
+            --border-glass: rgba(245,245,247,0.09);
+            --border-mid: rgba(245,245,247,0.17);
             
-            --text-main: #e3d5e1;
-            --text-muted: #b5a0b2;
+            --text-main: #f5f5f7;
+            --text-muted: #8e8e93;
             
-            --accent: #d47abc;
-            --accent-glow: rgba(212,122,188,0.35);
-            --danger: #ff8a94;
-            --success: #7bc74d;
-            --warning: #f2b04a;
+            --accent: #dc73c2;
+            --accent-glow: rgba(220,115,194,0.35);
+            --danger: #ff7a85;
+            --success: #7fd35a;
+            --warning: #ffb85c;
             
-            --shadow-win: 0 40px 100px -20px rgba(10,3,9,0.95);
+            --shadow-win: 0 40px 100px -20px rgba(6,6,6,0.95);
             --glass-blur: blur(40px) saturate(180%);
             --radius-xl: clamp(16px, 2vh, 24px);
             --radius-l: clamp(8px, 1vh, 12px);
@@ -67,7 +67,7 @@
             top: -10%; left: -10%;
         }
         .blob-2 {
-            width: 450px; height: 450px; background: rgba(234,164,220,0.25);
+            width: 450px; height: 450px; background: rgba(240,147,215,0.25);
             bottom: -5%; right: -5%; animation-delay: -5s;
         }
         .blob-3 {
@@ -99,7 +99,7 @@
 
         .bar-left, .bar-right {
             display: flex; align-items: center; gap: 8px;
-            background: rgba(15,6,13,0.25);
+            background: rgba(10,10,10,0.25);
             border: 1px solid var(--border-glass);
             padding: 6px 16px; border-radius: var(--radius-pill);
             backdrop-filter: blur(10px);
@@ -121,7 +121,7 @@
             font-size: 12px; font-weight: 700; outline: none; cursor: pointer;
             text-transform: uppercase; letter-spacing: 0.5px;
         }
-        .session-switcher option { background: #1d131b; color: var(--text-main); }
+        .session-switcher option { background: #181818; color: var(--text-main); }
 
         /* --- Center Screen Arena --- */
         .stage-center {
@@ -135,7 +135,7 @@
         .system-clock-panel {
             text-align: center;
             display: flex; flex-direction: column; gap: 4px;
-            text-shadow: 0 4px 15px rgba(15,6,13,0.4);
+            text-shadow: 0 4px 15px rgba(10,10,10,0.4);
             animation: fade-down 0.8s var(--ease-leonux) forwards;
         }
         .clock-time { font-size: 72px; font-weight: 200; letter-spacing: -0.04em; }
@@ -199,14 +199,14 @@
 
         .user-avatar {
             width: 40px; height: 40px; border-radius: 50%;
-            background: rgba(223,118,202,0.15); border: 1px solid var(--border-glass);
+            background: rgba(220,115,194,0.15); border: 1px solid var(--border-glass);
             display: flex; align-items: center; justify-content: center;
             font-weight: 700; font-size: 16px; color: var(--accent);
             text-transform: uppercase; position: relative; overflow: hidden;
         }
         .user-avatar::after {
             content: ''; position: absolute; inset: 0;
-            background: linear-gradient(135deg, rgba(248,241,247,0.1) 0%, transparent 100%);
+            background: linear-gradient(135deg, rgba(245,245,247,0.1) 0%, transparent 100%);
         }
 
         .user-meta { display: flex; flex-direction: column; gap: 2px; }
@@ -258,7 +258,7 @@
 
         .password-field {
             width: 100%;
-            background: rgba(15,6,13,0.3);
+            background: rgba(10,10,10,0.3);
             border: 1px solid var(--border-glass);
             border-radius: 8px;
             padding: 12px 48px;
@@ -268,7 +268,7 @@
         }
         .password-field:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 10px rgba(223,118,202,0.15);
+            box-shadow: 0 0 10px rgba(220,115,194,0.15);
         }
 
         .eye-toggle {
@@ -297,7 +297,7 @@
             display: flex; align-items: center; justify-content: center; gap: 8px;
         }
         .btn-secondary {
-            background: rgba(248,241,247,0.03); border-color: var(--border-glass); color: var(--text-main);
+            background: rgba(245,245,247,0.03); border-color: var(--border-glass); color: var(--text-main);
         }
         .btn-secondary:hover { background: var(--surface-hover); border-color: var(--border-mid); }
         
@@ -306,7 +306,7 @@
             box-shadow: 0 8px 24px var(--accent-glow);
         }
         .btn-primary:hover:not(:disabled) {
-            background: #e387d1; box-shadow: 0 12px 32px var(--accent-glow); transform: translateY(-1px);
+            background: #f093d7; box-shadow: 0 12px 32px var(--accent-glow); transform: translateY(-1px);
         }
         .btn-primary:active { transform: scale(0.98); }
         .btn:disabled { opacity: 0.3; cursor: not-allowed; }
@@ -328,7 +328,7 @@
         }
 
         .terminal-cli-hint {
-            background: rgba(248,241,247,0.03); border: 1px solid var(--border-glass);
+            background: rgba(245,245,247,0.03); border: 1px solid var(--border-glass);
             border-radius: 4px; padding: 4px 8px; cursor: pointer; transition: 0.2s;
             font-family: monospace; display: flex; align-items: center; gap: 6px;
         }
@@ -336,7 +336,7 @@
 
         /* --- FULLSYSTEM TTY COMMAND LINE TERMINAL FALLBACK --- */
         .tty-overlay {
-            position: fixed; inset: 0; background: #0f060d; z-index: 100;
+            position: fixed; inset: 0; background: #0a0a0a; z-index: 100;
             display: none; flex-direction: column; padding: 32px;
             font-family: 'JetBrains Mono', Consolas, monospace; font-size: 14px;
             line-height: 1.6; color: var(--success); overflow-y: auto;
@@ -352,20 +352,20 @@
 
         /* --- DYNAMIC SYSTEMD PARALLEL BOOT LOADER DE SPLASH --- */
         .systemd-boot-splash {
-            position: fixed; inset: 0; background: #020102; z-index: 200;
+            position: fixed; inset: 0; background: #020202; z-index: 200;
             display: none; flex-direction: column; padding: 40px;
-            font-family: monospace; font-size: 13px; color: #eaa4dc;
+            font-family: monospace; font-size: 13px; color: #f093d7;
             overflow-y: auto;
         }
         .systemd-boot-splash.active { display: flex; }
 
         .boot-row { display: flex; gap: 12px; margin-bottom: 4px; }
         .boot-ok { color: var(--success); font-weight: 700; min-width: 60px; }
-        .boot-desc { color: #eaa4dc; }
+        .boot-desc { color: #f093d7; }
 
         /* Desktop Simulation Welcome Target */
         .welcome-de-screen {
-            position: fixed; inset: 0; background: #0a0208; z-index: 300;
+            position: fixed; inset: 0; background: #060606; z-index: 300;
             display: none; flex-direction: column; align-items: center; justify-content: center;
             gap: 24px; animation: scale-up-fade 1.2s var(--ease-leonux) forwards;
             background-size: cover;
@@ -381,7 +381,7 @@
 
         /* --- GLOBAL SYSTEM CONFIRMATION DIALOG MODAL --- */
         .modal-overlay {
-            position: fixed; inset: 0; background: rgba(15,6,13,0.5);
+            position: fixed; inset: 0; background: rgba(10,10,10,0.5);
             backdrop-filter: blur(10px); z-index: 500;
             display: none; align-items: center; justify-content: center;
             opacity: 0; transition: opacity 0.3s ease;
@@ -390,8 +390,8 @@
 
         .modal-card {
             width: 90%; max-width: 400px;
-            background: rgba(28,18,26,0.95); border: 1px solid var(--border-glass);
-            border-radius: var(--radius-xl); box-shadow: 0 24px 60px rgba(15,6,13,0.8);
+            background: rgba(23,23,23,0.95); border: 1px solid var(--border-glass);
+            border-radius: var(--radius-xl); box-shadow: 0 24px 60px rgba(10,10,10,0.8);
             padding: 24px; display: flex; flex-direction: column; gap: 20px;
             transform: scale(0.95); transition: transform 0.3s var(--ease-leonux);
         }
@@ -402,7 +402,7 @@
         .modal-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
         .modal-footer { display: flex; justify-content: flex-end; gap: 10px; }
     </style>
-<style id="malva-overrides">body{background:#1d101c url(../../brand/wallpapers/malva-dusk-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f6f0f6 url(../../brand/wallpapers/malva-dawn-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
+<style id="malva-overrides">body{background:#161617 url(../../brand/wallpapers/malva-graphite-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f5f5f7 url(../../brand/wallpapers/malva-silver-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
 <body>
 
     <div class="noise-layer"></div>

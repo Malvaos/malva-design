@@ -10,24 +10,24 @@
          * LEONUX DESIGN SYSTEM - TERMINAL EMULATOR EDITION
          */
         :root {
-            --bg-body: #1d101c;
-            --surface-base: rgba(42,25,41,0.84);
-            --surface-panel: rgba(58,38,57,0.55);
-            --surface-hover: rgba(227,213,225,0.08);
-            --surface-active: rgba(227,213,225,0.13);
-            --border-glass: rgba(227,213,225,0.09);
-            --border-mid: rgba(227,213,225,0.17);
+            --bg-body: #161617;
+            --surface-base: rgba(30,30,31,0.84);
+            --surface-panel: rgba(58,58,60,0.55);
+            --surface-hover: rgba(245,245,247,0.08);
+            --surface-active: rgba(245,245,247,0.13);
+            --border-glass: rgba(245,245,247,0.09);
+            --border-mid: rgba(245,245,247,0.17);
             
-            --text-main: #e3d5e1;
-            --text-muted: #b5a0b2;
+            --text-main: #f5f5f7;
+            --text-muted: #8e8e93;
             
-            --accent: #d47abc;
-            --accent-glow: rgba(212,122,188,0.35);
-            --danger: #ff8a94;
-            --success: #7bc74d;
-            --warning: #f2b04a;
+            --accent: #dc73c2;
+            --accent-glow: rgba(220,115,194,0.35);
+            --danger: #ff7a85;
+            --success: #7fd35a;
+            --warning: #ffb85c;
             
-            --shadow-win: 0 40px 100px -20px rgba(10,3,9,0.95);
+            --shadow-win: 0 40px 100px -20px rgba(6,6,6,0.95);
             --glass-blur: blur(40px) saturate(180%);
             --radius-xl: clamp(16px, 2vh, 24px);
             --radius-l: clamp(8px, 1vh, 12px);
@@ -56,21 +56,21 @@
         }
 
         [data-theme="dracula"] {
-            --accent: #e9a3db;
-            --accent-glow: rgba(233,163,219,0.35);
+            --accent: #f093d7;
+            --accent-glow: rgba(240,147,215,0.35);
             --text-main: #f8f6f2;
             --text-muted: #d345b7;
-            --surface-base: rgba(34,8,29,0.88);
-            --border-glass: rgba(233,163,219,0.15);
+            --surface-base: rgba(21,21,21,0.88);
+            --border-glass: rgba(240,147,215,0.15);
         }
 
         [data-theme="nord"] {
-            --accent: #df79cb;
-            --accent-glow: rgba(223,121,203,0.35);
-            --text-main: #eaa4dc;
+            --accent: #dc73c2;
+            --accent-glow: rgba(220,115,194,0.35);
+            --text-main: #f093d7;
             --text-muted: #93237d;
-            --surface-base: rgba(36,8,30,0.88);
-            --border-glass: rgba(223,121,203,0.15);
+            --surface-base: rgba(22,22,22,0.88);
+            --border-glass: rgba(220,115,194,0.15);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
@@ -135,7 +135,7 @@
             align-items: center;
             padding: 16px 24px;
             border-bottom: 1px solid var(--border-glass);
-            background: rgba(15,6,13,0.3);
+            background: rgba(10,10,10,0.3);
             justify-content: space-between;
             z-index: 30;
             flex-shrink: 0;
@@ -190,7 +190,7 @@
         /* Scanning phosphor lines overlay */
         .scanlines {
             position: absolute; inset: 0;
-            background: linear-gradient(rgba(21,13,19,0) 50%, rgba(15,6,13,0.25) 50%);
+            background: linear-gradient(rgba(17,17,17,0) 50%, rgba(10,10,10,0.25) 50%);
             background-size: 100% 4px;
             z-index: 5;
             pointer-events: none;
@@ -299,7 +299,7 @@
         /* Customizable Prompts / Form entries */
         .config-input {
             width: 100%;
-            background: rgba(15,6,13,0.3);
+            background: rgba(10,10,10,0.3);
             border: 1px solid var(--border-glass);
             border-radius: 8px;
             padding: 10px 14px;
@@ -311,7 +311,7 @@
         }
         .config-input:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 10px rgba(223,118,202,0.15);
+            box-shadow: 0 0 10px rgba(220,115,194,0.15);
         }
 
         /* Theme Selector Blocks grid */
@@ -324,7 +324,7 @@
             padding: 12px;
             border-radius: 8px;
             border: 1px solid var(--border-glass);
-            background: rgba(15,6,13,0.25);
+            background: rgba(10,10,10,0.25);
             cursor: pointer;
             display: flex;
             flex-direction: column;
@@ -347,7 +347,7 @@
         }
         .theme-dot {
             width: 16px; height: 16px; border-radius: 50%;
-            box-shadow: 0 0 8px rgba(15,6,13,0.5);
+            box-shadow: 0 0 8px rgba(10,10,10,0.5);
         }
 
         /* Incremental Sizers buttons */
@@ -355,7 +355,7 @@
             display: flex; gap: 8px; align-items: center;
         }
         .sizer-btn {
-            background: rgba(248,241,247,0.03);
+            background: rgba(245,245,247,0.03);
             border: 1px solid var(--border-glass);
             color: var(--text-main);
             border-radius: 8px;
@@ -374,7 +374,7 @@
         }
         .toggle { position: relative; display: inline-block; width: 40px; height: 20px; }
         .toggle input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; inset: 0; background-color: rgba(248,241,247,0.05); transition: .3s; border-radius: 20px; border: 1px solid var(--border-glass); }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: rgba(245,245,247,0.05); transition: .3s; border-radius: 20px; border: 1px solid var(--border-glass); }
         .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px; background-color: var(--text-muted); transition: .3s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--accent); border-color: var(--accent); }
         input:checked + .slider:before { transform: translateX(20px); background-color: var(--bg-body); }
@@ -382,7 +382,7 @@
         /* Quick Utility Trigger buttons */
         .action-tray-btn {
             width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-glass);
-            background: rgba(248,241,247,0.02); color: var(--text-main); font-size: 12px; font-weight: 600;
+            background: rgba(245,245,247,0.02); color: var(--text-main); font-size: 12px; font-weight: 600;
             cursor: pointer; text-align: center; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
             font-family: system-ui, -apple-system, sans-serif;
         }
@@ -393,7 +393,7 @@
             .options-tray { width: 100%; }
         }
     </style>
-<style id="malva-overrides">body{background:#1d101c url(../../brand/wallpapers/malva-dusk-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f6f0f6 url(../../brand/wallpapers/malva-dawn-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
+<style id="malva-overrides">body{background:#161617 url(../../brand/wallpapers/malva-graphite-2560x1440.jpg) center/cover no-repeat fixed !important;animation:none !important}[data-theme="light"] body{background:#f5f5f7 url(../../brand/wallpapers/malva-silver-2560x1440.jpg) center/cover no-repeat fixed !important}.blob{display:none !important}</style></head>
 <body>
 
     <div class="noise-layer"></div>
@@ -447,7 +447,7 @@
                     <div class="section-title"><span>Terminal Color Themes</span></div>
                     <div class="device-group" id="theme-selectors-group">
                         <div class="tree-node active" data-theme-id="cyberpunk">
-                            <div style="width: 14px; height: 14px; border-radius: 50%; background: #df76ca;" class="node-icon"></div>
+                            <div style="width: 14px; height: 14px; border-radius: 50%; background: #dc73c2;" class="node-icon"></div>
                             <div class="node-meta"><span class="node-name">Leonux Standard (Blue)</span></div>
                         </div>
                         <div class="tree-node" data-theme-id="retro">
@@ -459,11 +459,11 @@
                             <div class="node-meta"><span class="node-name">Matrix Phosphor (Green)</span></div>
                         </div>
                         <div class="tree-node" data-theme-id="dracula">
-                            <div style="width: 14px; height: 14px; border-radius: 50%; background: #e9a3db;" class="node-icon"></div>
+                            <div style="width: 14px; height: 14px; border-radius: 50%; background: #f093d7;" class="node-icon"></div>
                             <div class="node-meta"><span class="node-name">Clean Dracula (Purple)</span></div>
                         </div>
                         <div class="tree-node" data-theme-id="nord">
-                            <div style="width: 14px; height: 14px; border-radius: 50%; background: #df79cb;" class="node-icon"></div>
+                            <div style="width: 14px; height: 14px; border-radius: 50%; background: #dc73c2;" class="node-icon"></div>
                             <div class="node-meta"><span class="node-name">Nordic Arctic (Frost)</span></div>
                         </div>
                     </div>
@@ -805,11 +805,11 @@
 
                 // Set Backlight glow colors match
                 const glowColors = {
-                    cyber: 'rgba(223,118,202,0.35)',
+                    cyber: 'rgba(220,115,194,0.35)',
                     retro: 'rgba(223,147,32,0.35)',
                     hacker: 'rgba(126,180,95,0.35)',
-                    dracula: 'rgba(233,163,219,0.35)',
-                    nord: 'rgba(223,121,203,0.35)'
+                    dracula: 'rgba(240,147,215,0.35)',
+                    nord: 'rgba(220,115,194,0.35)'
                 };
                 document.getElementById('ambient-glow').style.background = `radial-gradient(circle, ${glowColors[themeId]} 0%, transparent 70%)`;
             }
@@ -906,16 +906,16 @@
                 }
 
                 function drawMatrixFrame() {
-                    matrixCtx.fillStyle = 'rgba(15,6,13,0.05)';
+                    matrixCtx.fillStyle = 'rgba(10,10,10,0.05)';
                     matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
 
                     // Dynamic stroke color based on active theme
                     let matrixColor = '#7eb45f'; // hacker default
                     const activeTheme = document.documentElement.getAttribute('data-theme');
-                    if (activeTheme === 'cyber') matrixColor = '#df76ca';
+                    if (activeTheme === 'cyber') matrixColor = '#dc73c2';
                     else if (activeTheme === 'amber') matrixColor = '#df9320';
-                    else if (activeTheme === 'dracula') matrixColor = '#e9a3db';
-                    else if (activeTheme === 'nord') matrixColor = '#df79cb';
+                    else if (activeTheme === 'dracula') matrixColor = '#f093d7';
+                    else if (activeTheme === 'nord') matrixColor = '#dc73c2';
 
                     matrixCtx.fillStyle = matrixColor;
                     matrixCtx.font = fontSize + 'px monospace';
